@@ -1,0 +1,200 @@
+LaserBoy_ASCII_text file format
+
+The goal of writing this format was to recreate all of the
+capabilities of the ILDA (binary) file format in a plain ASCII
+text version so that people can use other applications like
+spread sheets with functions or math CAD apps like Maple or
+MatLab to exchange color vector information in and out of
+LaserBoy, where it can be converted to other useful formats like
+ILDA, wave or DXF.
+
+This format adds more capabilities for notation and numeric
+representation of data than what is found in the ILDA file format.
+
+This file (LaserBoy_ASCII_text.txt) contains a description of
+the blocks (space delimited lines of text) associated with
+frames, palettes and color tables.
+
+There are also LaserBoy ASCII formats for representing
+(animated) math figures (LaserBoy Liquid Math) and (animated)
+text frames, not documented in this file.
+
+For instructions on using animated text notation
+(vector font rendering) see ./LaserBoy/txt/text.txt.
+
+For instructions on using LaserBoy Liquid Math, see
+./LaserBoy/txt/doc for a collection of txt files.
+
+Since this format is text, it relies on delimiting principals
+of text; i.e.: non-breaking white space and lines.
+
+# A comment is anything on a line that follows a hash mark.
+
+Blank lines are ignored.
+
+There are three different kinds of text information blocks.
+
+frame
+palette
+table
+
+Each block of text starts with a line with one of these words
+as the first token. The first word is the only criteria of the
+block that can not be assumed to be a default value.
+Tokens that modify the meaning of the first word may follow.
+
+The tokens that modify the word "frame" are:
+
+frame [xy | xyz]  [rgb | hex | palette | table]  [short | unit | real]
+
+Use only one word from each of the tokens in the square brackets.
+The square brackets are no to be included.
+
+The first token in each of the square brackets are the assumed values.
+Tokens may be omitted only from right to left. In other words, if you want
+to designate a frame to store coordinates in unit values, you must also
+specify your choice of [xy | xyz]  [rgb | hex | palette | table]
+before you place the token "unit" at the end of the line.
+
+So, just placing the word
+
+frame
+
+on a line by itself tells LaserBoy to read the numbers that follow
+it as though it was...
+
+frame xy rgb short
+
+... a 2D frame of 16-bit signed short integers with individual decimal
+byte values (0 - 255) for each red, green and blue;
+a total of 5 numerical values per vertex (per line).
+
+frame xyz
+
+would be a similar 3D frame.
+
+frame xy hex
+
+would be a 2D frame of 16-bit signed short integers with one 24-bit
+hexadecimal value for the color. This is 0xRRGGBB, the same exact
+notation for color as used in HTML.
+
+LaserBoy_ASCII_text frame blocks can have the color integrated
+into them or they can rely on palettes or tables.
+
+The relationship between frames palettes and tables is similar to the
+way it was supposed to work in the ILDA formats 0, 1, 2 & 3.
+
+Many frames can use the same palette. A palette must be defined in
+the file before it is used by any frame. If a frame definition appears
+that uses the word palette to describe its color model before any
+palette is defined, the default palette of 63 colors is assumed
+(same as an ILDA file).
+
+Since the frame designates that its color is to be one of
+
+[rgb | hex | palette | table]
+
+A palette can be stored as rgb or hex, just like the integrated color
+values of the frame.
+
+A palette can also be "named".
+
+A named palette is any one of the pre-defined palettes in the
+LaserBoy palette set that is compiled into the application.
+
+palette [named] [name]
+
+If you store frames with palettes that are built into LaserBoy,
+you have the option of just storing the name of the palette and none of
+its values. LaserBoy looks for the name and if it finds it in the array
+of predefined palettes it uses that one; if not, it's an error.
+
+It is possible to create a palette definition in text and give it a name.
+A name is 8 or less characters following the color storage token.
+
+palette [rgb | hex] [name]
+
+Any palette can be given a name, but only those palettes that are
+built into LaserBoy can be designated as "named".
+
+In other words, a custom palette could be made with the first line like this:
+
+palette rgb happy
+
+This would need to be followed by lines containing r, g, b byte values,
+one color per line. This palette would load into LaserBoy with the name
+"happy" as part of the running application's current palette set.
+
+A table is much like the ill-fated ILDA format 3. It is a list of only the
+color values of a frame in the same exact order as the vertices of the frame
+that must follow it. It has a one-to-one relationship with the frame.
+Tables can also be rgb or hex, but they can not have a name.
+
+table [rgb | hex]
+
+Blanking is indicated in either frames or tables by storing the literal
+number -1. Since a blank vertex has no color, there is no need to store
+or read anything after that single value. It takes three values to store
+a color in rgb format, but only one value to designate that it is blank.
+
+The keywords or tokens that are part of the LaserBoy_ASCII_text format
+are lower case only! Names for palettes can be up to 8 of any of the
+digits, letters, the dash and the underscore.
+
+0 to 9
+a to z
+A to Z
+- and _
+
+Palette names are case sensitive!
+
+When reading a single line of numerical values, LaserBoy assumes that
+all of those values are relative to only one item; a vertex or a color value.
+It also assumes the individual values of each part, x, y, z, r, g, or b
+to be zero before it is read. If a line terminates before all the values
+are found, the un-found values remain zero. Extra information after all
+of the expected values are found is ignored.
+
+Now, take a look at what LaserBoy can make for you when you save as txt.
+Take a look at the output options you have in menu
+[Tab] sub-menu "7 file type specific options".
+
+--> 5 txt save in unit coordinates (-1.0 ~ +1.0)
+
+This option, when set, will save the vertex coordinates scaled to
+unit space. All coordinate values will be real numbers from -1.0 to +1.0.
+Unset, LaserBoy will save frames using ASCII representations of the
+signed short integers as they are in the LaserBoy frame_set memory.
+
+--> 6 txt save frames with integrated color
+
+This option, when set, will save the whole color value of each vertex
+within the vertex line of text (similar to ILDA format 4 or 5).
+Unset, LaserBoy will save frames using palettes or color tables.
+
+--> 7 txt save colors in hex
+
+This option, when set, will save the color values in palettes, tables or
+vertex lines in hexadecimal notation 0xRRGGBB.
+Unset, LaserBoy will use the three decimal r g b format.
+
+--> 8 txt save named LaserBoy palette values
+
+This option, when set, will save a definition of any of the built-in, named
+LaserBoy palettes if they are used by any of the frames in the text file.
+This is so they will be available to other text reading applications, outside
+of LaserBoy.
+
+To see an example of LaserBoy_ASCII_text, just save a
+frame, frame_set or palette as output type 4 txt. Look in the txt directory
+and open the file in any text editor.
+
+After opening a text file into LaserBoy, look in the LaserBoy directory
+for a file named
+
+txt_in_errors.txt
+
+This file may contain error messages with line numbers that indicate
+syntax errors in the text file.
+

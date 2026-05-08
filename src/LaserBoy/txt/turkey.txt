@@ -1,0 +1,102 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+#math  normalize_frames_individually  yes
+
+math  to_space            1.0
+math  hues_span_factor    1.0
+math  hues_shift          7
+
+math bmp_line_width       1
+math bmp_render_vectors   yes
+math bmp_render_vertices  no
+math disable_bmp          yes
+
+#------------------------------------------------
+#math  P0                  0.0  -4.125 0.0
+#math  P1                  9.25  3.0   0.0
+#math  rectangular_grid_x_units  0.125
+#math  rectangular_grid_y_units  0.125
+#math  rectangular_grid_xy
+#math  store grid
+
+#------------------------------------------------
+math  duration          1.0
+math  iterations        500
+
+math  LBO1 amplitude    2.5
+math  LBO1 frequency    1.0
+
+math  oscillator
+
+#------------------------------------------------
+math  factor   0.0   0.0   0.0
+math  factor_  1.0   1.0   1.0
+math  scale_acceleration  -1.0
+
+math  scale_
+math  store swish
+
+#------------------------------------------------
+math  still_frames      500
+math  duration          300
+math  iterations        50000
+
+math  LBO1 amplitude    1.0
+math  LBO1 frequency    3.506
+math  LBO1 offset       2.0
+
+math  polar
+
+#------------------------------------------------
+math  rotation 0.0   0.0   0.0
+math _rotation 0.0   0.0   1.0
+
+math _rotate
+
+#------------------------------------------------
+math  factor   0.0   0.0   0.0
+math  factor_  1.0   1.0   1.0
+math  scale_acceleration   1.0
+
+math  scale_
+
+#------------------------------------------------
+math  recall swish
+math  add
+math  color_span_hues
+
+#------------------------------------------------
+#math  recall grid
+#math  swap
+#math  composite
+
+#------------------------------------------------
+#math  P0       4.625  -0.5625   0.0
+#math  P1       4.625  -0.5625   0.0
+#math _P0       0.0    -4.125    0.0
+#math _P1       9.25    3.0      0.0
+#math _clip
+
+#------------------------------------------------
+math  render
+
+#math  save_as_bmp turkey 1920 1080
+
+# ffmpeg -r 16 -f image2 -s 1920x1080 -i turkey_%06d.bmp -vcodec libx264 -crf 25 -pix_fmt yuv420p turkey.mp4
+
+#################################################
+#################################################

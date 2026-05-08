@@ -1,0 +1,91 @@
+# ────────────────────────────────────────────────────────────
+#  LaserBoy-FLTK  v0.1-win64  (MSYS2 / mingw-w64 g++)
+#  James Lehman – laserboy.org
+# ────────────────────────────────────────────────────────────
+
+CPP         = g++
+STRIP       = strip -s -v
+
+SRC_DIR     = ./
+BUILD_DIR   = ../build
+BIN         = ../LaserBoy.exe
+
+BOOST_DIR   = /mingw64/include/boost
+FLTK_DIR    = /mingw64/include
+LIB_DIR     = /mingw64/lib
+INC         = -I$(BOOST_DIR) -I$(FLTK_DIR)
+
+CPPFLAGS    = -D__MINGW_LASERBOY__            \
+              -D__BOOST_PROCESS_V1__          \
+              -DWINVER=0x0601                 \
+              -D_WIN32_WINNT=0x0601           \
+              -std=c++17                      \
+              -O3                             \
+              -Wall                           \
+              -Wextra                         \
+              -frounding-math                 \
+              -fsignaling-nans                \
+              -fexpensive-optimizations       \
+              -Wno-deprecated-declarations    \
+              -Wno-array-bounds               \
+              -Wno-stringop-overflow          \
+              -Wno-psabi                      \
+              -Wno-unused-parameter           \
+              -Wno-implicit-fallthrough       \
+              -Wno-missing-field-initializers \
+              -Wno-misleading-indentation     \
+              -Wno-unused-but-set-variable    \
+              -Wno-mismatched-new-delete      \
+              $(INC)
+
+BOOST_LIBS  = -lboost_filesystem-mt           \
+              -lboost_thread-mt               \
+              -lboost_chrono-mt               \
+              -lpthread
+
+FLTK_LIBS   = -lfltk                          \
+              -lfltk_images                   \
+              -lfltk_jpeg                     \
+              -lfltk_png
+
+STATIC_LIBS = -Wl,-Bstatic                    \
+              $(BOOST_LIBS)                   \
+              $(FLTK_LIBS)                    \
+              -static-libgcc                  \
+              -static-libstdc++
+
+SYSTEM_LIBS = -Wl,-Bdynamic                   \
+              -lgdi32                         \
+              -luser32                        \
+              -lcomdlg32                      \
+              -lcomctl32                      \
+              -lwinspool                      \
+              -lws2_32                        \
+              -lwininet                       \
+              -lole32                         \
+              -luuid                          \
+              -lgdiplus                       \
+              -lz
+
+LDFLAGS     = $(STATIC_LIBS) $(SYSTEM_LIBS)
+
+SRC := $(wildcard $(SRC_DIR)/LaserBoy*.cpp)
+OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o64,$(SRC))
+
+all: $(BIN) strip
+
+$(BIN): $(OBJ)
+	$(CPP) $^ -o $@ -L$(LIB_DIR) $(LDFLAGS)
+
+$(BUILD_DIR)/%.o64: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	$(CPP) $(CPPFLAGS) -c $< -o $@
+
+.PHONY: strip
+strip: $(BIN)
+	$(STRIP) $(BIN)
+
+clean:
+	rm -f ../build/*.o64 $(BIN)
+
+.PHONY: all clean

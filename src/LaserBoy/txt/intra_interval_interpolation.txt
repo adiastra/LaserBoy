@@ -1,0 +1,813 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+#math phase_cycle        360.0
+#math rotation_cycle     1.0
+#math interval_cycle     1.0
+
+math normalize_frames_individually 0
+math normalize_frames_with_origin  0
+math include_unit_reference        0
+
+math save_true_color_dxf           0
+math save_txt_with_color           1
+math save_txt_color_hex            1
+math overwrite_txt_files           1
+
+math  frames            100
+math  still_frames      1
+math  first_frames      10
+math  last_frames       10
+
+math  intra_interval_interpolation  on
+
+math  duration          10.0
+math  iterations        5000
+
+math  LBO1  amplitude   pi
+math  LBO1_ amplitude   pi
+
+math  LBO1  duty_cycle  0.0
+math  LBO1_ duty_cycle  1.0
+
+#------------------------------------------------
+math  LBO1  offset      24
+math  LBO1_ offset      24
+
+math  oscillator
+
+math color_rgb          255 0 0
+
+
+
+
+#------------------------------------------------
+math  LBO1  function    triangle
+math  LBO1  offset      16
+
+math  LBO1_ function    triangle
+math  LBO1_ offset      16
+
+math  oscillator
+
+math color_rgb          255 127 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    ramp
+math  LBO1  offset      8
+
+math  LBO1_ function    ramp
+math  LBO1_ offset      8
+
+math  oscillator
+
+math color_rgb          255 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    square
+math  LBO1  offset      0
+
+math  LBO1_ function    square
+math  LBO1_ offset      0
+
+math  oscillator
+
+math color_rgb          0 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    pulse
+math  LBO1  offset      -8
+
+math  LBO1_ function    pulse
+math  LBO1_ offset      -8
+
+math  oscillator
+
+math color_rgb          0 255 127
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    trapezoid
+math  LBO1  offset      -16
+
+math  LBO1_ function    trapezoid
+math  LBO1_ offset      -16
+
+math  oscillator
+
+math color_rgb          0 255 255
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    circle
+math  LBO1  offset      -24
+
+math  LBO1_ function    circle
+math  LBO1_ offset      -24
+
+math  oscillator
+
+math color_rgb          0 127 255
+math composite
+
+math render
+
+
+#------------------------------------------------
+#------------------------------------------------
+math _duration          10.0
+math _iterations        5000
+
+math  LBO_reset_all
+
+math  LBO1  amplitude   pi
+math  LBO1_ amplitude   pi
+math _LBO1  amplitude   pi
+math _LBO1_ amplitude   pi
+
+math  LBO1  duty_cycle  0.5
+math  LBO1_ duty_cycle  0.5
+math _LBO1  duty_cycle  0.0
+math _LBO1_ duty_cycle  1.0
+
+
+#------------------------------------------------
+math  LBO1  offset      24
+math  LBO1_ offset      24
+math _LBO1  offset      24
+math _LBO1_ offset      24
+
+math _oscillator
+
+math color_rgb          255 0 0
+
+
+
+
+#------------------------------------------------
+math  LBO1  function    triangle
+math  LBO1_ function    triangle
+math _LBO1  function    triangle
+math _LBO1_ function    triangle
+
+math  LBO1  offset      16
+math  LBO1_ offset      16
+math _LBO1  offset      16
+math _LBO1_ offset      16
+
+math _oscillator
+
+math color_rgb          255 127 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    ramp
+math  LBO1_ function    ramp
+math _LBO1  function    ramp
+math _LBO1_ function    ramp
+
+math  LBO1  offset      8
+math  LBO1_ offset      8
+math _LBO1  offset      8
+math _LBO1_ offset      8
+
+math _oscillator
+
+math color_rgb          255 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    square
+math  LBO1_ function    square
+math _LBO1  function    square
+math _LBO1_ function    square
+
+math  LBO1  offset      0
+math  LBO1_ offset      0
+math _LBO1  offset      0
+math _LBO1_ offset      0
+
+math _oscillator
+
+math color_rgb          0 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    pulse
+math  LBO1_ function    pulse
+math _LBO1  function    pulse
+math _LBO1_ function    pulse
+
+math  LBO1  offset      -8
+math  LBO1_ offset      -8
+math _LBO1  offset      -8
+math _LBO1_ offset      -8
+
+math _oscillator
+
+math color_rgb          0 255 127
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    trapezoid
+math  LBO1_ function    trapezoid
+math _LBO1  function    trapezoid
+math _LBO1_ function    trapezoid
+
+math  LBO1  offset      -16
+math  LBO1_ offset      -16
+math _LBO1  offset      -16
+math _LBO1_ offset      -16
+
+math _oscillator
+
+math color_rgb          0 255 255
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    circle
+math  LBO1_ function    circle
+math _LBO1  function    circle
+math _LBO1_ function    circle
+
+math  LBO1  offset      -24
+math  LBO1_ offset      -24
+math _LBO1  offset      -24
+math _LBO1_ offset      -24
+
+math _oscillator
+
+math color_rgb          0 127 255
+math composite
+
+math render
+
+
+
+
+
+#------------------------------------------------
+#------------------------------------------------
+math  LBO_reset_all
+
+math  LBO1  amplitude   pi
+math  LBO1_ amplitude   pi
+math _LBO1  amplitude   pi
+math _LBO1_ amplitude   pi
+
+math _LBO1  frequency   0.0
+math _LBO1_ frequency   4.0
+
+
+#------------------------------------------------
+math  LBO1  offset      24
+math  LBO1_ offset      24
+math _LBO1  offset      24
+math _LBO1_ offset      24
+
+math _oscillator
+
+math color_rgb          255 0 0
+
+
+
+
+#------------------------------------------------
+math  LBO1  function    triangle
+math  LBO1_ function    triangle
+math _LBO1  function    triangle
+math _LBO1_ function    triangle
+
+math  LBO1  offset      16
+math  LBO1_ offset      16
+math _LBO1  offset      16
+math _LBO1_ offset      16
+
+math _oscillator
+
+math color_rgb          255 127 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    ramp
+math  LBO1_ function    ramp
+math _LBO1  function    ramp
+math _LBO1_ function    ramp
+
+math  LBO1  offset      8
+math  LBO1_ offset      8
+math _LBO1  offset      8
+math _LBO1_ offset      8
+
+math _oscillator
+
+math color_rgb          255 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    square
+math  LBO1_ function    square
+math _LBO1  function    square
+math _LBO1_ function    square
+
+math  LBO1  offset      0
+math  LBO1_ offset      0
+math _LBO1  offset      0
+math _LBO1_ offset      0
+
+math _oscillator
+
+math color_rgb          0 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    pulse
+math  LBO1_ function    pulse
+math _LBO1  function    pulse
+math _LBO1_ function    pulse
+
+math  LBO1  offset      -8
+math  LBO1_ offset      -8
+math _LBO1  offset      -8
+math _LBO1_ offset      -8
+
+math _oscillator
+
+math color_rgb          0 255 127
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    trapezoid
+math  LBO1_ function    trapezoid
+math _LBO1  function    trapezoid
+math _LBO1_ function    trapezoid
+
+math  LBO1  offset      -16
+math  LBO1_ offset      -16
+math _LBO1  offset      -16
+math _LBO1_ offset      -16
+
+math _oscillator
+
+math color_rgb          0 255 255
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    circle
+math  LBO1_ function    circle
+math _LBO1  function    circle
+math _LBO1_ function    circle
+
+math  LBO1  offset      -24
+math  LBO1_ offset      -24
+math _LBO1  offset      -24
+math _LBO1_ offset      -24
+
+math _oscillator
+
+math color_rgb          0 127 255
+math composite
+
+math render
+
+
+#------------------------------------------------
+#------------------------------------------------
+math  LBO_reset_all
+
+math  LBO1  amplitude   pi
+math  LBO1_ amplitude   pi
+math _LBO1  amplitude   pi
+math _LBO1_ amplitude   pi
+
+math _LBO1  phase       -180.0
+math _LBO1_ phase       180.0
+
+
+#------------------------------------------------
+math  LBO1  offset      24
+math  LBO1_ offset      24
+math _LBO1  offset      24
+math _LBO1_ offset      24
+
+math _oscillator
+
+math color_rgb          255 0 0
+
+
+
+
+#------------------------------------------------
+math  LBO1  function    triangle
+math  LBO1_ function    triangle
+math _LBO1  function    triangle
+math _LBO1_ function    triangle
+
+math  LBO1  offset      16
+math  LBO1_ offset      16
+math _LBO1  offset      16
+math _LBO1_ offset      16
+
+math _oscillator
+
+math color_rgb          255 127 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    ramp
+math  LBO1_ function    ramp
+math _LBO1  function    ramp
+math _LBO1_ function    ramp
+
+math  LBO1  offset      8
+math  LBO1_ offset      8
+math _LBO1  offset      8
+math _LBO1_ offset      8
+
+math _oscillator
+
+math color_rgb          255 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    square
+math  LBO1_ function    square
+math _LBO1  function    square
+math _LBO1_ function    square
+
+math  LBO1  offset      0
+math  LBO1_ offset      0
+math _LBO1  offset      0
+math _LBO1_ offset      0
+
+math _oscillator
+
+math color_rgb          0 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    pulse
+math  LBO1_ function    pulse
+math _LBO1  function    pulse
+math _LBO1_ function    pulse
+
+math  LBO1  offset      -8
+math  LBO1_ offset      -8
+math _LBO1  offset      -8
+math _LBO1_ offset      -8
+
+math _oscillator
+
+math color_rgb          0 255 127
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    trapezoid
+math  LBO1_ function    trapezoid
+math _LBO1  function    trapezoid
+math _LBO1_ function    trapezoid
+
+math  LBO1  offset      -16
+math  LBO1_ offset      -16
+math _LBO1  offset      -16
+math _LBO1_ offset      -16
+
+math _oscillator
+
+math color_rgb          0 255 255
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    circle
+math  LBO1_ function    circle
+math _LBO1  function    circle
+math _LBO1_ function    circle
+
+math  LBO1  offset      -24
+math  LBO1_ offset      -24
+math _LBO1  offset      -24
+math _LBO1_ offset      -24
+
+math _oscillator
+
+math color_rgb          0 127 255
+math composite
+
+math render
+
+
+#------------------------------------------------
+#------------------------------------------------
+math  LBO_reset_all
+
+math  LBO1  amplitude   pi
+math  LBO1_ amplitude   pi
+math _LBO1  amplitude   0.0
+math _LBO1_ amplitude   two_pi
+
+
+#------------------------------------------------
+math  LBO1  offset      24
+math  LBO1_ offset      24
+math _LBO1  offset      24
+math _LBO1_ offset      24
+
+math _oscillator
+
+math color_rgb          255 0 0
+
+
+
+
+#------------------------------------------------
+math  LBO1  function    triangle
+math  LBO1_ function    triangle
+math _LBO1  function    triangle
+math _LBO1_ function    triangle
+
+math  LBO1  offset      16
+math  LBO1_ offset      16
+math _LBO1  offset      16
+math _LBO1_ offset      16
+
+math _oscillator
+
+math color_rgb          255 127 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    ramp
+math  LBO1_ function    ramp
+math _LBO1  function    ramp
+math _LBO1_ function    ramp
+
+math  LBO1  offset      8
+math  LBO1_ offset      8
+math _LBO1  offset      8
+math _LBO1_ offset      8
+
+math _oscillator
+
+math color_rgb          255 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    square
+math  LBO1_ function    square
+math _LBO1  function    square
+math _LBO1_ function    square
+
+math  LBO1  offset      0
+math  LBO1_ offset      0
+math _LBO1  offset      0
+math _LBO1_ offset      0
+
+math _oscillator
+
+math color_rgb          0 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    pulse
+math  LBO1_ function    pulse
+math _LBO1  function    pulse
+math _LBO1_ function    pulse
+
+math  LBO1  offset      -8
+math  LBO1_ offset      -8
+math _LBO1  offset      -8
+math _LBO1_ offset      -8
+
+math _oscillator
+
+math color_rgb          0 255 127
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    trapezoid
+math  LBO1_ function    trapezoid
+math _LBO1  function    trapezoid
+math _LBO1_ function    trapezoid
+
+math  LBO1  offset      -16
+math  LBO1_ offset      -16
+math _LBO1  offset      -16
+math _LBO1_ offset      -16
+
+math _oscillator
+
+math color_rgb          0 255 255
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    circle
+math  LBO1_ function    circle
+math _LBO1  function    circle
+math _LBO1_ function    circle
+
+math  LBO1  offset      -24
+math  LBO1_ offset      -24
+math _LBO1  offset      -24
+math _LBO1_ offset      -24
+
+math _oscillator
+
+math color_rgb          0 127 255
+math composite
+
+math render
+
+
+#------------------------------------------------
+#------------------------------------------------
+math  LBO_reset_all
+
+math  LBO1  amplitude   pi
+math  LBO1_ amplitude   pi
+math _LBO1  amplitude   0
+math _LBO1_ amplitude   two_pi
+
+
+#------------------------------------------------
+math  LBO1  offset      24
+math  LBO1_ offset      24
+math _LBO1_ offset      24
+
+math _oscillator
+
+math color_rgb          255 0 0
+
+
+
+
+#------------------------------------------------
+math  LBO1  function    triangle
+math  LBO1_ function    triangle
+math _LBO1  function    triangle
+math _LBO1_ function    triangle
+
+math  LBO1  offset      16
+math  LBO1_ offset      16
+math _LBO1_ offset      16
+
+math _oscillator
+
+math color_rgb          255 127 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    ramp
+math  LBO1_ function    ramp
+math _LBO1  function    ramp
+math _LBO1_ function    ramp
+
+math  LBO1  offset      8
+math  LBO1_ offset      8
+math _LBO1_ offset      8
+
+math _oscillator
+
+math color_rgb          255 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    square
+math  LBO1_ function    square
+math _LBO1  function    square
+math _LBO1_ function    square
+
+math  LBO1  offset      0
+math  LBO1_ offset      0
+math _LBO1_ offset      0
+
+math _oscillator
+
+math color_rgb          0 255 0
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    pulse
+math  LBO1_ function    pulse
+math _LBO1  function    pulse
+math _LBO1_ function    pulse
+
+math  LBO1  offset      -8
+math  LBO1_ offset      -8
+math _LBO1_ offset      -8
+
+math _oscillator
+
+math color_rgb          0 255 127
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    trapezoid
+math  LBO1_ function    trapezoid
+math _LBO1  function    trapezoid
+math _LBO1_ function    trapezoid
+
+math  LBO1  offset      -16
+math  LBO1_ offset      -16
+math _LBO1_ offset      -16
+
+math _oscillator
+
+math color_rgb          0 255 255
+math composite
+
+
+
+#------------------------------------------------
+math  LBO1  function    circle
+math  LBO1_ function    circle
+math _LBO1  function    circle
+math _LBO1_ function    circle
+
+math  LBO1  offset      -24
+math  LBO1_ offset      -24
+math _LBO1_ offset      -24
+
+math _oscillator
+
+math color_rgb          0 127 255
+math composite
+
+math render
+
+
+#################################################
+#################################################

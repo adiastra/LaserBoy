@@ -34,7 +34,7 @@
 #include "LaserBoy_includes.hpp"
 
 //############################################################################
-#define    LASERBOY_VERSION                "LaserBoy-11-23-2022"
+#define    LASERBOY_VERSION                "LaserBoy-05-05-2026-editor"
 //----------------------------------------------------------------------------
 //#define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-06-03-2008"  X
 //#define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-07-15-2008"  X
@@ -69,6 +69,7 @@
 //#define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-07-28-2021"
 //#define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-08-20-2021"
 //#define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-08-27-2022"
+//#define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-12-19-2023"
 #define    LASERBOY_CFG_VERSION            "LaserBoy.wtf-10-12-2022"
 
 //----------------------------------------------------------------------------
@@ -77,7 +78,8 @@
 //#define    LASERBOY_WAVE_VERSION           "LaserBoy10102008"
 //#define    LASERBOY_WAVE_VERSION           "LaserBoy11112008"
 //#define    LASERBOY_WAVE_VERSION           "LaserBoy12082009"
-#define    LASERBOY_WAVE_VERSION           "LaserBoy06282010"
+//#define    LASERBOY_WAVE_VERSION           "LaserBoy06282010"
+#define    LASERBOY_WAVE_VERSION           "LaserBoy20231223"
 //----------------------------------------------------------------------------
 #define    LASERBOY_TXT_VERSION            "LaserBoy-txt-09-08-2022"
 //----------------------------------------------------------------------------

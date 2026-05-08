@@ -32,7 +32,9 @@
 //############################################################################
 bool LaserBoy_settings::load_wtf_file(string wtf_file)
 {
-    int           c;
+    int           c,
+                  dud;
+    double        d_dud;
     string        version,
                   GUID;
     std::ifstream in(wtf_file.c_str(), ios::in);
@@ -194,6 +196,162 @@ bool LaserBoy_settings::load_wtf_file(string wtf_file)
             in >> color_rescale_file[1]   ;
             in >> color_rescale_file[2]   ;
             in >> color_rescale_file[3]   ;
+            if(in.good())
+            {
+                string maybe_wav_channel_map;
+                in >> maybe_wav_channel_map;
+                if(maybe_wav_channel_map != "If")
+                    wav_channel_map = maybe_wav_channel_map;
+            }
+        }
+        //----------------------------------------------------------------
+        else if(version == "LaserBoy.wtf-12-19-2023")
+        {
+            int offsets[7],
+                bit_masks[7];
+            in >> bg_file_name            ;
+            in >> c                       ; bg_color.r = c;
+            in >> c                       ; bg_color.g = c;
+            in >> c                       ; bg_color.b = c;
+            in >> c                       ; mono_text.r = c;
+            in >> c                       ; mono_text.g = c;
+            in >> c                       ; mono_text.b = c;
+            in >> c                       ; rendered_blank.r = c;
+            in >> c                       ; rendered_blank.g = c;
+            in >> c                       ; rendered_blank.b = c;
+            in >> c                       ; rendered_black.r = c;
+            in >> c                       ; rendered_black.g = c;
+            in >> c                       ; rendered_black.b = c;
+            in >> sample_rate             ;
+            in >> lit_dwell_overhang      ;
+            in >> dwell_on_dot            ;
+            in >> font_size_factor        ;
+            in >> rendered_line_width     ;
+            in >> background_bmp_scale    ;
+            in >> displacement_step       ;
+            in >> color_frame_shift       ;
+            in >> app_runs_count          ;
+            in >> output_bmp_size         ;
+            in >> transparent_menu_font   ;
+            in >> signal_if_not_z         ;
+            in >> unframed_wave_stride    ;
+            in >> fulcrum.x               ;
+            in >> fulcrum.y               ;
+            in >> fulcrum.z               ;
+            in >> view_angle.x            ;
+            in >> view_angle.y            ;
+            in >> view_angle.z            ;
+            in >> view_scale.x            ;
+            in >> view_scale.y            ;
+            in >> view_offset.x           ;
+            in >> view_offset.y           ;
+            in >> lit_delta_max           ;
+            in >> blank_delta_max         ;
+            in >> max_dwell_millisec      ;
+            in >> max_wag_microsec        ;
+            in >> d_dud                   ;
+            in >> insignificant_distance  ;
+            in >> insignificant_angle     ;
+            in >> recolor_span_factor     ;
+            in >> recolor_index_multiple  ;
+            in >> onion_skin_fade         ;
+            in >> rendered_arc_angle      ;
+            in >> rendered_mono_font_space;
+            in >> rendered_vari_font_gap  ;
+            in >> rendered_vari_font_space;
+            in >> rotation_step           ;
+            in >> magnitude_step          ;
+            magnitude_step_up = 1.00 + magnitude_step;
+            magnitude_step_dn = 1.00 - magnitude_step;
+            in >> frames_per_second       ;
+            in >> still_frame_duration    ;
+            in >> GUID                    ;
+            in >> rainbow_menus           ;
+            in >> dud                     ;
+            in >> show_vectors            ;
+            in >> show_vertices           ;
+            in >> show_blanking           ;
+            in >> show_intro              ;
+            in >> show_bridge             ;
+            in >> show_coda               ;
+            in >> show_direction          ;
+            in >> show_stats              ;
+            in >> track_bmp_view          ;
+            in >> show_fixed_bounds       ;
+            in >> show_fixed_origin       ;
+            in >> show_floating_axis      ;
+            in >> show_floating_bounds    ;
+            in >> infinite_vector         ;
+            in >> dud                     ;
+            in >> destructive_clipping    ;
+            in >> show_onion_skin         ;
+            in >> show_onion_visuals      ;
+            in >> show_indices            ;
+            in >> show_effects_generation ;
+            in >> show_Z_as_order         ;
+            in >> show_quad_view          ;
+            in >> track_bmp_view          ;
+            in >> show_cursor_limits_msg  ;
+            in >> auto_scale_dxf          ;
+            in >> maintain_real_origin    ;
+            in >> save_true_color_dxf     ;
+            in >> loop_animation          ;
+            in >> approximate_frame_rate  ;
+            in >> black_dwell_vertices    ;
+            in >> auto_flatten_z          ;
+            in >> no_equivalent_vectors   ;
+            in >> conglomerate_in_minimize;
+            in >> fracture_b4_conglomerate;
+            in >> dots_setting            ;
+            in >> invert_wave_output      ;
+            in >> auto_minimize           ;
+            in >> auto_opti_ctn           ;
+            in >> auto_apply_offsets      ;
+            in >> auto_apply_rescales     ;
+            in >> no_black_match          ;
+            in >> allow_lit_black         ;
+            in >> save_2D_as_3D           ;
+            in >> save_1_frame_bridge     ;
+            in >> save_ild_fmt_4_5        ;
+            in >> save_txt_with_color     ;
+            in >> save_txt_unit           ;
+            in >> save_txt_color_hex      ;
+            in >> save_txt_named_palettes ;
+            in >> bond_word               ;
+            in >> wave_show_vertices      ;
+            in >> wave_show_blanks        ;
+            in >> wave_real_time          ;
+            in >> wave_show_inverted      ;
+            in >> wave_clean_screen       ;
+            in >> wave_loop               ;
+            for(int i = 0; i < 7; i++)
+                in >> offsets[i];
+            in >> black_level             ;
+            in >> number_of_skins         ;
+            for(int i = 0; i < 7; i++)
+                in >> bit_masks[i];
+            in >> wav_channel_map         ;
+            in >> color_rescale_file[0]   ;
+            in >> color_rescale_file[1]   ;
+            in >> color_rescale_file[2]   ;
+            in >> color_rescale_file[3]   ;
+            wave_offsets[0] = offsets[0];
+            wave_offsets[1] = offsets[1];
+            wave_offsets[5] = offsets[2];
+            wave_offsets[2] = offsets[3];
+            wave_offsets[3] = offsets[4];
+            wave_offsets[4] = offsets[5];
+            wave_offsets[6] = offsets[6];
+            signal_bit_mask[0] = bit_masks[0];
+            signal_bit_mask[1] = bit_masks[1];
+            signal_bit_mask[5] = bit_masks[2];
+            signal_bit_mask[2] = bit_masks[3];
+            signal_bit_mask[3] = bit_masks[4];
+            signal_bit_mask[4] = bit_masks[5];
+            signal_bit_mask[6] = bit_masks[6];
+            channels_of_wav_out = (wav_channel_map.size() >= 2 && wav_channel_map.size() <= 8)
+                                ? wav_channel_map.size()
+                                : channels_of_wav_out;
         }
         //----------------------------------------------------------------
         if(version == "LaserBoy.wtf-08-27-2022")
@@ -1310,6 +1468,7 @@ bool LaserBoy_settings::save_wtf_file(string wtf_file)
         out << color_rescale_file[1]    << ENDL;
         out << color_rescale_file[2]    << ENDL;
         out << color_rescale_file[3]    << ENDL;
+        out << wav_channel_map          << ENDL;
         out << ENDL;
         out << "If this file is corrupted, delete it!" << ENDL;
         out.close();

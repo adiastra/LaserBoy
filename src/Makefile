@@ -1,13 +1,18 @@
 # project LaserBoy
 # James Lehman
 # laserboy.org
+#
+# Apple Silicon prerequisites:
+#   xcode-select --install
+#   brew install boost fltk jpeg libpng zlib
 
 RM       = rm -f
 STRIP    = strip
 CPP      = g++
 FLTK_CONFIG ?= fltk-config
-INC      = -I/opt/homebrew/include
-LIB      = -L/opt/homebrew/lib
+BREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
+INC      = -I$(BREW_PREFIX)/include
+LIB      = -L$(BREW_PREFIX)/lib
 LIBS     = $(shell $(FLTK_CONFIG) --ldflags) -lboost_filesystem
 
 CPPFLAGS = -D__WITH_FLTK__ \

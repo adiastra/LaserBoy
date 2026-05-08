@@ -5567,6 +5567,9 @@ bool LaserBoy_frame::save_as_wave(const string& file, bool optimized, bool timed
         header.signal_id [5] = LASERBOY_SIGNAL_Z_POSITION;
         header.signal_id [6] = LASERBOY_SIGNAL_UNDEFINED;
         header.signal_id [7] = LASERBOY_SIGNAL_UNDEFINED;
+        header.channel_map = p_space->wav_channel_map.substr(0, header.num_channels);
+        if(header.channel_map.size() != header.num_channels)
+            header.channel_map = (header.num_channels == 8) ? "XYrgbiaa" : "XYrgbi";
         //----------------------------------------------------------------
         header.LSB_tag   [0] = LASERBOY_LSB_NOT_USED; // default values
         header.LSB_tag   [1] = LASERBOY_LSB_NOT_USED;

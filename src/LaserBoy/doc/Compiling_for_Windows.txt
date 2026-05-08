@@ -1,0 +1,95 @@
+Compiling LaserBoy for Windows
+==============================
+
+LaserBoy can be compiled in Windows using MSYS2.
+
+Install MSYS2 from here:
+
+https://www.msys2.org
+
+After MSYS2 is installed, open the MSYS2 shell.
+
+First update MSYS2:
+
+pacman -Syuu
+
+Answer yes to all prompts.
+
+MSYS2 might close itself during the update. If it does, open the MSYS2 shell again and run the same command again:
+
+pacman -Syuu
+
+Keep doing this until it says there is nothing left to update.
+
+Now install the tools and libraries needed to compile LaserBoy:
+
+pacman -Sy --needed base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-fltk mingw-w64-x86_64-boost mingw-w64-x86_64-cairo
+
+Answer yes to all prompts.
+
+After that is finished, close the MSYS2 shell.
+
+Now open the MINGW64 shell.
+
+Do not use the plain MSYS2 shell to compile LaserBoy. Use MINGW64.
+
+Go to your LaserBoy folder.
+
+If LaserBoy is in C:\LaserBoy, use this:
+
+cd /c/LaserBoy
+
+List the files to make sure you are in the right place:
+
+ls
+
+You should see the LaserBoy folders and files.
+
+Now go into the source code folder:
+
+cd src
+
+List the files:
+
+ls
+
+You should see the LaserBoy source code and makefiles.
+
+Compile LaserBoy:
+
+time make -f Makefile.w64
+
+This can take a while.
+
+When it is done, go back to the main LaserBoy folder:
+
+cd ..
+
+You should now have a new Windows executable:
+
+LaserBoy.exe
+
+Run it from the MINGW64 shell like this:
+
+./LaserBoy.exe 1024 700
+
+The two numbers are the window width and height in pixels.
+
+Use numbers that fit your display.
+
+For example:
+
+./LaserBoy.exe 1600 900
+
+If you need to clean the source folder and build again, do this:
+
+cd /c/LaserBoy/src
+make -f Makefile.w64 clean
+time make -f Makefile.w64
+
+Enjoy!
+
+James Lehman
+james@akrobiz.com
+laserboy.org
+

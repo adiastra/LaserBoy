@@ -1,0 +1,119 @@
+Compiling LaserBoy for MacOS
+============================
+
+LaserBoy can be compiled on MacOS using Homebrew.
+
+Open a terminal.
+
+If you do not already have Homebrew installed, install it with this command:
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+Let Homebrew finish installing.
+
+Homebrew might tell you to run one or two extra commands to finish setting up your shell.
+
+On Apple Silicon Macs, those commands usually look like this:
+
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+On Intel Macs, Homebrew might use this path instead:
+
+/usr/local/bin/brew
+
+Follow the instructions Homebrew gives you.
+
+Now install the tools and libraries needed to compile LaserBoy:
+
+brew install fltk boost cairo
+
+If you downloaded LaserBoy from:
+
+https://laserboy.org/code/LaserBoy_Current.zip
+
+the zip file will probably be in your Downloads folder.
+
+Unzip it.
+
+You can move the LaserBoy folder to your Desktop if you want it to be easy to find.
+
+For example:
+
+mv ~/Downloads/LaserBoy ~/Desktop/
+
+Now go to the LaserBoy folder:
+
+cd ~/Desktop/LaserBoy
+
+List the files to make sure you are in the right place:
+
+ls
+
+You should see the LaserBoy folders and files.
+
+Now go into the source code folder:
+
+cd src
+
+List the files:
+
+ls
+
+You should see the LaserBoy source code and makefiles.
+
+Compile LaserBoy.
+
+For an Intel Mac, use this:
+
+time make -f Makefile.osx
+
+For an Apple Silicon Mac, such as M1, M2, or M3, use this:
+
+time make -f Makefile.mm1
+
+This can take a while.
+
+If you need to clean the source folder and build again, use the matching clean command.
+
+For an Intel Mac:
+
+make -f Makefile.osx clean
+time make -f Makefile.osx
+
+For an Apple Silicon Mac:
+
+make -f Makefile.mm1 clean
+time make -f Makefile.mm1
+
+When the build is done, go back to the main LaserBoy folder:
+
+cd ..
+
+You should now have a LaserBoy executable.
+
+Run it from the terminal like this:
+
+./LaserBoy_osx 1600 980
+
+or
+
+./LaserBoy_mm1 1600 980
+
+The two numbers are the window width and height in pixels.
+
+Use numbers that fit your display.
+
+Leave room for the window title bar and borders so the whole LaserBoy window fits on the screen.
+
+LaserBoy is keyboard driven.
+
+It does not use the mouse for drawing or editing.
+
+Enjoy!
+
+James Lehman
+james@akrobiz.com
+laserboy.org
+

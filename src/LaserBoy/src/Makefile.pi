@@ -1,0 +1,79 @@
+# ────────────────────────────────────────────────────────────
+#  LaserBoy‑FLTK • Raspberry‑Pi Makefile
+#  Produces:
+#      • objects  →  ../build/*.opi
+#      • binary   →  ../LaserBoy_pi
+# ────────────────────────────────────────────────────────────
+
+BIN        := ../LaserBoy_pi
+CXX        ?= g++
+STRIP      ?= strip -s
+
+FLTK_CXXFLAGS := $(shell fltk-config --cxxflags)
+
+CXXFLAGS   = -std=c++17                      \
+             -O3                             \
+             -pipe                           \
+             -Wall -Wextra                   \
+             -frounding-math                 \
+             -Wno-unused-parameter           \
+             -Wno-implicit-fallthrough       \
+             -Wno-missing-field-initializers \
+             -Wno-misleading-indentation     \
+             -Wno-mismatched-new-delete      \
+             -Wno-unused-but-set-variable
+
+BOOST_LIBS = -lboost_system                  \
+             -lboost_filesystem              \
+             -lboost_thread                  \
+             -lboost_chrono
+
+# Debian/RPi package provides only libfltk.a and libfltk_images.a
+FLTK_LIBS  = -lfltk                          \
+             -lfltk_images                  # ← removed *_jpeg / *_png
+
+IMG_LIBS   = -ljpeg                          \
+             -lpng                           \
+             -lz
+
+X11_LIBS   = -lX11                           \
+             -lXext                          \
+             -lXft                           \
+             -lfontconfig                    \
+             -lXrender                       \
+             -lXfixes                        \
+             -lXcursor                       \
+             -lXinerama
+
+SYS_LIBS   = -pthread                        \
+             -ldl
+
+LDFLAGS    = $(BOOST_LIBS)                   \
+             $(FLTK_LIBS)                    \
+             $(IMG_LIBS)                     \
+             $(X11_LIBS)                     \
+             $(SYS_LIBS)
+
+SRC        := $(wildcard LaserBoy*.cpp)
+OBJ        := $(patsubst %.cpp,../build/%.opi,$(SRC))
+DEP        := $(OBJ:.opi=.dpi)
+
+all: $(BIN) strip
+
+$(BIN): $(OBJ)
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+
+../build/%.opi: %.cpp
+	@mkdir -p ../build
+	$(CXX) $(CXXFLAGS) $(FLTK_CXXFLAGS) -MD -MF ../build/$*.dpi -c $< -o $@
+
+-include $(DEP)
+
+strip:
+	@if [ -f $(BIN) ]; then $(STRIP) $(BIN); fi
+
+clean:
+	rm -f ../build/*.opi ../build/*.dpi $(BIN)
+
+.PHONY: all clean strip
+

@@ -197,13 +197,8 @@ bool file_exists(const string& file)
 //############################################################################
 bool directory_exists(const string& dir, const string& home)
 {
-    if(chdir(home.c_str())) {};
-    if(chdir(dir.c_str()) == 0) // success!
-    {
-        if(chdir(home.c_str())) {};
+    if(exists((home + dir).c_str()))
         return true;
-    }
-    if(chdir(home.c_str())) {};
     return false;
 }
 

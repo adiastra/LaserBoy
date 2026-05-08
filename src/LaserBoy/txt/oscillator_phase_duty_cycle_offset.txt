@@ -1,0 +1,397 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+#math  phase_cycle        360.0
+#math  rotation_cycle     1.0
+#math  interval_cycle     1.0
+
+math  frames                        100
+math  still_frames                  1
+
+math  normalize_frames_individually 0
+math  normalize_frames_with_origin  0
+math  include_unit_reference        0
+math  to_space                      0.90
+
+math  save_true_color_dxf           0
+
+math  save_txt_with_color           1
+math  save_txt_color_hex            1
+math  overwrite_txt_files           1
+
+math  x_of_pi                       1
+math  y_of_pi                       0
+math  z_of_pi                       0
+math  radii_of_pi                   0
+
+
+
+#----------------------------------------------
+math  P0             0.0  -9.0  -1.0
+math  P1             2.0   9.0  -1.0
+math  rectangular_grid_x_units   0.5
+math  rectangular_grid_y_units   1.0
+math  rectangular_grid_xy
+math  color_rgb          0 0 128
+math  store reticle
+
+
+
+
+
+
+
+
+
+
+
+math  start             -0.5
+math  duration          2.0
+math  iterations        1000
+
+math _start             -0.5
+math _duration          2.0
+math _iterations        1000
+
+math  LBO1 function     sin
+math  LBO1 amplitude    half_pi
+math  LBO1 frequency    1.0
+math  LBO1 phase        0.0
+math  LBO1 duty_cycle   0.0
+math  LBO1 damping      0.0
+math  LBO1 offset       0.0
+
+math _LBO1 function     sin
+math _LBO1 amplitude    half_pi
+math _LBO1 frequency    1.0
+math _LBO1 phase        360.0
+math _LBO1 duty_cycle   1.0
+math _LBO1 damping      0.0
+math _LBO1 offset       0.0
+
+
+
+
+math  LBO1 function     sin
+math _LBO1 function     sin
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     triangle
+math _LBO1 function     triangle
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     ramp
+math _LBO1 function     ramp
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     square
+math _LBO1 function     square
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     pulse
+math _LBO1 function     pulse
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     trapezoid
+math _LBO1 function     trapezoid
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     circle
+math _LBO1 function     circle
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 sin          1.0
+math  LBO1 triangle     1.0
+math  LBO1 ramp         1.0
+math  LBO1 square       1.0
+math  LBO1 pulse        1.0
+math  LBO1 trapezoid    1.0
+math  LBO1 circle       1.0
+
+math _LBO1 sin          1.0
+math _LBO1 triangle     1.0
+math _LBO1 ramp         1.0
+math _LBO1 square       1.0
+math _LBO1 pulse        1.0
+math _LBO1 trapezoid    1.0
+math _LBO1 circle       1.0
+
+#----------------------------------------------
+math  LBO1 offset       5.0
+math _LBO1 offset       5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       0.0
+math _LBO1 offset       0.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+
+#----------------------------------------------
+math  LBO1 offset       -5.0
+math _LBO1 offset       -5.0
+# X = t
+# Y = LBO1(t)
+math _oscillator
+math color_rgb          255 0 0
+math composite
+math render
+
+#################################################
+#################################################
+
+
+
+
+
+

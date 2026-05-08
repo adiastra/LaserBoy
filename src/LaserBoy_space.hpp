@@ -50,6 +50,7 @@ public:
             , file_name                   (             ) // string
             , font_name                   ("laserellipse") // string
             , current_extension           (             ) // string
+            , wav_channel_map             ("XYrgbi"     ) // string
             , bg_color                    (  0,   0,   0) // LaserBoy_color
             , mono_text                   (  0, 128,   0) // LaserBoy_color
             , rendered_bounds             (160, 160, 160) // LaserBoy_color
@@ -187,7 +188,8 @@ public:
                        file_name,
                        font_name,
                        current_extension,
-                       absolute_path_of_LaserBoy;
+                       absolute_path_of_LaserBoy,
+                       wav_channel_map;
 
     LaserBoy_color     bg_color         ,
                        mono_text        ,

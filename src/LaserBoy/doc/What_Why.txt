@@ -1,0 +1,42 @@
+LaserBoy is a work of art; both the running application and the code that makes it.
+
+Obviously finding a particular key on the keyboard and tapping it is not a daunting task. But understanding what is going on behind the keyboard certainly is.
+
+Using a standard US English keyboard, LaserBoy can do a huge list of things that no other application can do at all in any form.
+
+What would you want a mouse to do in LaserBoy?
+
+If your answer is to pick items out of drop down menus, well... that's what the keyboard does.
+
+LaserBoy is at its core a rather complex memory model.
+
+It can contain 3D vector frames each of arbitrary size in a set of frames of arbitrary size with relationships to a set of palettes of arbitrary size or 24-bit color.
+
+LaserBoy knows how to render a (raster) bitmap of this memory object based on the current state of a set of variables and what it is currently doing, like the state of the camera (zoom, pan, rotation) and the settings for the visual attributes like vectors, vertices, blanking, indices, palettes, cursors, etc.
+
+Every time you hit a key LB renders the current state and puts it in the application window.
+
+Everything you see in the app window is rendered in the code, including that lovely 8 pixel square font.
+
+LaserBoy started life as a Linux console application that used to render directly into the video card RAM. It actually took two computers to run it. A Linux machine with a high resolution video card and monitor and another computer to shell into that for a command prompt menu system.
+
+My video card API (ezfb) only works in Linux and only with kernels built with frame buffer support.
+
+So I converted the whole thing to build on top of SDL. SDL gives me a window. It gives me the address of the first pixel in that window and the bits per pixel. It also gives me keyboard events and some timers for showing animated frames on the screen. Everything else that LaserBoy does is in the code in the src directory.
+
+More recently, I converted the entire code set to use FLTK instead of SDL or SDL2. FLTK provides the application window, keyboard events, drawing surface, and timers that LaserBoy needs, while also being more stable in MacOS and offering a robust set of GUI options for future development.
+
+LaserBoy has been out there since 2008 and many laser application developers have used it as a reference standard to verify that their own software development is moving in the right direction. I know this because I have worked with several of them.
+
+It has also been used in at least two museum installations and at least two people used it as part of getting their Master of Fine Arts degrees; one in Australia and one in the UK. I only know that because I happened to find the pdf files of their master's theses in a Google search. There is an article in the IEEE Journal about using LaserBoy with a UV laser projector to make printed circuit boards. There is an arduino project that relies entirely on LaserBoy and its ability to export frame_sets as plain ASCII text tables. I know of a few examples of other applications that use the LaserBoy vector font format and the actual font files distributed with LaserBoy.
+
+The first major breakthrough in my development of the code way back in late 2003 was getting an ild file imported into the memory model and displaying it on the screen. Once I could see what was going on, it quite literally told me where it wanted to go and showed me if I was getting there. Aside from all of the many functions it can do to 3D color vector art frame_sets, it is an outstanding visualization tool just to look at it and understand it better.
+
+Since I knew I was looking into 3D short integer space that is a finite cube of coordinates 65535 points wide (and there is no mouse in an ssh shell) I knew that I wanted nothing to do with trying to manipulate vectors in that space with a mouse. A mouse is 2D and limited to the resolution of the computer screen. So I took it as a challenge to figure out how to maneuver in this space with absolute precision with only a keyboard. That's an advantage over a mouse; not a disadvantage. If I had taken the path of developing LaserBoy with a windowing API and mouse support, it would not have become what it is.
+
+Also, the fact that it is written in C++ has everything to do with how it works. It depends entirely on things like The Standard Template Library, multiple inheritance, polymorphism, operator overloading, hierarchical data structures, container class pointers and many other concepts that are germane to C++. So again, it is a working example of these concepts in action and potentially a great learning experience. I often cite it as an example of these many things when I'm helping someone understand C++.
+
+James Lehman
+james@akrobiz.com
+laserboy.org
+

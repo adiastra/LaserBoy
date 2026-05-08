@@ -1,0 +1,55 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+#math phase_cycle        360.0
+#math rotation_cycle     1.0
+#math interval_cycle     1.0
+
+math hues_span_factor   1.0
+math hues_shift         3
+
+math frames             1000
+
+math  start             0.0
+math _start             0.0
+
+math  duration          100.0
+math _duration          100.0
+
+math  iterations        96
+math _iterations        303
+
+math  LBO1  phase       90.0
+math _LBO1  phase       90.0
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+#    x = LBO1(t)
+#    y = LBO2(t)
+math _oscillator_xy
+
+math  factor         0.0  0.0  0.0
+math  factor_        1.0  1.0  1.0
+math  scale_acceleration  0.0
+math  scale_
+
+math  color_span_hues
+#math  reverse_vectors
+math  render
+
+###############################################
+###############################################
+

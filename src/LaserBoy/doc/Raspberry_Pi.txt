@@ -1,0 +1,119 @@
+Compiling LaserBoy on a Linux Pi
+================================
+
+LaserBoy can be compiled on Raspberry Pi, Orange Pi, and other small Linux computers running a Linux kernel.
+
+This version of LaserBoy uses FLTK.
+
+It is a graphical desktop application. It needs a running desktop, X server, VNC desktop, or other graphical Linux session.
+
+It does not run directly on the Linux framebuffer like the old SDL1 version did.
+
+Recommended location
+====================
+
+On a Pi, the recommended LaserBoy location is:
+
+/LaserBoy
+
+This keeps the installation simple and also makes sense for piDAC, multiverse, and future schizosphere use.
+
+Install required packages
+=========================
+
+Open a terminal.
+
+Update the package list:
+
+sudo apt update
+
+Install the tools and libraries needed to compile LaserBoy:
+
+sudo apt install -y build-essential git unzip libfltk1.3-dev libboost-all-dev libcairo2-dev
+
+Some newer Linux distributions may provide FLTK 1.4 instead of FLTK 1.3.
+
+If this command fails because libfltk1.3-dev is not available, try this:
+
+sudo apt install -y build-essential git unzip libfltk1.4-dev libboost-all-dev libcairo2-dev
+
+Install LaserBoy at /LaserBoy
+=============================
+
+If you downloaded LaserBoy from:
+
+https://laserboy.org/code/LaserBoy_Current.zip
+
+the zip file will probably be in your Downloads folder.
+
+Go to the root directory:
+
+cd /
+
+Unzip LaserBoy:
+
+sudo unzip ~/Downloads/LaserBoy_Current.zip
+
+This should create:
+
+/LaserBoy
+
+Make sure your normal user owns the LaserBoy directory.
+
+For example, if your user name is pi:
+
+sudo chown -R pi:pi /LaserBoy
+
+If your user name is laserboy:
+
+sudo chown -R laserboy:laserboy /LaserBoy
+
+Now go to the LaserBoy source code folder:
+
+cd /LaserBoy/src
+
+List the files:
+
+ls
+
+You should see the LaserBoy source code and makefiles.
+
+Compile LaserBoy:
+
+time make -f Makefile.pi
+
+This can take a while.
+
+If you need to clean the source folder and build again, do this:
+
+make -f Makefile.pi clean
+time make -f Makefile.pi
+
+When the build is done, go back to the main LaserBoy folder:
+
+cd ..
+
+You should now have a LaserBoy executable.
+
+Run LaserBoy
+============
+
+Run it from the terminal like this:
+
+./LaserBoy_pi 1200 800
+
+The two numbers are the window width and height in pixels.
+
+Use numbers that fit your display.
+
+Leave room for the window title bar and borders so the whole LaserBoy window fits on the screen.
+
+LaserBoy is keyboard driven.
+
+It does not use the mouse for drawing or editing.
+
+Enjoy!
+
+James Lehman
+james@akrobiz.com
+laserboy.org

@@ -32,6 +32,10 @@
 
 //############################################################################
 #include <FL/Fl.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Group.H>
+#include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Widget.H>
 
@@ -189,9 +193,23 @@ private:
 };
 
 //############################################################################
+class LaserBoy_FLTK_Palette_Display : public Fl_Widget
+{
+public:
+    LaserBoy_FLTK_Palette_Display(int x, int y, int w, int h, LaserBoy_FLTK_GUI* gui);
+    //------------------------------------------------------------------------
+    int  handle(int event);
+    void draw();
+
+private:
+    LaserBoy_FLTK_GUI* gui;
+};
+
+//############################################################################
 class LaserBoy_FLTK_GUI
 {
     friend class LaserBoy_FLTK_Display;
+    friend class LaserBoy_FLTK_Palette_Display;
 public:
     LaserBoy_FLTK_GUI(int x, int y);
     //------------------------------------------------------------------------
@@ -474,6 +492,33 @@ public:
     bool    txt_file_open_menu                   ();
     bool    ctn_file_open_menu                   ();
     bool    bmp_file_open_menu                   ();
+    void    open_import_wizard                   ();
+    bool    show_import_task_modal               ();
+    bool    import_file_with_wizard              (const string& file);
+    int     show_import_mode_dialog              (const string& file, const string& extension);
+    bool    import_ild_file                      (const string& file, int mode);
+    bool    apply_imported_frame_set             (LaserBoy_frame_set& frame_set, int mode, const string& clue);
+    bool    import_wav_file                      (const string& file, int mode, bool global_polarity = false);
+    bool    import_dxf_file                      (const string& file, int mode);
+    bool    import_txt_file                      (const string& file, int mode);
+    bool    import_ctn_file                      (const string& file, int mode);
+    bool    import_wtf_file                      (const string& file);
+    bool    execute_import_task                  (int file_type, int action, const string& source, bool option_a, bool option_b, bool option_c);
+    bool    import_bmp_file                      (const string& source, int action, bool scale_to_screen);
+    bool    import_utf8_file                     (const string& source, bool add_missing_frames, bool leave_extra_frames_unindexed);
+    void    finish_import_refresh                (const string& clue);
+    void    open_export_wizard                   ();
+    bool    show_export_task_modal               ();
+    bool    execute_export_task                  (int file_type, int action, const string& destination, bool option_a, bool option_b, bool option_c, bool option_d);
+    bool    export_ild_file                      (const string& destination, int action, bool use_format_45, bool save_2D_as_3D, bool auto_minimize);
+    bool    export_dxf_file                      (const string& destination, int action, bool true_color_dxf);
+    bool    export_wav_file                      (const string& destination, int action);
+    bool    export_txt_file                      (const string& destination, int action, bool unit_coordinates, bool integrated_color, bool color_hex, bool named_palettes);
+    bool    export_ctn_file                      (const string& destination, int action);
+    bool    export_bmp_file                      (const string& destination, int action);
+    bool    export_wtf_file                      (const string& destination);
+    bool    export_utf8_file                     (const string& destination, bool cleanup);
+    void    finish_export_refresh                (const string& clue);
     void    save_as_file_menu                    ();
     bool    ild_out_cd_menu                      ();
     bool    save_as_ild_menu                     ();
@@ -552,14 +597,34 @@ public:
     LaserBoy_TUI   space;
     int            wait_for_gui_event(LaserBoy_GUI_Event* event);
     int            poll_gui_event(LaserBoy_GUI_Event* event);
+    void           update_gui_regions();
     void           present_screen();
     void           present_screen_region(LaserBoy_Screen_Buffer* surface, int x, int y, int w, int h);
     void           focus_display();
+    void           push_command_key(int key, int state = 0);
     void           push_key_event(int key, int state);
     void           fltk_request_close();
     int            fltk_key_to_laserboy_key(int key);
     //------------------------------------------------------------------------
     Fl_Window*     window;
+    Fl_Menu_Bar*   menu_bar;
+    Fl_Group*      toolbar;
+    Fl_Group*      main_viewport;
+    Fl_Group*      frame_controls;
+    Fl_Group*      stats_panel;
+    Fl_Group*      palette_panel;
+    Fl_Group*      status_bar;
+    Fl_Box*        toolbar_label;
+    Fl_Button*     previous_frame_button;
+    Fl_Button*     next_frame_button;
+    Fl_Button*     first_frame_button;
+    Fl_Button*     last_frame_button;
+    Fl_Button*     menu_toggle_button;
+    Fl_Box*        frame_number_label;
+    Fl_Box*        stats_text;
+    Fl_Box*        palette_text;
+    LaserBoy_FLTK_Palette_Display* palette_display;
+    Fl_Box*        status_text;
     LaserBoy_FLTK_Display* display;
     LaserBoy_GUI_PixelFormat screen_format;
     std::deque<LaserBoy_GUI_Event> event_queue;

@@ -1,0 +1,71 @@
+---------------------------------
+List of Makefiles
+---------------------------------
+
+---------------------------------
+Makefile
+
+For Linux based systems.
+
+time make clean
+time make
+cd ../
+
+This makes the executable
+
+./LaserBoy
+
+---------------------------------
+Makefile.mm1
+
+For Apple MacOS, Apple Silicon
+
+time make -f Makefile.mm1 clean
+time make -f Makefile.mm1
+cd ../
+
+This makes the executable
+
+./LaserBoy_mm1
+
+---------------------------------
+Makefile.osx
+
+For Apple MacOS, intel
+
+time make -f Makefile.osx clean
+time make -f Makefile.osx
+cd ../
+
+This makes the executable
+
+./LaserBoy_osx
+
+---------------------------------
+Makefile.pi
+
+For Linux based systems on SBCs like Raspberry Pi, Orange Pi, etc...
+
+time make -f Makefile.pi clean
+time make -f Makefile.pi
+cd ../
+
+This makes the executable
+
+./LaserBoy_pi
+
+---------------------------------
+Makefile.w64
+
+For Windows 64-bit
+
+time make -f Makefile.w64 clean
+time make -f Makefile.w64
+cd ../
+
+This makes the executable
+
+./LaserBoy.exe
+
+---------------------------------
+

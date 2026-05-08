@@ -1,0 +1,59 @@
+As of "LaserBoy-03-10-2016" LaserBoy reads and writes .ctn files for SD card readers.
+
+All of the development of these new features was done using a "My Effect II"
+3 color laser projector with an SD card reader.
+
+Please note the new ctn directory inside the LaserBoy directory.
+This is where LB finds all ctn files.
+
+Also note there is an included ./wtf/ctn.wtf file. Import this into LB for the best optimization parameter settings for ctn file output.
+
+i to input a file
+7 for type wtf
+ctn.wtf
+[Enter]
+
+
+There is a setting in menu [Tab] sub-menu "6 system switch settings", option f to turn on and off automatic optimizations for ctn file output.
+
+So you can choose to allow LB to do all the optimizations or you can do all of your own optimization techniques and save them to a ctn file.
+
+Should you choose to do your own, there is a "chil" frame_set effect that adds "dwell on dot" extra points at the transitions between lit and blank and blank and lit segments.
+
+This effect is included in the automatic optimization setting, so, by far, the easiest way to get good working ctn files is to import ctn.wtf and simply start saving ctn files, letting LB do all the optimizations.
+
+o to output a file
+5 for type ctn
+1, 2 or 3 for what you want to save.
+filename
+[Enter]
+
+To prepare the SD card, on the root of the SD card, make or open a directory called
+
+NEW00
+
+Inside of this directory, place all the ctn files you make from LB.
+
+Also in this same directory, open or create a text file called
+
+WR-New.LST
+
+This is a plain text file that contains a list of files to play
+when the SD card is loaded into the projector.
+
+filename.ctn,30,5
+
+If the above line of text is the only thing in WR-New.LST it will play
+filename.ctn at a DAC rate of 30K, five times (before repeating).
+
+count.ctn,30,1
+lines.ctn,30,3
+zippy.ctn,30,5
+quisp.ctn,30,1
+
+This would show count.ctn once at 30K, lines.ctn 3 times, zippy 5 times and
+quisp once. Then it repeats this list over and over. You can skip from one
+file the next with the up down buttons on the SD card reader.
+
+The ctn files you make in LB can be individual frames or frame_set animations.
+

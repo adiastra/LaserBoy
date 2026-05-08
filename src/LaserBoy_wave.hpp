@@ -67,12 +67,15 @@ class LaserBoy_wave_header
 public:
     LaserBoy_wave_header()
                   : num_channels       (0),
-                    bits_per_sample    (0),
+                    bits_per_sample    (16),
                     num_samples        (0),
                     sample_rate        (0),
                     num_frames         (0),
+                    header_size        (0),
                     LaserBoy_wave_mode (LASERBOY_WAVE_NO_MODE),
                     version            ("!LaserBoy!"),
+                    file_name          (),
+                    channel_map        (),
                     parms              ()
     {
         u_int i;
@@ -88,7 +91,7 @@ public:
             color_rescale_r[i] =
             color_rescale_g[i] =
             color_rescale_b[i] =
-            color_rescale_i[i] = 0;
+            color_rescale_i[i] = i;
         }
     }
     //------------------------------------------------------------------------
@@ -98,8 +101,11 @@ public:
                     num_samples        ( 0),
                     sample_rate        ( r),
                     num_frames         ( 0),
+                    header_size        ( 0),
                     LaserBoy_wave_mode ( m),
                     version            ( v),
+                    file_name          (  ),
+                    channel_map        (  ),
                     parms              (  )
     {
         u_int i;
@@ -115,7 +121,7 @@ public:
             color_rescale_r[i] =
             color_rescale_g[i] =
             color_rescale_b[i] =
-            color_rescale_i[i] = 0;
+            color_rescale_i[i] = i;
         }
     }
     //------------------------------------------------------------------------
@@ -128,6 +134,8 @@ public:
     //------------------------------------------------------------------------
     bool     from_fstream_wave (std::fstream& in );
     void     to_fstream_wave   (std::fstream& out) const;
+    u_int    lboy_chunk_size   () const;
+    void     tell              (string label = "") const;
     //------------------------------------------------------------------------
     // data
     //------------------------------------------------------------------------
@@ -145,11 +153,14 @@ public:
     u_int    num_samples,
              sample_rate,
              num_frames ,
+             header_size ,
              LaserBoy_wave_mode; // up to 32 binary flags;
     //------------------------------------------------------------------------
     int      offset      [8];
     //------------------------------------------------------------------------
-    string   version        ;
+    string   version        ,
+             file_name      ,
+             channel_map    ;
     //------------------------------------------------------------------------
     LaserBoy_wave_optimization_parameters parms;
 };

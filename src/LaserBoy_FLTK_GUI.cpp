@@ -29,14 +29,447 @@
 //############################################################################
 #include "LaserBoy_FLTK_GUI.hpp"
 
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Choice.H>
+#include <FL/Fl_Native_File_Chooser.H>
+#include <FL/Fl_Return_Button.H>
+#include <FL/fl_ask.H>
 #include <FL/fl_draw.H>
 
+#include <cctype>
+#include <cstdio>
 #include <cstdlib>
+#include <cstdint>
 #include <cstring>
+#include <sstream>
+#include <vector>
+#include <sys/stat.h>
 
 namespace
 {
 LaserBoy_FLTK_GUI* active_fltk_gui = NULL;
+
+enum LaserBoy_Import_Mode
+{
+    LASERBOY_IMPORT_CANCEL = 0,
+    LASERBOY_IMPORT_REPLACE,
+    LASERBOY_IMPORT_PREPEND,
+    LASERBOY_IMPORT_INSERT,
+    LASERBOY_IMPORT_APPEND,
+    LASERBOY_IMPORT_SUPERIMPOSE
+};
+
+enum LaserBoy_Import_File_Type
+{
+    LASERBOY_IMPORT_TYPE_ILD = 0,
+    LASERBOY_IMPORT_TYPE_DXF,
+    LASERBOY_IMPORT_TYPE_WAV,
+    LASERBOY_IMPORT_TYPE_TXT,
+    LASERBOY_IMPORT_TYPE_CTN,
+    LASERBOY_IMPORT_TYPE_BMP,
+    LASERBOY_IMPORT_TYPE_WTF,
+    LASERBOY_IMPORT_TYPE_UTF8
+};
+
+enum LaserBoy_Import_Source_Kind
+{
+    LASERBOY_IMPORT_SOURCE_FILE = 0,
+    LASERBOY_IMPORT_SOURCE_DIRECTORY,
+    LASERBOY_IMPORT_SOURCE_NONE
+};
+
+enum LaserBoy_Import_Action
+{
+    LASERBOY_IMPORT_ACTION_REPLACE = 1,
+    LASERBOY_IMPORT_ACTION_PREPEND,
+    LASERBOY_IMPORT_ACTION_INSERT,
+    LASERBOY_IMPORT_ACTION_APPEND,
+    LASERBOY_IMPORT_ACTION_SUPERIMPOSE,
+    LASERBOY_IMPORT_ACTION_DXF_DIR_REPLACE,
+    LASERBOY_IMPORT_ACTION_DXF_DIR_APPEND,
+    LASERBOY_IMPORT_ACTION_DXF_FONT_REPLACE,
+    LASERBOY_IMPORT_ACTION_DXF_FONT_APPEND,
+    LASERBOY_IMPORT_ACTION_WAV_LB_REPLACE,
+    LASERBOY_IMPORT_ACTION_WAV_LB_APPEND,
+    LASERBOY_IMPORT_ACTION_WAV_LB_AS_UNFORMATTED,
+    LASERBOY_IMPORT_ACTION_WAV_CLIP_REPLACE,
+    LASERBOY_IMPORT_ACTION_WAV_CLIP_APPEND,
+    LASERBOY_IMPORT_ACTION_WAV_CLIP_AS_UNFORMATTED,
+    LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_REPLACE,
+    LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_APPEND,
+    LASERBOY_IMPORT_ACTION_WAV_QM_REFRAME,
+    LASERBOY_IMPORT_ACTION_TXT_PALETTES_ONLY,
+    LASERBOY_IMPORT_ACTION_BMP_FRAME_COLOR,
+    LASERBOY_IMPORT_ACTION_BMP_FRAME_SET_COLOR,
+    LASERBOY_IMPORT_ACTION_BMP_DIR_COLOR,
+    LASERBOY_IMPORT_ACTION_BMP_FRAME_MASK,
+    LASERBOY_IMPORT_ACTION_BMP_FRAME_SET_MASK,
+    LASERBOY_IMPORT_ACTION_BMP_DIR_MASK,
+    LASERBOY_IMPORT_ACTION_BMP_PALETTE,
+    LASERBOY_IMPORT_ACTION_BMP_BACKGROUND,
+    LASERBOY_IMPORT_ACTION_BMP_DIR_BACKGROUND,
+    LASERBOY_IMPORT_ACTION_BMP_CLEAR_BACKGROUND,
+    LASERBOY_IMPORT_ACTION_BMP_PREVIEW_DIR,
+    LASERBOY_IMPORT_ACTION_WTF_LOAD,
+    LASERBOY_IMPORT_ACTION_UTF8_INDEX
+};
+
+enum LaserBoy_Export_File_Type
+{
+    LASERBOY_EXPORT_TYPE_ILD = 0,
+    LASERBOY_EXPORT_TYPE_DXF,
+    LASERBOY_EXPORT_TYPE_WAV,
+    LASERBOY_EXPORT_TYPE_TXT,
+    LASERBOY_EXPORT_TYPE_CTN,
+    LASERBOY_EXPORT_TYPE_BMP,
+    LASERBOY_EXPORT_TYPE_WTF,
+    LASERBOY_EXPORT_TYPE_UTF8
+};
+
+enum LaserBoy_Export_Destination_Kind
+{
+    LASERBOY_EXPORT_DEST_FILE = 0,
+    LASERBOY_EXPORT_DEST_DIRECTORY
+};
+
+enum LaserBoy_Export_Action
+{
+    LASERBOY_EXPORT_ACTION_ILD_CURRENT = 1,
+    LASERBOY_EXPORT_ACTION_ILD_SELECTED,
+    LASERBOY_EXPORT_ACTION_ILD_ALL,
+    LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT,
+    LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED,
+    LASERBOY_EXPORT_ACTION_ILD_EFFECT_ALL,
+    LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8,
+    LASERBOY_EXPORT_ACTION_ILD_SPLIT_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_DXF_CURRENT,
+    LASERBOY_EXPORT_ACTION_DXF_SELECTED_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_DXF_ALL_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_WAV_OPT_CURRENT_ONCE,
+    LASERBOY_EXPORT_ACTION_WAV_OPT_CURRENT_TIMED,
+    LASERBOY_EXPORT_ACTION_WAV_OPT_ALL_ONCE,
+    LASERBOY_EXPORT_ACTION_WAV_OPT_ALL_TIMED,
+    LASERBOY_EXPORT_ACTION_WAV_OPT_CLIP,
+    LASERBOY_EXPORT_ACTION_WAV_UNOPT_CURRENT_ONCE,
+    LASERBOY_EXPORT_ACTION_WAV_UNOPT_CURRENT_TIMED,
+    LASERBOY_EXPORT_ACTION_WAV_UNOPT_ALL_ONCE,
+    LASERBOY_EXPORT_ACTION_WAV_UNOPT_ALL_TIMED,
+    LASERBOY_EXPORT_ACTION_TXT_CURRENT,
+    LASERBOY_EXPORT_ACTION_TXT_SELECTED,
+    LASERBOY_EXPORT_ACTION_TXT_ALL,
+    LASERBOY_EXPORT_ACTION_TXT_CURRENT_PALETTE,
+    LASERBOY_EXPORT_ACTION_TXT_TARGET_PALETTE,
+    LASERBOY_EXPORT_ACTION_TXT_WAVE_RESCLES,
+    LASERBOY_EXPORT_ACTION_TXT_WTF,
+    LASERBOY_EXPORT_ACTION_CTN_CURRENT,
+    LASERBOY_EXPORT_ACTION_CTN_SELECTED,
+    LASERBOY_EXPORT_ACTION_CTN_ALL,
+    LASERBOY_EXPORT_ACTION_BMP_LIT_CURRENT,
+    LASERBOY_EXPORT_ACTION_BMP_LIT_SELECTED_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_BMP_LIT_ALL_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_BMP_VIEW_CURRENT,
+    LASERBOY_EXPORT_ACTION_BMP_VIEW_SELECTED_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_BMP_VIEW_ALL_DIRECTORY,
+    LASERBOY_EXPORT_ACTION_WTF_SAVE,
+    LASERBOY_EXPORT_ACTION_UTF8_SAVE
+};
+
+struct LaserBoy_Import_Mode_Option
+{
+    const char* label;
+    int         mode;
+};
+
+struct LaserBoy_Import_Action_Option
+{
+    const char* label;
+    int         action;
+    int         source_kind;
+};
+
+struct LaserBoy_Export_Action_Option
+{
+    const char* label;
+    int         action;
+    int         destination_kind;
+};
+
+struct LaserBoy_Import_Dialog_State
+{
+    int        result;
+    Fl_Window* window;
+    Fl_Choice* choice;
+};
+
+struct LaserBoy_Import_Task_State
+{
+    LaserBoy_FLTK_GUI* gui;
+    bool               accepted;
+    int                file_type;
+    int                action;
+    string             source;
+    Fl_Window*         window;
+    Fl_Choice*         type_choice;
+    Fl_Choice*         action_choice;
+    Fl_Box*            source_label;
+    Fl_Button*         browse_button;
+    Fl_Check_Button*   option_a;
+    Fl_Check_Button*   option_b;
+    Fl_Check_Button*   option_c;
+    Fl_Box*            note;
+    vector<LaserBoy_Import_Action_Option> actions;
+};
+
+struct LaserBoy_Export_Task_State
+{
+    LaserBoy_FLTK_GUI* gui;
+    bool               accepted;
+    int                file_type;
+    int                action;
+    string             destination;
+    Fl_Window*         window;
+    Fl_Choice*         type_choice;
+    Fl_Choice*         action_choice;
+    Fl_Box*            destination_label;
+    Fl_Button*         browse_button;
+    Fl_Check_Button*   option_a;
+    Fl_Check_Button*   option_b;
+    Fl_Check_Button*   option_c;
+    Fl_Check_Button*   option_d;
+    Fl_Box*            note;
+    vector<LaserBoy_Export_Action_Option> actions;
+};
+
+//----------------------------------------------------------------------------
+string lower_string(string text)
+{
+    for(size_t i = 0; i < text.size(); i++)
+        text[i] = (char)std::tolower((unsigned char)text[i]);
+    return text;
+}
+
+//----------------------------------------------------------------------------
+string file_extension(const string& file)
+{
+    const size_t dot = file.find_last_of('.');
+    if(dot == string::npos)
+        return "";
+    return lower_string(file.substr(dot + 1));
+}
+
+//----------------------------------------------------------------------------
+string file_basename(const string& file)
+{
+    const size_t slash = file.find_last_of("/\\");
+    if(slash == string::npos)
+        return file;
+    return file.substr(slash + 1);
+}
+
+//----------------------------------------------------------------------------
+string file_stem(const string& file)
+{
+    string name = file_basename(file);
+    const size_t dot = name.find_last_of('.');
+    if(dot != string::npos)
+        name = name.substr(0, dot);
+    return name;
+}
+
+//----------------------------------------------------------------------------
+string directory_with_slash(string dir)
+{
+    if(dir.size() && dir[dir.size() - 1] != '/' && dir[dir.size() - 1] != '\\')
+        dir += "/";
+    return dir;
+}
+
+//----------------------------------------------------------------------------
+string parent_directory(const string& path)
+{
+    const size_t slash = path.find_last_of("/\\");
+    if(slash == string::npos)
+        return ".";
+    if(slash == 0)
+        return "/";
+    return path.substr(0, slash);
+}
+
+//----------------------------------------------------------------------------
+string ensure_extension(string path, const string& extension)
+{
+    if(extension.size() && (path.size() < extension.size() || !iends_with(path, extension)))
+        path += extension;
+    return path;
+}
+
+//----------------------------------------------------------------------------
+bool confirm_file_overwrite(const string& path)
+{
+    if(!file_exists(path))
+        return true;
+    return fl_choice("File exists. Overwrite?\n%s", "Cancel", "Overwrite", NULL, path.c_str()) == 1;
+}
+
+//----------------------------------------------------------------------------
+bool ensure_new_directory_target(const string& path)
+{
+    struct stat info;
+    if(stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode))
+    {
+        fl_alert("Directory already exists and cannot be overwritten:\n%s", path.c_str());
+        return false;
+    }
+    return true;
+}
+
+//----------------------------------------------------------------------------
+void import_actions_for_type(int file_type, vector<LaserBoy_Import_Action_Option>& actions)
+{
+    actions.clear();
+    switch(file_type)
+    {
+        case LASERBOY_IMPORT_TYPE_ILD:
+            actions.push_back({"replace frame_set", LASERBOY_IMPORT_ACTION_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"prepend to frame_set", LASERBOY_IMPORT_ACTION_PREPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"insert after current frame", LASERBOY_IMPORT_ACTION_INSERT, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"append to frame_set", LASERBOY_IMPORT_ACTION_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"superimpose frame(s) into frame_set", LASERBOY_IMPORT_ACTION_SUPERIMPOSE, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+        case LASERBOY_IMPORT_TYPE_DXF:
+            actions.push_back({"replace frame_set with dxf file", LASERBOY_IMPORT_ACTION_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"append frame_set with dxf file", LASERBOY_IMPORT_ACTION_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"replace frame_set with dxf directory", LASERBOY_IMPORT_ACTION_DXF_DIR_REPLACE, LASERBOY_IMPORT_SOURCE_DIRECTORY});
+            actions.push_back({"append frame_set with dxf directory", LASERBOY_IMPORT_ACTION_DXF_DIR_APPEND, LASERBOY_IMPORT_SOURCE_DIRECTORY});
+            actions.push_back({"replace frame_set with dxf font", LASERBOY_IMPORT_ACTION_DXF_FONT_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"append frame_set with dxf font", LASERBOY_IMPORT_ACTION_DXF_FONT_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+        case LASERBOY_IMPORT_TYPE_WAV:
+            actions.push_back({"LaserBoy wave: replace current frame_set", LASERBOY_IMPORT_ACTION_WAV_LB_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"LaserBoy wave: append to current frame_set", LASERBOY_IMPORT_ACTION_WAV_LB_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"LaserBoy wave: open as unformatted wave", LASERBOY_IMPORT_ACTION_WAV_LB_AS_UNFORMATTED, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"LaserBoy clip: replace current frame_set", LASERBOY_IMPORT_ACTION_WAV_CLIP_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"LaserBoy clip: append to current frame_set", LASERBOY_IMPORT_ACTION_WAV_CLIP_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"LaserBoy clip: open as unformatted wave", LASERBOY_IMPORT_ACTION_WAV_CLIP_AS_UNFORMATTED, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"unformatted wave: replace current frame_set", LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"unformatted wave: append to current frame_set", LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"unformatted wave: reframe by blanking", LASERBOY_IMPORT_ACTION_WAV_QM_REFRAME, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+        case LASERBOY_IMPORT_TYPE_TXT:
+            actions.push_back({"replace frame_set", LASERBOY_IMPORT_ACTION_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"prepend to frame_set", LASERBOY_IMPORT_ACTION_PREPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"insert after current frame", LASERBOY_IMPORT_ACTION_INSERT, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"append to frame_set", LASERBOY_IMPORT_ACTION_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"superimpose frame(s) into frame_set", LASERBOY_IMPORT_ACTION_SUPERIMPOSE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"import palettes only", LASERBOY_IMPORT_ACTION_TXT_PALETTES_ONLY, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+        case LASERBOY_IMPORT_TYPE_CTN:
+            actions.push_back({"replace frame_set", LASERBOY_IMPORT_ACTION_REPLACE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"prepend to frame_set", LASERBOY_IMPORT_ACTION_PREPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"insert after current frame", LASERBOY_IMPORT_ACTION_INSERT, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"append to frame_set", LASERBOY_IMPORT_ACTION_APPEND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"superimpose frame(s) into frame_set", LASERBOY_IMPORT_ACTION_SUPERIMPOSE, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+        case LASERBOY_IMPORT_TYPE_BMP:
+            actions.push_back({"open as frame color map", LASERBOY_IMPORT_ACTION_BMP_FRAME_COLOR, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"open as frame_set color map", LASERBOY_IMPORT_ACTION_BMP_FRAME_SET_COLOR, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"open bmp directory as color map", LASERBOY_IMPORT_ACTION_BMP_DIR_COLOR, LASERBOY_IMPORT_SOURCE_DIRECTORY});
+            actions.push_back({"open as frame mask", LASERBOY_IMPORT_ACTION_BMP_FRAME_MASK, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"open as frame_set mask", LASERBOY_IMPORT_ACTION_BMP_FRAME_SET_MASK, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"open bmp directory as frame_set mask", LASERBOY_IMPORT_ACTION_BMP_DIR_MASK, LASERBOY_IMPORT_SOURCE_DIRECTORY});
+            actions.push_back({"open as palette", LASERBOY_IMPORT_ACTION_BMP_PALETTE, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"open as display background", LASERBOY_IMPORT_ACTION_BMP_BACKGROUND, LASERBOY_IMPORT_SOURCE_FILE});
+            actions.push_back({"open bmp directory as background", LASERBOY_IMPORT_ACTION_BMP_DIR_BACKGROUND, LASERBOY_IMPORT_SOURCE_DIRECTORY});
+            actions.push_back({"clear display background bitmap", LASERBOY_IMPORT_ACTION_BMP_CLEAR_BACKGROUND, LASERBOY_IMPORT_SOURCE_NONE});
+            actions.push_back({"display bmp directory preview", LASERBOY_IMPORT_ACTION_BMP_PREVIEW_DIR, LASERBOY_IMPORT_SOURCE_DIRECTORY});
+            break;
+        case LASERBOY_IMPORT_TYPE_WTF:
+            actions.push_back({"load settings", LASERBOY_IMPORT_ACTION_WTF_LOAD, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+        case LASERBOY_IMPORT_TYPE_UTF8:
+            actions.push_back({"apply UTF8 index to frame names", LASERBOY_IMPORT_ACTION_UTF8_INDEX, LASERBOY_IMPORT_SOURCE_FILE});
+            break;
+    }
+}
+
+//----------------------------------------------------------------------------
+int import_source_kind(const LaserBoy_Import_Task_State* state)
+{
+    if(state->action_choice->value() < 0 || state->action_choice->value() >= (int)state->actions.size())
+        return LASERBOY_IMPORT_SOURCE_FILE;
+    return state->actions[state->action_choice->value()].source_kind;
+}
+
+//----------------------------------------------------------------------------
+void export_actions_for_type(int file_type, vector<LaserBoy_Export_Action_Option>& actions)
+{
+    actions.clear();
+    switch(file_type)
+    {
+        case LASERBOY_EXPORT_TYPE_ILD:
+            actions.push_back({"ild save current frame", LASERBOY_EXPORT_ACTION_ILD_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ild save selected frames", LASERBOY_EXPORT_ACTION_ILD_SELECTED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ild save all frames", LASERBOY_EXPORT_ACTION_ILD_ALL, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ild effect current frame", LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ild effect selected frames", LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ild effect frame_set", LASERBOY_EXPORT_ACTION_ILD_EFFECT_ALL, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ild save font and utf8 index file", LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"split frame_set into new directory", LASERBOY_EXPORT_ACTION_ILD_SPLIT_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            break;
+        case LASERBOY_EXPORT_TYPE_DXF:
+            actions.push_back({"dxf save current frame", LASERBOY_EXPORT_ACTION_DXF_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"dxf save directory of selected frames", LASERBOY_EXPORT_ACTION_DXF_SELECTED_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            actions.push_back({"dxf save directory all frames", LASERBOY_EXPORT_ACTION_DXF_ALL_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            break;
+        case LASERBOY_EXPORT_TYPE_WAV:
+            actions.push_back({"optimized wave of current frame once", LASERBOY_EXPORT_ACTION_WAV_OPT_CURRENT_ONCE, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"optimized wave of current frame timed", LASERBOY_EXPORT_ACTION_WAV_OPT_CURRENT_TIMED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"optimized wave animation each frame once", LASERBOY_EXPORT_ACTION_WAV_OPT_ALL_ONCE, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"optimized wave animation at FPS", LASERBOY_EXPORT_ACTION_WAV_OPT_ALL_TIMED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"optimized wave clip of current frame", LASERBOY_EXPORT_ACTION_WAV_OPT_CLIP, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"unoptimized wave of current frame once", LASERBOY_EXPORT_ACTION_WAV_UNOPT_CURRENT_ONCE, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"unoptimized wave of current frame timed", LASERBOY_EXPORT_ACTION_WAV_UNOPT_CURRENT_TIMED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"unoptimized wave animation each frame once", LASERBOY_EXPORT_ACTION_WAV_UNOPT_ALL_ONCE, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"unoptimized wave of all frames at FPS", LASERBOY_EXPORT_ACTION_WAV_UNOPT_ALL_TIMED, LASERBOY_EXPORT_DEST_FILE});
+            break;
+        case LASERBOY_EXPORT_TYPE_TXT:
+            actions.push_back({"save current frame", LASERBOY_EXPORT_ACTION_TXT_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"save selected frames", LASERBOY_EXPORT_ACTION_TXT_SELECTED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"save all frames", LASERBOY_EXPORT_ACTION_TXT_ALL, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"save current frame palette", LASERBOY_EXPORT_ACTION_TXT_CURRENT_PALETTE, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"save target palette", LASERBOY_EXPORT_ACTION_TXT_TARGET_PALETTE, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"save LaserBoy wave color rescales", LASERBOY_EXPORT_ACTION_TXT_WAVE_RESCLES, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"save system settings (wtf)", LASERBOY_EXPORT_ACTION_TXT_WTF, LASERBOY_EXPORT_DEST_FILE});
+            break;
+        case LASERBOY_EXPORT_TYPE_CTN:
+            actions.push_back({"ctn save current frame", LASERBOY_EXPORT_ACTION_CTN_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ctn save selected frames", LASERBOY_EXPORT_ACTION_CTN_SELECTED, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"ctn save all frames", LASERBOY_EXPORT_ACTION_CTN_ALL, LASERBOY_EXPORT_DEST_FILE});
+            break;
+        case LASERBOY_EXPORT_TYPE_BMP:
+            actions.push_back({"lit vectors: save current frame", LASERBOY_EXPORT_ACTION_BMP_LIT_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"lit vectors: save selected frames directory", LASERBOY_EXPORT_ACTION_BMP_LIT_SELECTED_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            actions.push_back({"lit vectors: save all frames directory", LASERBOY_EXPORT_ACTION_BMP_LIT_ALL_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            actions.push_back({"current view: save current frame", LASERBOY_EXPORT_ACTION_BMP_VIEW_CURRENT, LASERBOY_EXPORT_DEST_FILE});
+            actions.push_back({"current view: save selected frames directory", LASERBOY_EXPORT_ACTION_BMP_VIEW_SELECTED_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            actions.push_back({"current view: save all frames directory", LASERBOY_EXPORT_ACTION_BMP_VIEW_ALL_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
+            break;
+        case LASERBOY_EXPORT_TYPE_WTF:
+            actions.push_back({"save system settings", LASERBOY_EXPORT_ACTION_WTF_SAVE, LASERBOY_EXPORT_DEST_FILE});
+            break;
+        case LASERBOY_EXPORT_TYPE_UTF8:
+            actions.push_back({"save frame index", LASERBOY_EXPORT_ACTION_UTF8_SAVE, LASERBOY_EXPORT_DEST_FILE});
+            break;
+    }
+}
+
+//----------------------------------------------------------------------------
+int export_destination_kind(const LaserBoy_Export_Task_State* state)
+{
+    if(state->action_choice->value() < 0 || state->action_choice->value() >= (int)state->actions.size())
+        return LASERBOY_EXPORT_DEST_FILE;
+    return state->actions[state->action_choice->value()].destination_kind;
+}
 
 //----------------------------------------------------------------------------
 int fltk_global_event_handler(int fltk_event)
@@ -45,6 +478,19 @@ int fltk_global_event_handler(int fltk_event)
         && (fltk_event == FL_KEYDOWN || fltk_event == FL_SHORTCUT)
       )
     {
+        if(Fl::event_state(FL_COMMAND))
+        {
+            if(Fl::event_key() == 'o' || Fl::event_key() == 'O')
+            {
+                active_fltk_gui->open_import_wizard();
+                return 1;
+            }
+            if(Fl::event_key() == 'e' || Fl::event_key() == 'E')
+            {
+                active_fltk_gui->open_export_wizard();
+                return 1;
+            }
+        }
         active_fltk_gui->push_key_event(Fl::event_key(), Fl::event_state());
         return 1;
     }
@@ -65,6 +511,9 @@ public:
     {
         if(fltk_event == FL_PUSH)
         {
+            const int handled = Fl_Window::handle(fltk_event);
+            if(handled)
+                return handled;
             gui->focus_display();
             return 1;
         }
@@ -89,6 +538,312 @@ private:
 void fltk_close_callback(Fl_Widget*, void* data)
 {
     ((LaserBoy_FLTK_GUI*)data)->fltk_request_close();
+}
+
+//----------------------------------------------------------------------------
+void gui_command_callback(Fl_Widget*, void* data)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->push_command_key((int)(intptr_t)data);
+}
+
+//----------------------------------------------------------------------------
+void gui_open_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->open_import_wizard();
+}
+
+//----------------------------------------------------------------------------
+void gui_export_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->open_export_wizard();
+}
+
+//----------------------------------------------------------------------------
+bool key_is_nav_key(int key)
+{
+    switch(key)
+    {
+        case LASERBOY_KEY_RSHIFT:
+        case LASERBOY_KEY_LSHIFT:
+        case LASERBOY_KEY_UP:
+        case LASERBOY_KEY_DOWN:
+        case LASERBOY_KEY_RIGHT:
+        case LASERBOY_KEY_LEFT:
+        case LASERBOY_KEY_TAB:
+        case ' ':
+        case LASERBOY_KEY_F3:
+            return true;
+    }
+    return false;
+}
+
+//----------------------------------------------------------------------------
+void update_import_task_dialog(LaserBoy_Import_Task_State* state)
+{
+    state->file_type = state->type_choice->value();
+    const int previous_action = state->action;
+    import_actions_for_type(state->file_type, state->actions);
+    state->action_choice->clear();
+    for(size_t i = 0; i < state->actions.size(); i++)
+        state->action_choice->add(state->actions[i].label);
+    int selected_action = 0;
+    for(size_t i = 0; i < state->actions.size(); i++)
+        if(state->actions[i].action == previous_action)
+            selected_action = (int)i;
+    state->action_choice->value(selected_action);
+    state->action = state->actions[state->action_choice->value()].action;
+    const int source_kind = import_source_kind(state);
+    if(source_kind == LASERBOY_IMPORT_SOURCE_DIRECTORY)
+    {
+        state->browse_button->label("Choose Directory...");
+        state->browse_button->activate();
+    }
+    else if(source_kind == LASERBOY_IMPORT_SOURCE_FILE)
+    {
+        state->browse_button->label("Choose File...");
+        state->browse_button->activate();
+    }
+    else
+    {
+        state->browse_button->label("No Source Needed");
+        state->browse_button->deactivate();
+        state->source.clear();
+    }
+    string source = state->source.size() ? state->source : string("(none)");
+    state->source_label->copy_label(source.c_str());
+
+    state->option_a->hide();
+    state->option_b->hide();
+    state->option_c->hide();
+    state->note->copy_label("");
+    if(state->file_type == LASERBOY_IMPORT_TYPE_WAV)
+    {
+        state->option_a->label("Wave is inverted");
+        state->option_a->show();
+        state->note->copy_label("LaserBoy WAV headers may include 2026 channel-map metadata; headerless WAV uses current settings.");
+    }
+    else if(state->file_type == LASERBOY_IMPORT_TYPE_BMP)
+    {
+        state->option_a->label("Scale bitmap to screen");
+        state->option_a->show();
+    }
+    else if(   state->action == LASERBOY_IMPORT_ACTION_DXF_FONT_REPLACE
+            || state->action == LASERBOY_IMPORT_ACTION_DXF_FONT_APPEND
+           )
+    {
+        state->option_a->label("Move paired .utf8 from dxf to fonts");
+        state->option_b->label("Overwrite existing paired .utf8");
+        state->option_a->show();
+        state->option_b->show();
+    }
+    else if(state->file_type == LASERBOY_IMPORT_TYPE_UTF8)
+    {
+        state->option_a->label("Add missing frames when UTF8 is longer");
+        state->option_b->label("Leave extra frames un-indexed when UTF8 is shorter");
+        state->option_a->show();
+        state->option_b->show();
+    }
+    else if(state->file_type == LASERBOY_IMPORT_TYPE_WTF)
+    {
+        state->note->copy_label("This loads settings and display preferences.");
+    }
+}
+
+//----------------------------------------------------------------------------
+void import_task_type_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Task_State* state = (LaserBoy_Import_Task_State*)data;
+    state->source.clear();
+    state->action = 0;
+    update_import_task_dialog(state);
+}
+
+//----------------------------------------------------------------------------
+void import_task_action_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Task_State* state = (LaserBoy_Import_Task_State*)data;
+    if(state->action_choice->value() >= 0 && state->action_choice->value() < (int)state->actions.size())
+        state->action = state->actions[state->action_choice->value()].action;
+    update_import_task_dialog(state);
+}
+
+//----------------------------------------------------------------------------
+void import_task_browse_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Task_State* state = (LaserBoy_Import_Task_State*)data;
+    Fl_Native_File_Chooser chooser;
+    const int source_kind = import_source_kind(state);
+    chooser.title(source_kind == LASERBOY_IMPORT_SOURCE_DIRECTORY ? "Choose Import Directory" : "Choose Import File");
+    chooser.type(source_kind == LASERBOY_IMPORT_SOURCE_DIRECTORY ? Fl_Native_File_Chooser::BROWSE_DIRECTORY : Fl_Native_File_Chooser::BROWSE_FILE);
+    chooser.filter("LaserBoy Files\t*.{ild,dxf,wav,txt,ctn,bmp,wtf,utf8}\nAll Files\t*");
+    if(chooser.show() == 0 && chooser.filename())
+        state->source = chooser.filename();
+    update_import_task_dialog(state);
+}
+
+//----------------------------------------------------------------------------
+void import_task_ok_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Task_State* state = (LaserBoy_Import_Task_State*)data;
+    if(state->action_choice->value() >= 0 && state->action_choice->value() < (int)state->actions.size())
+        state->action = state->actions[state->action_choice->value()].action;
+    state->accepted = true;
+    state->window->hide();
+}
+
+//----------------------------------------------------------------------------
+void import_task_cancel_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Task_State* state = (LaserBoy_Import_Task_State*)data;
+    state->accepted = false;
+    state->window->hide();
+}
+
+//----------------------------------------------------------------------------
+void update_export_task_dialog(LaserBoy_Export_Task_State* state)
+{
+    state->file_type = state->type_choice->value();
+    const int previous_action = state->action;
+    export_actions_for_type(state->file_type, state->actions);
+    state->action_choice->clear();
+    for(size_t i = 0; i < state->actions.size(); i++)
+        state->action_choice->add(state->actions[i].label);
+    int selected_action = 0;
+    for(size_t i = 0; i < state->actions.size(); i++)
+        if(state->actions[i].action == previous_action)
+            selected_action = (int)i;
+    state->action_choice->value(selected_action);
+    state->action = state->actions[state->action_choice->value()].action;
+
+    const int destination_kind = export_destination_kind(state);
+    if(destination_kind == LASERBOY_EXPORT_DEST_DIRECTORY)
+        state->browse_button->label("Choose New Directory...");
+    else
+        state->browse_button->label("Choose File...");
+    string destination = state->destination.size() ? state->destination : string("(none)");
+    state->destination_label->copy_label(destination.c_str());
+
+    state->option_a->hide();
+    state->option_b->hide();
+    state->option_c->hide();
+    state->option_d->hide();
+    state->note->copy_label("");
+    if(state->file_type == LASERBOY_EXPORT_TYPE_ILD)
+    {
+        state->option_a->label("Use ILD format 4/5");
+        state->option_b->label("Save 2D frames as 3D");
+        state->option_c->label("Auto minimize before save");
+        state->option_d->label("Clean up invalid UTF8 names if needed");
+        state->option_a->show();
+        state->option_b->show();
+        state->option_c->show();
+        if(state->action == LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8)
+            state->option_d->show();
+        if(   state->action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT
+           || state->action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED
+           || state->action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_ALL
+          )
+            state->note->copy_label("Effect export needs effect selection; use legacy output menu for now.");
+    }
+    else if(state->file_type == LASERBOY_EXPORT_TYPE_DXF)
+    {
+        state->option_a->label("Save true-color DXF");
+        state->option_a->show();
+    }
+    else if(state->file_type == LASERBOY_EXPORT_TYPE_WAV)
+    {
+        string note = "Wave timing uses current duration/FPS. Channel map metadata: " + p_space->wav_channel_map;
+        state->note->copy_label(note.c_str());
+    }
+    else if(state->file_type == LASERBOY_EXPORT_TYPE_TXT)
+    {
+        state->option_a->label("Save unit coordinates");
+        state->option_b->label("Save frames with integrated color");
+        state->option_c->label("Save colors as hex");
+        state->option_d->label("Save named palette values / UTF8 cleanup");
+        state->option_a->show();
+        state->option_b->show();
+        state->option_c->show();
+        state->option_d->show();
+        if(state->action == LASERBOY_EXPORT_ACTION_TXT_WAVE_RESCLES)
+            state->note->copy_label("Choose an existing .wav; rescale table path is derived from it.");
+    }
+    else if(state->file_type == LASERBOY_EXPORT_TYPE_BMP)
+        state->note->copy_label("Bitmap size uses the current output bitmap size setting.");
+    else if(state->file_type == LASERBOY_EXPORT_TYPE_UTF8)
+    {
+        state->option_a->label("Clean up invalid/redundant names if needed");
+        state->option_a->show();
+    }
+}
+
+//----------------------------------------------------------------------------
+void export_task_type_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Export_Task_State* state = (LaserBoy_Export_Task_State*)data;
+    state->destination.clear();
+    state->action = 0;
+    update_export_task_dialog(state);
+}
+
+//----------------------------------------------------------------------------
+void export_task_action_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Export_Task_State* state = (LaserBoy_Export_Task_State*)data;
+    if(state->action_choice->value() >= 0 && state->action_choice->value() < (int)state->actions.size())
+        state->action = state->actions[state->action_choice->value()].action;
+    update_export_task_dialog(state);
+}
+
+//----------------------------------------------------------------------------
+void export_task_browse_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Export_Task_State* state = (LaserBoy_Export_Task_State*)data;
+    Fl_Native_File_Chooser chooser;
+    const int destination_kind = export_destination_kind(state);
+    chooser.title(destination_kind == LASERBOY_EXPORT_DEST_DIRECTORY ? "Choose New Export Directory" : "Choose Export File");
+    chooser.type(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
+    chooser.filter("LaserBoy Files\t*.{ild,dxf,wav,txt,ctn,bmp,wtf,utf8}\nAll Files\t*");
+    if(chooser.show() == 0 && chooser.filename())
+        state->destination = chooser.filename();
+    update_export_task_dialog(state);
+}
+
+//----------------------------------------------------------------------------
+void export_task_ok_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Export_Task_State* state = (LaserBoy_Export_Task_State*)data;
+    if(state->action_choice->value() >= 0 && state->action_choice->value() < (int)state->actions.size())
+        state->action = state->actions[state->action_choice->value()].action;
+    state->accepted = true;
+    state->window->hide();
+}
+
+//----------------------------------------------------------------------------
+void export_task_cancel_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Export_Task_State* state = (LaserBoy_Export_Task_State*)data;
+    state->accepted = false;
+    state->window->hide();
+}
+
+//----------------------------------------------------------------------------
+void import_dialog_ok_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Dialog_State* state = (LaserBoy_Import_Dialog_State*)data;
+    state->result = state->choice->value();
+    state->window->hide();
+}
+
+//----------------------------------------------------------------------------
+void import_dialog_cancel_callback(Fl_Widget*, void* data)
+{
+    LaserBoy_Import_Dialog_State* state = (LaserBoy_Import_Dialog_State*)data;
+    state->result = -1;
+    state->window->hide();
 }
 }
 
@@ -121,13 +876,82 @@ int LaserBoy_FLTK_Display::handle(int fltk_event)
 void LaserBoy_FLTK_Display::draw()
 {
     if(gui && gui->screen && gui->screen->pixels)
+    {
+        const int art_w = gui->screen->h;
+        fl_push_clip(x(), y(), w(), h());
+        fl_rectf(x(), y(), w(), h(), FL_BLACK);
         fl_draw_image((const unsigned char*)gui->screen->pixels,
                       x(),
                       y(),
-                      gui->screen->w,
+                      art_w,
                       gui->screen->h,
-                      4
+                      4,
+                      gui->screen->w * 4
                      );
+        fl_pop_clip();
+    }
+}
+
+//############################################################################
+LaserBoy_FLTK_Palette_Display::LaserBoy_FLTK_Palette_Display(int x, int y, int w, int h, LaserBoy_FLTK_GUI* gui_ptr)
+        : Fl_Widget(x, y, w, h)
+        , gui(gui_ptr)
+{
+}
+
+//############################################################################
+int LaserBoy_FLTK_Palette_Display::handle(int fltk_event)
+{
+    if(fltk_event == FL_PUSH)
+    {
+        if(gui)
+            gui->focus_display();
+        return 1;
+    }
+    return Fl_Widget::handle(fltk_event);
+}
+
+//############################################################################
+void LaserBoy_FLTK_Palette_Display::draw()
+{
+    fl_push_clip(x(), y(), w(), h());
+    fl_rectf(x(), y(), w(), h(), FL_BACKGROUND2_COLOR);
+    if(gui && gui->space.number_of_palettes())
+    {
+        int palette_index = gui->space.palette_index;
+        if(gui->space.number_of_frames())
+            palette_index = gui->space.current_frame().palette_index;
+        LaserBoy_palette& palette = gui->space.palette_picker(palette_index);
+        const int colors = (int)palette.number_of_colors();
+        if(colors > 0)
+        {
+            const int swatch = 18;
+            const int gap = 3;
+            const int columns = (w() > gap) ? ((w() - gap) / (swatch + gap)) : 1;
+            const int safe_columns = (columns > 0) ? columns : 1;
+            for(int i = 0; i < colors; i++)
+            {
+                const int column = i % safe_columns;
+                const int row = i / safe_columns;
+                const int sx = x() + gap + column * (swatch + gap);
+                const int sy = y() + gap + row * (swatch + gap);
+                if(sy + swatch > y() + h())
+                    break;
+                const LaserBoy_color& color = palette[i];
+                fl_color(color.r, color.g, color.b);
+                fl_rectf(sx, sy, swatch, swatch);
+                fl_color(FL_DARK3);
+                fl_rect(sx, sy, swatch, swatch);
+                if(i == (int)gui->space.selected_color_index)
+                {
+                    fl_color(FL_YELLOW);
+                    fl_rect(sx - 1, sy - 1, swatch + 2, swatch + 2);
+                    fl_rect(sx - 2, sy - 2, swatch + 4, swatch + 4);
+                }
+            }
+        }
+    }
+    fl_pop_clip();
 }
 
 //############################################################################
@@ -139,9 +963,105 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
           space          (this ),
           screen         (NULL )
 {
-    window = new LaserBoy_FLTK_Window(xres, yres, "LaserBoy by James Lehman : FLTK", this);
-    display = new LaserBoy_FLTK_Display(0, 0, xres, yres, this);
-    window->resizable(display);
+    const int menu_h    = 24;
+    const int toolbar_h = 34;
+    const int frame_controls_h = 30;
+    const int status_h  = 24;
+    const int panel_w   = 220;
+    const int stats_h   = yres / 2;
+    const int gap       = 4;
+    const int art_w     = yres;
+    const int window_w  = art_w + panel_w + gap;
+    const int window_h  = yres + menu_h + toolbar_h + frame_controls_h + status_h + (2 * gap);
+    const int toolbar_y = menu_h;
+    const int viewport_y = menu_h + toolbar_h;
+    const int frame_controls_y = viewport_y + yres + gap;
+    const int panel_x    = art_w + gap;
+
+    window = new LaserBoy_FLTK_Window(window_w, window_h, "LaserBoy by James Lehman : FLTK", this);
+
+    menu_bar = new Fl_Menu_Bar(0, 0, window_w, menu_h);
+    menu_bar->add("File/Open...", FL_COMMAND + 'o', gui_open_callback, NULL);
+    menu_bar->add("File/Export...", FL_COMMAND + 'e', gui_export_callback, NULL);
+    menu_bar->add("Frame/Previous", 0, gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_LEFT);
+    menu_bar->add("Frame/Next", 0, gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RIGHT);
+    menu_bar->add("Frame/First", 0, gui_command_callback, (void*)(intptr_t)'9');
+    menu_bar->add("Frame/Last", 0, gui_command_callback, (void*)(intptr_t)'0');
+    menu_bar->add("View/Show or Hide Legacy Menu", 0, gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RETURN);
+    menu_bar->add("View/Toggle Frame Stats", 0, gui_command_callback, (void*)(intptr_t)'?');
+    menu_bar->add("View/Toggle Frame Set Stats", 0, gui_command_callback, (void*)(intptr_t)'/');
+    menu_bar->add("View/Toggle Background Bitmap", 0, gui_command_callback, (void*)(intptr_t)';');
+
+    toolbar = new Fl_Group(0, toolbar_y, window_w, toolbar_h);
+    toolbar->box(FL_UP_BOX);
+    toolbar_label = new Fl_Box(8, toolbar_y + 6, 72, 22, "LaserBoy");
+    toolbar_label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    menu_toggle_button = new Fl_Button(86, toolbar_y + 5, 64, 24, "Menu");
+    menu_toggle_button->callback(gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RETURN);
+    toolbar->end();
+
+    main_viewport = new Fl_Group(0, viewport_y, art_w, yres);
+    main_viewport->box(FL_DOWN_FRAME);
+    display = new LaserBoy_FLTK_Display(0, viewport_y, art_w, yres, this);
+    main_viewport->resizable(display);
+    main_viewport->end();
+
+    frame_controls = new Fl_Group(0, frame_controls_y, art_w, frame_controls_h);
+    frame_controls->box(FL_UP_BOX);
+    const int button_w = 30;
+    const int button_h = 22;
+    const int button_gap = 4;
+    const int label_w = 96;
+    const int controls_w = (4 * button_w) + label_w + (4 * button_gap);
+    int controls_x = (art_w - controls_w) / 2;
+    if(controls_x < 8)
+        controls_x = 8;
+    const int controls_y = frame_controls_y + 4;
+    first_frame_button = new Fl_Button(controls_x, controls_y, button_w, button_h, "|<");
+    previous_frame_button = new Fl_Button(controls_x + button_w + button_gap, controls_y, button_w, button_h, "<");
+    frame_number_label = new Fl_Box(controls_x + (2 * (button_w + button_gap)), controls_y, label_w, button_h, "0 / 0");
+    next_frame_button = new Fl_Button(controls_x + (2 * (button_w + button_gap)) + label_w + button_gap,
+                                      controls_y,
+                                      button_w,
+                                      button_h,
+                                      ">");
+    last_frame_button = new Fl_Button(controls_x + (3 * (button_w + button_gap)) + label_w + button_gap,
+                                      controls_y,
+                                      button_w,
+                                      button_h,
+                                      ">|");
+    frame_number_label->box(FL_DOWN_BOX);
+    frame_number_label->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+    first_frame_button->callback(gui_command_callback, (void*)(intptr_t)'9');
+    previous_frame_button->callback(gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_LEFT);
+    next_frame_button->callback(gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RIGHT);
+    last_frame_button->callback(gui_command_callback, (void*)(intptr_t)'0');
+    frame_controls->end();
+
+    stats_panel = new Fl_Group(panel_x, viewport_y, panel_w, stats_h);
+    stats_panel->box(FL_DOWN_BOX);
+    stats_text = new Fl_Box(panel_x + 8, viewport_y + 8, panel_w - 16, stats_h - 16, "Stats");
+    stats_text->align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+    stats_panel->end();
+
+    palette_panel = new Fl_Group(panel_x, viewport_y + stats_h + gap, panel_w, yres - stats_h - gap);
+    palette_panel->box(FL_DOWN_BOX);
+    palette_text = new Fl_Box(panel_x + 8, viewport_y + stats_h + gap + 8, panel_w - 16, 82, "Palette");
+    palette_text->align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+    palette_display = new LaserBoy_FLTK_Palette_Display(panel_x + 8,
+                                                        viewport_y + stats_h + gap + 94,
+                                                        panel_w - 16,
+                                                        yres - stats_h - gap - 102,
+                                                        this);
+    palette_panel->end();
+
+    status_bar = new Fl_Group(0, frame_controls_y + frame_controls_h + gap, window_w, status_h);
+    status_bar->box(FL_UP_BOX);
+    status_text = new Fl_Box(8, frame_controls_y + frame_controls_h + gap + 4, window_w - 16, status_h - 8, "Ready");
+    status_text->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    status_bar->end();
+
+    window->resizable(main_viewport);
     window->callback(fltk_close_callback, this);
     window->end();
     window->show();
@@ -177,6 +1097,9 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
         space.font_frames.clear();
     if(y < 960)
         space.font_size_factor = 1;
+    space.show_stats = false;
+    space.show_TUI_clue = false;
+    update_gui_regions();
 }
 
 //############################################################################
@@ -219,15 +1142,1283 @@ int LaserBoy_FLTK_GUI::poll_gui_event(LaserBoy_GUI_Event* fltk_event)
     if(event_queue.empty())
         Fl::check();
     if(event_queue.empty())
+    {
+        fltk_event->type = 0;
         return 0;
+    }
     *fltk_event = event_queue.front();
     event_queue.pop_front();
     return 1;
 }
 
 //############################################################################
+void LaserBoy_FLTK_GUI::open_import_wizard()
+{
+    if(!show_import_task_modal())
+        update_gui_regions();
+    focus_display();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::open_export_wizard()
+{
+    if(!show_export_task_modal())
+        update_gui_regions();
+    focus_display();
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::show_export_task_modal()
+{
+    LaserBoy_Export_Task_State state;
+    state.gui = this;
+    state.accepted = false;
+    state.file_type = LASERBOY_EXPORT_TYPE_ILD;
+    state.action = LASERBOY_EXPORT_ACTION_ILD_CURRENT;
+    state.destination.clear();
+
+    Fl_Window* dialog = new Fl_Window(590, 360, "Export Task");
+    dialog->set_modal();
+    state.window = dialog;
+    Fl_Box* title = new Fl_Box(16, 12, 550, 24, "Choose the export type, action, destination, and options.");
+    title->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+    state.type_choice = new Fl_Choice(130, 48, 250, 26, "Output type:");
+    state.type_choice->add("ILD");
+    state.type_choice->add("DXF");
+    state.type_choice->add("WAV");
+    state.type_choice->add("TXT");
+    state.type_choice->add("CTN");
+    state.type_choice->add("BMP");
+    state.type_choice->add("WTF");
+    state.type_choice->add("UTF8");
+    state.type_choice->value(0);
+    state.type_choice->callback(export_task_type_callback, &state);
+
+    state.action_choice = new Fl_Choice(130, 86, 410, 26, "Action:");
+    state.action_choice->callback(export_task_action_callback, &state);
+
+    state.browse_button = new Fl_Button(130, 126, 170, 26, "Choose File...");
+    state.browse_button->callback(export_task_browse_callback, &state);
+    state.destination_label = new Fl_Box(130, 158, 430, 38, "(none)");
+    state.destination_label->box(FL_DOWN_BOX);
+    state.destination_label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+
+    state.option_a = new Fl_Check_Button(130, 206, 390, 22, "");
+    state.option_b = new Fl_Check_Button(130, 232, 390, 22, "");
+    state.option_c = new Fl_Check_Button(130, 258, 390, 22, "");
+    state.option_d = new Fl_Check_Button(130, 284, 390, 22, "");
+    state.note = new Fl_Box(130, 206, 420, 70, "");
+    state.note->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+
+    Fl_Button* cancel = new Fl_Button(388, 322, 82, 26, "Cancel");
+    Fl_Return_Button* export_button = new Fl_Return_Button(486, 322, 82, 26, "Export");
+    cancel->callback(export_task_cancel_callback, &state);
+    export_button->callback(export_task_ok_callback, &state);
+    dialog->callback(export_task_cancel_callback, &state);
+    dialog->end();
+    update_export_task_dialog(&state);
+    dialog->show();
+    while(dialog->shown())
+        Fl::wait();
+    const bool accepted = state.accepted;
+    const int file_type = state.file_type;
+    const int action = state.action;
+    const string destination = state.destination;
+    const bool option_a = state.option_a->value() != 0;
+    const bool option_b = state.option_b->value() != 0;
+    const bool option_c = state.option_c->value() != 0;
+    const bool option_d = state.option_d->value() != 0;
+    delete dialog;
+
+    if(!accepted)
+    {
+        space.TUI_clue = "export canceled";
+        return false;
+    }
+    return execute_export_task(file_type, action, destination, option_a, option_b, option_c, option_d);
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::show_import_task_modal()
+{
+    LaserBoy_Import_Task_State state;
+    state.gui = this;
+    state.accepted = false;
+    state.file_type = LASERBOY_IMPORT_TYPE_ILD;
+    state.action = LASERBOY_IMPORT_ACTION_REPLACE;
+    state.source.clear();
+
+    Fl_Window* dialog = new Fl_Window(560, 330, "Import Task");
+    dialog->set_modal();
+    state.window = dialog;
+    Fl_Box* title = new Fl_Box(16, 12, 520, 24, "Choose the import type, source, action, and options.");
+    title->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+    state.type_choice = new Fl_Choice(120, 48, 250, 26, "File type:");
+    state.type_choice->add("ILD");
+    state.type_choice->add("DXF");
+    state.type_choice->add("WAV");
+    state.type_choice->add("TXT");
+    state.type_choice->add("CTN");
+    state.type_choice->add("BMP");
+    state.type_choice->add("WTF");
+    state.type_choice->add("UTF8");
+    state.type_choice->value(0);
+    state.type_choice->callback(import_task_type_callback, &state);
+
+    state.action_choice = new Fl_Choice(120, 86, 380, 26, "Action:");
+    state.action_choice->callback(import_task_action_callback, &state);
+
+    state.browse_button = new Fl_Button(120, 126, 150, 26, "Choose File...");
+    state.browse_button->callback(import_task_browse_callback, &state);
+    state.source_label = new Fl_Box(120, 158, 400, 38, "(none)");
+    state.source_label->box(FL_DOWN_BOX);
+    state.source_label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+
+    state.option_a = new Fl_Check_Button(120, 206, 360, 22, "");
+    state.option_b = new Fl_Check_Button(120, 232, 360, 22, "");
+    state.option_c = new Fl_Check_Button(120, 258, 360, 22, "");
+    state.note = new Fl_Box(120, 206, 380, 48, "");
+    state.note->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+
+    Fl_Button* cancel = new Fl_Button(360, 292, 82, 26, "Cancel");
+    Fl_Return_Button* import = new Fl_Return_Button(456, 292, 82, 26, "Import");
+    cancel->callback(import_task_cancel_callback, &state);
+    import->callback(import_task_ok_callback, &state);
+    dialog->callback(import_task_cancel_callback, &state);
+    dialog->end();
+    update_import_task_dialog(&state);
+    dialog->show();
+    while(dialog->shown())
+        Fl::wait();
+    const bool accepted = state.accepted;
+    const int file_type = state.file_type;
+    const int action = state.action;
+    const string source = state.source;
+    const bool option_a = state.option_a->value() != 0;
+    const bool option_b = state.option_b->value() != 0;
+    const bool option_c = state.option_c->value() != 0;
+    delete dialog;
+
+    if(!accepted)
+    {
+        space.TUI_clue = "open canceled";
+        return false;
+    }
+    return execute_import_task(file_type, action, source, option_a, option_b, option_c);
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_file_with_wizard(const string& file)
+{
+    const string extension = file_extension(file);
+    if(    extension != "ild"
+        && extension != "dxf"
+        && extension != "wav"
+        && extension != "txt"
+        && extension != "ctn"
+        && extension != "bmp"
+        && extension != "wtf"
+        && extension != "utf8"
+      )
+    {
+        space.TUI_clue = "unsupported file type";
+        fl_alert("Unsupported file type:\n%s", file.c_str());
+        update_gui_regions();
+        focus_display();
+        return false;
+    }
+    const int mode = show_import_mode_dialog(file, extension);
+    if(mode == LASERBOY_IMPORT_CANCEL)
+    {
+        space.TUI_clue = "open canceled";
+        update_gui_regions();
+        focus_display();
+        return false;
+    }
+    bool imported = false;
+    if(extension == "ild")
+        imported = import_ild_file(file, mode);
+    else if(extension == "dxf")
+        imported = import_dxf_file(file, mode);
+    else if(extension == "wav")
+        imported = import_wav_file(file, mode);
+    else if(extension == "txt")
+        imported = import_txt_file(file, mode);
+    else if(extension == "ctn")
+        imported = import_ctn_file(file, mode);
+    else if(extension == "wtf")
+        imported = import_wtf_file(file);
+    else if(extension == "bmp" || extension == "utf8")
+    {
+        space.TUI_clue = extension + " import not yet migrated";
+        fl_alert("%s import has multiple legacy actions and is not migrated to the native wizard yet.", extension.c_str());
+    }
+    if(imported)
+        finish_import_refresh(space.TUI_clue);
+    else
+        update_gui_regions();
+    focus_display();
+    return imported;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::execute_import_task(int file_type, int action, const string& source, bool option_a, bool option_b, bool option_c)
+{
+    if(   action != LASERBOY_IMPORT_ACTION_BMP_CLEAR_BACKGROUND
+       && source.size() == 0
+      )
+    {
+        fl_alert("Choose a source before importing.");
+        space.TUI_clue = "open canceled";
+        update_gui_regions();
+        focus_display();
+        return false;
+    }
+
+    bool imported = false;
+    switch(file_type)
+    {
+        case LASERBOY_IMPORT_TYPE_ILD:
+            imported = import_ild_file(source, action);
+            break;
+        case LASERBOY_IMPORT_TYPE_DXF:
+            imported = import_dxf_file(source, action);
+            if(imported && option_a && (action == LASERBOY_IMPORT_ACTION_DXF_FONT_REPLACE || action == LASERBOY_IMPORT_ACTION_DXF_FONT_APPEND))
+            {
+                const string utf8_source = source.substr(0, source.find_last_of('.')) + ".utf8";
+                const string utf8_target = LASERBOY_FONT_SHARE + file_stem(source) + ".utf8";
+                if(!file_exists(utf8_source))
+                    fl_alert("Paired UTF8 file not found:\n%s", utf8_source.c_str());
+                else if(file_exists(utf8_target) && !option_b)
+                    fl_alert("Paired UTF8 target already exists and was not overwritten:\n%s", utf8_target.c_str());
+                else
+                {
+                    std::remove(utf8_target.c_str());
+                    std::rename(utf8_source.c_str(), utf8_target.c_str());
+                }
+            }
+            break;
+        case LASERBOY_IMPORT_TYPE_WAV:
+            imported = import_wav_file(source, action, option_a);
+            break;
+        case LASERBOY_IMPORT_TYPE_TXT:
+            imported = import_txt_file(source, action);
+            break;
+        case LASERBOY_IMPORT_TYPE_CTN:
+            imported = import_ctn_file(source, action);
+            break;
+        case LASERBOY_IMPORT_TYPE_BMP:
+            imported = import_bmp_file(source, action, option_a);
+            break;
+        case LASERBOY_IMPORT_TYPE_WTF:
+            if(fl_choice("Load settings from %s?", "Cancel", "Load", NULL, file_basename(source).c_str()) == 1)
+                imported = import_wtf_file(source);
+            break;
+        case LASERBOY_IMPORT_TYPE_UTF8:
+            imported = import_utf8_file(source, option_a, option_b);
+            break;
+    }
+    if(imported)
+        finish_import_refresh(space.TUI_clue);
+    else
+        update_gui_regions();
+    focus_display();
+    return imported;
+}
+
+//############################################################################
+int LaserBoy_FLTK_GUI::show_import_mode_dialog(const string& file, const string& extension)
+{
+    vector<LaserBoy_Import_Mode_Option> options;
+    if(extension == "ild" || extension == "ctn")
+    {
+        options.push_back({"Replace", LASERBOY_IMPORT_REPLACE});
+        options.push_back({"Prepend", LASERBOY_IMPORT_PREPEND});
+        options.push_back({"Insert", LASERBOY_IMPORT_INSERT});
+        options.push_back({"Append", LASERBOY_IMPORT_APPEND});
+        options.push_back({"Superimpose", LASERBOY_IMPORT_SUPERIMPOSE});
+    }
+    else if(extension == "dxf" || extension == "wav" || extension == "txt")
+    {
+        options.push_back({"Replace", LASERBOY_IMPORT_REPLACE});
+        options.push_back({"Append", LASERBOY_IMPORT_APPEND});
+    }
+    else if(extension == "wtf")
+    {
+        int answer = fl_choice("Load settings from %s?", "Cancel", "Load", NULL, file_basename(file).c_str());
+        return (answer == 1) ? LASERBOY_IMPORT_REPLACE : LASERBOY_IMPORT_CANCEL;
+    }
+    else if(extension == "bmp" || extension == "utf8")
+        return LASERBOY_IMPORT_REPLACE;
+    else
+        return LASERBOY_IMPORT_CANCEL;
+
+    LaserBoy_Import_Dialog_State state = {-1, NULL, NULL};
+    Fl_Window* dialog = new Fl_Window(420, 150, "Open Import");
+    dialog->set_modal();
+    Fl_Box* label = new Fl_Box(16, 14, 388, 32, file_basename(file).c_str());
+    label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+    Fl_Choice* choice = new Fl_Choice(94, 58, 230, 26, "Mode:");
+    for(size_t i = 0; i < options.size(); i++)
+        choice->add(options[i].label);
+    choice->value(0);
+    Fl_Button* cancel = new Fl_Button(224, 108, 82, 26, "Cancel");
+    Fl_Return_Button* import = new Fl_Return_Button(318, 108, 82, 26, "Import");
+    state.window = dialog;
+    state.choice = choice;
+    cancel->callback(import_dialog_cancel_callback, &state);
+    import->callback(import_dialog_ok_callback, &state);
+    dialog->callback(import_dialog_cancel_callback, &state);
+    dialog->end();
+    dialog->show();
+    while(dialog->shown())
+        Fl::wait();
+    const int result = state.result;
+    delete dialog;
+    if(result < 0 || result >= (int)options.size())
+        return LASERBOY_IMPORT_CANCEL;
+    return options[result].mode;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::apply_imported_frame_set(LaserBoy_frame_set& frame_set, int mode, const string& clue)
+{
+    if(frame_set.number_of_frames() == 0)
+    {
+        fl_alert("No frames found in imported file.");
+        return false;
+    }
+    switch(mode)
+    {
+        case LASERBOY_IMPORT_REPLACE:
+            space.frame_index = 0;
+            space = frame_set;
+            break;
+        case LASERBOY_IMPORT_PREPEND:
+            space.frame_index = 0;
+            frame_set += space;
+            space = frame_set;
+            break;
+        case LASERBOY_IMPORT_INSERT:
+        {
+            LaserBoy_frame_set result;
+            for(u_int i = 0; i <= space.frame_index && i < space.number_of_frames(); i++)
+                result += space[i];
+            for(u_int i = 0; i < frame_set.number_of_frames(); i++)
+                result += frame_set[i];
+            for(u_int i = space.frame_index + 1; i < space.number_of_frames(); i++)
+                result += space[i];
+            space.frame_index = 0;
+            space = result;
+            break;
+        }
+        case LASERBOY_IMPORT_APPEND:
+            space.frame_index = 0;
+            space += frame_set;
+            break;
+        case LASERBOY_IMPORT_SUPERIMPOSE:
+            space.frame_index = 0;
+            space.superimpose_frame_set(frame_set);
+            break;
+        default:
+            return false;
+    }
+    space.TUI_clue = clue;
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_ild_file(const string& file, int mode)
+{
+    long int bytes_skipped = 0;
+    LaserBoy_ild_header_count counter;
+    LaserBoy_frame_set frame_set;
+    if(frame_set.from_ild_file(file, bytes_skipped, counter) != LASERBOY_OK)
+    {
+        fl_alert("Failed to open ILD file:\n%s", file.c_str());
+        return false;
+    }
+    if(bytes_skipped > 0)
+        fl_message("%ld bytes of unrecognized data were skipped.", bytes_skipped);
+    return apply_imported_frame_set(frame_set, mode, file);
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_wav_file(const string& file, int mode, bool global_polarity)
+{
+    bool ok = false;
+    bool laserboy_wave = true;
+    switch(mode)
+    {
+        case LASERBOY_IMPORT_ACTION_WAV_LB_REPLACE:
+            ok = space.from_LaserBoy_wave_file(file, false);
+            break;
+        case LASERBOY_IMPORT_ACTION_WAV_LB_APPEND:
+            ok = space.from_LaserBoy_wave_file(file, true);
+            break;
+        case LASERBOY_IMPORT_ACTION_WAV_LB_AS_UNFORMATTED:
+        case LASERBOY_IMPORT_ACTION_WAV_CLIP_AS_UNFORMATTED:
+        case LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_REPLACE:
+            laserboy_wave = false;
+            ok = space.from_unformatted_wave_file(file, global_polarity, false);
+            break;
+        case LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_APPEND:
+            laserboy_wave = false;
+            ok = space.from_unformatted_wave_file(file, global_polarity, true);
+            break;
+        case LASERBOY_IMPORT_ACTION_WAV_QM_REFRAME:
+            laserboy_wave = false;
+            ok = space.from_qm_wave_file(file, global_polarity, false);
+            break;
+        case LASERBOY_IMPORT_ACTION_WAV_CLIP_REPLACE:
+            ok = space.from_LaserBoy_wave_file(file, false);
+            break;
+        case LASERBOY_IMPORT_ACTION_WAV_CLIP_APPEND:
+            ok = space.from_LaserBoy_wave_file(file, true);
+            break;
+        case LASERBOY_IMPORT_REPLACE:
+            ok = space.from_LaserBoy_wave_file(file, false);
+            break;
+        case LASERBOY_IMPORT_APPEND:
+            ok = space.from_LaserBoy_wave_file(file, true);
+            break;
+        default:
+            return false;
+    }
+    if(!ok)
+    {
+        if(laserboy_wave && (space.frame_set_error & LASERBOY_LB_WAVE_FORMAT_ERROR))
+            fl_alert("Not a LaserBoy formatted wave:\n%s", file.c_str());
+        else
+            fl_alert("Failed to open wave file:\n%s", file.c_str());
+        return false;
+    }
+    space.TUI_clue = file;
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_dxf_file(const string& file, int mode)
+{
+    LaserBoy_Error_Code result = LASERBOY_OK;
+    bool ok = true;
+    switch(mode)
+    {
+        case LASERBOY_IMPORT_ACTION_REPLACE:
+            result = space.from_dxf_file(file, false);
+            ok = (result == LASERBOY_OK);
+            break;
+        case LASERBOY_IMPORT_ACTION_APPEND:
+            result = space.from_dxf_file(file, true);
+            ok = (result == LASERBOY_OK);
+            break;
+        case LASERBOY_IMPORT_ACTION_DXF_DIR_REPLACE:
+            space.frame_index = 0;
+            ok = space.from_dxf_directory(file, false);
+            break;
+        case LASERBOY_IMPORT_ACTION_DXF_DIR_APPEND:
+            ok = space.from_dxf_directory(file, true);
+            break;
+        case LASERBOY_IMPORT_ACTION_DXF_FONT_REPLACE:
+            result = space.from_dxf_font(file, false);
+            ok = (result == LASERBOY_OK);
+            break;
+        case LASERBOY_IMPORT_ACTION_DXF_FONT_APPEND:
+            result = space.from_dxf_font(file, true);
+            ok = (result == LASERBOY_OK);
+            break;
+        default:
+            return false;
+    }
+    if(!ok)
+    {
+        fl_alert("Failed to open DXF file:\n%s", file.c_str());
+        return false;
+    }
+    space.TUI_clue = file;
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_txt_file(const string& file, int mode)
+{
+    if(mode == LASERBOY_IMPORT_ACTION_TXT_PALETTES_ONLY)
+    {
+        const int current_palette_count = space.number_of_palettes();
+        if(space.palettes_from_txt_file(file) != LASERBOY_OK)
+        {
+            fl_alert("Failed to import TXT palettes. See txt_in_errors.txt for details:\n%s", file.c_str());
+            return false;
+        }
+        const int new_palette_count = space.number_of_palettes() - current_palette_count;
+        space.TUI_clue = file;
+        if(new_palette_count > 0)
+            fl_message("%d palette%s imported.", new_palette_count, new_palette_count == 1 ? "" : "s");
+        return true;
+    }
+
+    LaserBoy_frame_set frame_set;
+    if(frame_set.from_txt_file(file) != LASERBOY_OK)
+    {
+        fl_alert("Failed to open TXT file. See txt_in_errors.txt for details:\n%s", file.c_str());
+        return false;
+    }
+    if(frame_set.number_of_frames() == 0)
+    {
+        fl_alert("No frames found in TXT file:\n%s", file.c_str());
+        return false;
+    }
+    if(mode == LASERBOY_IMPORT_ACTION_SUPERIMPOSE || mode == LASERBOY_IMPORT_SUPERIMPOSE)
+    {
+        int new_frame_count = 0;
+        int new_palette_count = 0;
+        if(space.superimpose_from_txt_file(file, new_frame_count, new_palette_count) != LASERBOY_OK)
+        {
+            fl_alert("Failed to superimpose TXT file. See txt_in_errors.txt for details:\n%s", file.c_str());
+            return false;
+        }
+        space.TUI_clue = file;
+        return true;
+    }
+    return apply_imported_frame_set(frame_set, mode, file);
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_ctn_file(const string& file, int mode)
+{
+    long int bytes_skipped = 0;
+    LaserBoy_frame_set frame_set;
+    if(frame_set.from_ctn_file(file, bytes_skipped) != LASERBOY_OK)
+    {
+        fl_alert("Failed to open CTN file:\n%s", file.c_str());
+        return false;
+    }
+    if(bytes_skipped > 0)
+        fl_message("%ld bytes of unrecognized data were skipped.", bytes_skipped);
+    return apply_imported_frame_set(frame_set, mode, file);
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_wtf_file(const string& file)
+{
+    if(!space.load_wtf_file(file))
+    {
+        fl_alert("Failed to open WTF file:\n%s", file.c_str());
+        return false;
+    }
+    space.TUI_clue = file;
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_bmp_file(const string& source, int action, bool scale_to_screen)
+{
+    switch(action)
+    {
+        case LASERBOY_IMPORT_ACTION_BMP_FRAME_COLOR:
+            if(space.current_frame().color_from_bmp(source) != LASERBOY_OK)
+            {
+                fl_alert("Failed to open BMP color map:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "color map " + file_basename(source);
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_FRAME_SET_COLOR:
+            if(space.color_from_bmp(source) != LASERBOY_OK)
+            {
+                fl_alert("Failed to open BMP color map:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "color map all " + file_basename(source);
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_DIR_COLOR:
+        {
+            const string dir = directory_with_slash(source);
+            space.get_file_list(dir, ".bmp");
+            if(space.working_directory_list.size() == 0)
+            {
+                fl_alert("BMP directory has no .bmp files:\n%s", source.c_str());
+                return false;
+            }
+            space.bmp_file_list = space.working_directory_list;
+            space.bmp_file_index = 0;
+            if(space.number_of_frames() >= space.bmp_file_list.size())
+                for(size_t i = 0; i < space.number_of_frames(); i++)
+                    space.frame_picker(i).color_from_bmp(space.bmp_file_list[i % space.bmp_file_list.size()].path().string());
+            else
+            {
+                const size_t original_frames = space.number_of_frames();
+                for(size_t i = 0; i < original_frames; i++)
+                    space.frame_picker(i).color_from_bmp(space.bmp_file_list[i].path().string());
+                for(size_t i = original_frames; i < space.bmp_file_list.size(); i++)
+                {
+                    space += space.frame_picker(i - original_frames);
+                    space.frame_picker(space.number_of_frames() - 1).color_from_bmp(space.bmp_file_list[i].path().string());
+                }
+            }
+            space.TUI_clue = "bmp directory color map";
+            return true;
+        }
+        case LASERBOY_IMPORT_ACTION_BMP_FRAME_MASK:
+            if(space.current_frame().subtract_bmp(source) != LASERBOY_OK)
+            {
+                fl_alert("Failed to open BMP mask:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "frame - " + file_basename(source);
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_FRAME_SET_MASK:
+            if(space.subtract_bmp(source) != LASERBOY_OK)
+            {
+                fl_alert("Failed to open BMP mask:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "subtract bmp all";
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_DIR_MASK:
+        {
+            const string dir = directory_with_slash(source);
+            space.get_file_list(dir, ".bmp");
+            if(space.working_directory_list.size() == 0)
+            {
+                fl_alert("BMP directory has no .bmp files:\n%s", source.c_str());
+                return false;
+            }
+            space.bmp_file_list = space.working_directory_list;
+            space.bmp_file_index = 0;
+            if(space.number_of_frames() >= space.bmp_file_list.size())
+                for(size_t i = 0; i < space.number_of_frames(); i++)
+                    space.frame_picker(i).subtract_bmp(space.bmp_file_list[i % space.bmp_file_list.size()].path().string());
+            else
+            {
+                const size_t original_frames = space.number_of_frames();
+                for(size_t i = 0; i < original_frames; i++)
+                    space.frame_picker(i).subtract_bmp(space.bmp_file_list[i].path().string());
+                for(size_t i = original_frames; i < space.bmp_file_list.size(); i++)
+                {
+                    space += space.frame_picker(i - original_frames);
+                    space.frame_picker(space.number_of_frames() - 1).subtract_bmp(space.bmp_file_list[i].path().string());
+                }
+            }
+            space.TUI_clue = "bmp directory mask";
+            return true;
+        }
+        case LASERBOY_IMPORT_ACTION_BMP_PALETTE:
+            if(space.copy_palette_from_bmp(source, file_stem(source)) == LASERBOY_FILE_OPEN_FAILED)
+            {
+                fl_alert("Failed to open BMP palette:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "bmp palette";
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_BACKGROUND:
+            if(!space.load_background_bitmap(source, scale_to_screen))
+            {
+                fl_alert("Failed to open BMP background:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "bmp background";
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_DIR_BACKGROUND:
+        {
+            const string dir = directory_with_slash(source);
+            space.get_file_list(dir, ".bmp");
+            if(space.working_directory_list.size() == 0)
+            {
+                fl_alert("BMP directory has no .bmp files:\n%s", source.c_str());
+                return false;
+            }
+            space.bmp_file_list = space.working_directory_list;
+            space.bmp_file_index = 0;
+            if(!space.load_background_bitmap(space.bmp_file_list[0].path().string(), scale_to_screen))
+            {
+                fl_alert("Failed to open first BMP background in:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "bmp directory background";
+            return true;
+        }
+        case LASERBOY_IMPORT_ACTION_BMP_CLEAR_BACKGROUND:
+            space.clear_background_bitmap();
+            space.TUI_clue = "clear bitmap";
+            return true;
+        case LASERBOY_IMPORT_ACTION_BMP_PREVIEW_DIR:
+            if(!display_bmp_directory(source, scale_to_screen))
+            {
+                fl_alert("Failed to preview BMP directory:\n%s", source.c_str());
+                return false;
+            }
+            space.TUI_clue = "bmp directory preview";
+            return true;
+        default:
+            return false;
+    }
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::import_utf8_file(const string& source, bool add_missing_frames, bool leave_extra_frames_unindexed)
+{
+    u32string unicode;
+    if(!get_utf8_index(unicode, source))
+    {
+        fl_alert("Failed to open UTF8 file:\n%s", source.c_str());
+        return false;
+    }
+    if(unicode.size() > space.number_of_frames())
+    {
+        if(!add_missing_frames)
+        {
+            fl_alert("UTF8 has more entries than frames. Enable adding missing frames to import this index.");
+            return false;
+        }
+        LaserBoy_frame frame;
+        size_t i = 0;
+        for(i = 0; i < space.number_of_frames(); i++)
+            space.frame_picker(i).name = as_hex_string(unicode[i]);
+        for(i = space.number_of_frames(); i < unicode.size(); i++)
+        {
+            frame = LaserBoy_real_segment(unicode[i]);
+            frame.name = as_hex_string(unicode[i]);
+            space += frame;
+        }
+    }
+    else if(unicode.size() < space.number_of_frames())
+    {
+        if(!leave_extra_frames_unindexed)
+        {
+            fl_alert("UTF8 has fewer entries than frames. Enable leaving extra frames un-indexed to import this index.");
+            return false;
+        }
+        size_t i = 0;
+        for(i = 0; i < unicode.size(); i++)
+            space.frame_picker(i).name = as_hex_string(unicode[i]);
+        for(i = unicode.size(); i < space.number_of_frames(); i++)
+            space.frame_picker(i).name = "ffffffff";
+    }
+    else
+        for(size_t i = 0; i < unicode.size(); i++)
+            space.frame_picker(i).name = as_hex_string(unicode[i]);
+    space.TUI_clue = "utf8 open";
+    return true;
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::finish_import_refresh(const string& clue)
+{
+    space.TUI_clue = clue;
+    space.clean_screen();
+    space.render_space();
+    display_space();
+    update_gui_regions();
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::execute_export_task(int file_type, int action, const string& destination, bool option_a, bool option_b, bool option_c, bool option_d)
+{
+    if(destination.size() == 0)
+    {
+        fl_alert("Choose a destination before exporting.");
+        space.TUI_clue = "export canceled";
+        update_gui_regions();
+        focus_display();
+        return false;
+    }
+
+    bool exported = false;
+    switch(file_type)
+    {
+        case LASERBOY_EXPORT_TYPE_ILD:
+            exported = export_ild_file(destination, action, option_a, option_b, option_c);
+            break;
+        case LASERBOY_EXPORT_TYPE_DXF:
+            exported = export_dxf_file(destination, action, option_a);
+            break;
+        case LASERBOY_EXPORT_TYPE_WAV:
+            exported = export_wav_file(destination, action);
+            break;
+        case LASERBOY_EXPORT_TYPE_TXT:
+            exported = export_txt_file(destination, action, option_a, option_b, option_c, option_d);
+            break;
+        case LASERBOY_EXPORT_TYPE_CTN:
+            exported = export_ctn_file(destination, action);
+            break;
+        case LASERBOY_EXPORT_TYPE_BMP:
+            exported = export_bmp_file(destination, action);
+            break;
+        case LASERBOY_EXPORT_TYPE_WTF:
+            exported = export_wtf_file(destination);
+            break;
+        case LASERBOY_EXPORT_TYPE_UTF8:
+            exported = export_utf8_file(destination, option_a);
+            break;
+    }
+    if(exported)
+        finish_export_refresh(space.TUI_clue);
+    else
+        update_gui_regions();
+    focus_display();
+    return exported;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_ild_file(const string& destination, int action, bool use_format_45, bool save_2D_as_3D, bool auto_minimize)
+{
+    if(   action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT
+       || action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED
+       || action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_ALL
+      )
+    {
+        fl_alert("ILD effect export needs effect selection. Use the legacy output menu for this action for now.");
+        space.TUI_clue = "export canceled";
+        return false;
+    }
+
+    const bool old_fmt = space.save_ild_fmt_4_5;
+    const bool old_2d  = space.save_2D_as_3D;
+    const bool old_min = space.auto_minimize;
+    space.save_ild_fmt_4_5 = use_format_45;
+    space.save_2D_as_3D    = save_2D_as_3D;
+    space.auto_minimize    = auto_minimize;
+
+    bool ok = false;
+    LaserBoy_ild_header_count counter;
+    if(action == LASERBOY_EXPORT_ACTION_ILD_SPLIT_DIRECTORY)
+    {
+        if(!ensure_new_directory_target(destination))
+            ok = false;
+        else if(   space.number_of_selected_frames() <= 1
+                && !(space.number_of_selected_frames() > 0 && !space.frame_picker(0).is_selected)
+               )
+        {
+            fl_alert("Not enough frames selected for split export.");
+            ok = false;
+        }
+        else
+        {
+#if defined __MINGW_LASERBOY__
+            mkdir(destination.c_str());
+#else
+            mkdir(destination.c_str(), 0777);
+#endif
+            vector<u_int> selected_frames_index;
+            selected_frames_index.push_back(0);
+            for(u_int i = 1; i < space.number_of_frames(); i++)
+                if(space.frame_picker(i).is_selected)
+                    selected_frames_index.push_back(i);
+            const string base_name = file_basename(destination);
+            char number[12];
+            LaserBoy_frame_set out;
+            u_int i = 0;
+            for(i = 0; i + 1 < selected_frames_index.size(); i++)
+            {
+                for(u_int j = selected_frames_index[i]; j < selected_frames_index[i + 1]; j++)
+                    out += space.frame_picker(j);
+                sprintf(number, "%05d", (int)i);
+                out.save_as_ild(directory_with_slash(destination) + base_name + "_" + number + ".ild", counter);
+                out.clear();
+            }
+            if(selected_frames_index[i] == space.number_of_frames() - 1)
+                out = space.frame_picker(selected_frames_index[i]);
+            else
+                for(u_int j = selected_frames_index[i]; j < space.number_of_frames(); j++)
+                    out += space.frame_picker(j);
+            sprintf(number, "%05d", (int)i);
+            ok = out.save_as_ild(directory_with_slash(destination) + base_name + "_" + number + ".ild", counter);
+        }
+    }
+    else
+    {
+        const string file = ensure_extension(destination, ".ild");
+        if(!confirm_file_overwrite(file))
+            ok = false;
+        else if(action == LASERBOY_EXPORT_ACTION_ILD_CURRENT)
+        {
+            LaserBoy_frame_set out;
+            out += space.current_frame();
+            ok = out.save_as_ild(file, counter);
+        }
+        else if(action == LASERBOY_EXPORT_ACTION_ILD_SELECTED)
+        {
+            if(!space.number_of_selected_frames())
+                fl_alert("No frames selected to save.");
+            else
+                ok = space.selected_frames().save_as_ild(file, counter);
+        }
+        else if(action == LASERBOY_EXPORT_ACTION_ILD_ALL)
+            ok = space.save_as_ild(file, counter);
+        else if(action == LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8)
+        {
+            ok = export_utf8_file(LASERBOY_UTF8_SHARE + file_stem(file) + ".utf8", true);
+            if(ok)
+                ok = space.save_as_ild(file, counter);
+        }
+    }
+
+    space.save_ild_fmt_4_5 = old_fmt;
+    space.save_2D_as_3D    = old_2d;
+    space.auto_minimize    = old_min;
+    if(ok)
+        space.TUI_clue = "ild saved";
+    else if(space.TUI_clue != "export canceled")
+        space.TUI_clue = "ild not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_dxf_file(const string& destination, int action, bool true_color_dxf)
+{
+    const bool old_true_color = space.save_true_color_dxf;
+    space.save_true_color_dxf = true_color_dxf;
+    bool ok = false;
+    if(action == LASERBOY_EXPORT_ACTION_DXF_CURRENT)
+    {
+        const string file = ensure_extension(destination, ".dxf");
+        if(confirm_file_overwrite(file))
+            ok = space.current_frame().save_as_dxf(file);
+    }
+    else
+    {
+        if(!ensure_new_directory_target(destination))
+            ok = false;
+        else if(action == LASERBOY_EXPORT_ACTION_DXF_SELECTED_DIRECTORY)
+        {
+            if(!space.number_of_selected_frames())
+                fl_alert("No frames selected to save.");
+            else
+                ok = space.selected_frames().save_as_dxf_directory(directory_with_slash(parent_directory(destination)), file_basename(destination));
+        }
+        else if(action == LASERBOY_EXPORT_ACTION_DXF_ALL_DIRECTORY)
+            ok = space.save_as_dxf_directory(directory_with_slash(parent_directory(destination)), file_basename(destination));
+    }
+    space.save_true_color_dxf = old_true_color;
+    space.TUI_clue = ok ? "dxf saved" : "dxf not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_wav_file(const string& destination, int action)
+{
+    const string file = ensure_extension(destination, ".wav");
+    if(!confirm_file_overwrite(file))
+    {
+        space.TUI_clue = "wave not saved";
+        return false;
+    }
+
+    bool ok = false;
+    switch(action)
+    {
+        case LASERBOY_EXPORT_ACTION_WAV_OPT_CURRENT_ONCE:
+            ok = space.current_frame().save_as_wave(file, true, false, false);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_OPT_CURRENT_TIMED:
+            ok = space.current_frame().save_as_wave(file, true, true, false);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_OPT_ALL_ONCE:
+            ok = space.save_as_wave(file, true, false);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_OPT_ALL_TIMED:
+            ok = space.save_as_wave(file, true, true);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_OPT_CLIP:
+            ok = space.current_frame().save_as_wave(file, true, false, true);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_UNOPT_CURRENT_ONCE:
+            ok = space.current_frame().save_as_wave(file, false, false, false);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_UNOPT_CURRENT_TIMED:
+            ok = space.current_frame().save_as_wave(file, false, true, false);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_UNOPT_ALL_ONCE:
+            ok = space.save_as_wave(file, false, false);
+            break;
+        case LASERBOY_EXPORT_ACTION_WAV_UNOPT_ALL_TIMED:
+            ok = space.save_as_wave(file, false, true);
+            break;
+    }
+    if(ok && space.auto_apply_offsets && space.have_nonzero_offsets())
+        space.apply_wave_offsets_prep(file);
+    space.TUI_clue = ok ? "wave saved" : "wave not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_txt_file(const string& destination, int action, bool unit_coordinates, bool integrated_color, bool color_hex, bool named_palettes)
+{
+    const bool old_unit  = space.save_txt_unit;
+    const bool old_color = space.save_txt_with_color;
+    const bool old_hex   = space.save_txt_color_hex;
+    const bool old_named = space.save_txt_named_palettes;
+    space.save_txt_unit           = unit_coordinates;
+    space.save_txt_with_color     = integrated_color;
+    space.save_txt_color_hex      = color_hex;
+    space.save_txt_named_palettes = named_palettes;
+
+    bool ok = false;
+    if(action == LASERBOY_EXPORT_ACTION_TXT_WAVE_RESCLES)
+    {
+        const string file = ensure_extension(destination, ".wav");
+        ok = space.save_color_rescales(file, LASERBOY_RESCALE_SHARE + file_stem(file));
+    }
+    else if(action == LASERBOY_EXPORT_ACTION_TXT_WTF)
+        ok = export_wtf_file(ensure_extension(destination, ".wtf"));
+    else
+    {
+        const string file = ensure_extension(destination, ".txt");
+        if(confirm_file_overwrite(file))
+        {
+            if(action == LASERBOY_EXPORT_ACTION_TXT_CURRENT)
+                ok = space.current_frame().save_as_txt(file);
+            else if(action == LASERBOY_EXPORT_ACTION_TXT_SELECTED)
+            {
+                if(!space.number_of_selected_frames())
+                    fl_alert("No frames selected to save.");
+                else
+                    ok = space.selected_frames().save_as_txt(file);
+            }
+            else if(action == LASERBOY_EXPORT_ACTION_TXT_ALL)
+                ok = space.save_as_txt(file);
+            else if(action == LASERBOY_EXPORT_ACTION_TXT_CURRENT_PALETTE)
+            {
+                if(space.current_frame().palette_index == LASERBOY_TRUE_COLOR)
+                    ok = space.current_frame().save_as_txt_table(file);
+                else
+                    ok = space.palette_picker(space.current_frame().palette_index).save_as_txt(file);
+            }
+            else if(action == LASERBOY_EXPORT_ACTION_TXT_TARGET_PALETTE)
+                ok = space.palette_picker(space.target_palette_index).save_as_txt(file);
+        }
+    }
+
+    space.save_txt_unit           = old_unit;
+    space.save_txt_with_color     = old_color;
+    space.save_txt_color_hex      = old_hex;
+    space.save_txt_named_palettes = old_named;
+    space.TUI_clue = ok ? "txt saved" : "txt not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_ctn_file(const string& destination, int action)
+{
+    const string file = ensure_extension(destination, ".ctn");
+    if(!confirm_file_overwrite(file))
+    {
+        space.TUI_clue = "ctn not saved";
+        return false;
+    }
+
+    bool ok = false;
+    if(action == LASERBOY_EXPORT_ACTION_CTN_CURRENT)
+        ok = space.current_frame().save_as_ctn(file);
+    else if(action == LASERBOY_EXPORT_ACTION_CTN_SELECTED)
+    {
+        if(!space.number_of_selected_frames())
+            fl_alert("No frames selected to save.");
+        else
+            ok = space.selected_frames().save_as_ctn(file);
+    }
+    else if(action == LASERBOY_EXPORT_ACTION_CTN_ALL)
+        ok = space.save_as_ctn(file);
+    space.TUI_clue = ok ? "ctn saved" : "ctn not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_bmp_file(const string& destination, int action)
+{
+    bool ok = false;
+    if(action == LASERBOY_EXPORT_ACTION_BMP_LIT_CURRENT || action == LASERBOY_EXPORT_ACTION_BMP_VIEW_CURRENT)
+    {
+        const string file = ensure_extension(destination, ".bmp");
+        if(!confirm_file_overwrite(file))
+        {
+            space.TUI_clue = "bitmap not saved";
+            return false;
+        }
+        remove(file.c_str());
+        if(action == LASERBOY_EXPORT_ACTION_BMP_LIT_CURRENT)
+        {
+            space.current_frame().save_as_bmp(file);
+            ok = true;
+        }
+        else
+        {
+            space.save_as_bmp_view(space.frame_index, file);
+            ok = true;
+        }
+    }
+    else
+    {
+        if(!ensure_new_directory_target(destination))
+            ok = false;
+        else if(action == LASERBOY_EXPORT_ACTION_BMP_LIT_SELECTED_DIRECTORY)
+        {
+            if(!space.number_of_selected_frames())
+                fl_alert("No frames selected to save.");
+            else
+            {
+                space.selected_frames().save_as_bmp_directory(directory_with_slash(parent_directory(destination)) + file_basename(destination), file_basename(destination));
+                ok = true;
+            }
+        }
+        else if(action == LASERBOY_EXPORT_ACTION_BMP_LIT_ALL_DIRECTORY)
+        {
+            space.save_as_bmp_directory(directory_with_slash(parent_directory(destination)) + file_basename(destination), file_basename(destination));
+            ok = true;
+        }
+        else if(action == LASERBOY_EXPORT_ACTION_BMP_VIEW_SELECTED_DIRECTORY)
+        {
+            if(!space.number_of_selected_frames())
+                fl_alert("No frames selected to save.");
+            else
+            {
+                space.selected_frames().save_as_bmp_directory_view(directory_with_slash(parent_directory(destination)) + file_basename(destination), file_basename(destination));
+                ok = true;
+            }
+        }
+        else if(action == LASERBOY_EXPORT_ACTION_BMP_VIEW_ALL_DIRECTORY)
+        {
+            space.save_as_bmp_directory_view(directory_with_slash(parent_directory(destination)) + file_basename(destination), file_basename(destination));
+            ok = true;
+        }
+    }
+    space.TUI_clue = ok ? "bitmap saved" : "bitmap not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_wtf_file(const string& destination)
+{
+    const string file = ensure_extension(destination.size() ? destination : string("LaserBoy.wtf"), ".wtf");
+    if(!confirm_file_overwrite(file))
+    {
+        space.TUI_clue = "wtf not saved";
+        return false;
+    }
+    const bool ok = space.save_wtf_file(file);
+    space.TUI_clue = ok ? "wtf saved" : "wtf not saved";
+    return ok;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::export_utf8_file(const string& destination, bool cleanup)
+{
+    const string file = ensure_extension(destination, ".utf8");
+    if(!confirm_file_overwrite(file))
+    {
+        space.TUI_clue = "utf8 not saved";
+        return false;
+    }
+    string report;
+    bool ok = space.save_utf8_frame_index(file, report, cleanup);
+    if(!ok && !cleanup && (space.frame_set_error & (LASERBOY_INVALID_UNICODE | LASERBOY_REDUNDANT_UNICODE)))
+    {
+        if(fl_choice("%s\n\nClean up and save anyway?", "Cancel", "Save Cleaned", NULL, report.c_str()) == 1)
+            ok = space.save_utf8_frame_index(file, report, true);
+    }
+    if(!ok && report.size())
+        fl_alert("%s", report.c_str());
+    space.TUI_clue = ok ? "utf8 saved" : "utf8 not saved";
+    return ok;
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::finish_export_refresh(const string& clue)
+{
+    space.TUI_clue = clue;
+    space.clean_screen();
+    space.render_space();
+    display_space();
+    update_gui_regions();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::update_gui_regions()
+{
+    if(stats_text)
+    {
+        std::ostringstream stats;
+        stats << "Current Frame\n";
+        if(space.number_of_frames())
+        {
+            LaserBoy_frame& frame = space.current_frame();
+            const string display_name = (frame.name == "0000") ? string("frame") : frame.name;
+            stats << "Name: " << display_name << "\n"
+                  << "Index: " << (space.frame_index + 1) << " / " << space.number_of_frames() << "\n"
+                  << "Type: " << (frame.is_2D() ? "2D" : "3D") << "\n"
+                  << "Vertices: " << frame.size() << "\n"
+                  << "Segments: " << frame.number_of_segments() << "\n\n";
+        }
+        else
+            stats << "No frame loaded\n\n";
+        stats << "View: " << (space.view_has_changed ? "modified" : "current");
+        stats_text->copy_label(stats.str().c_str());
+    }
+    if(frame_number_label)
+    {
+        std::ostringstream frame_number;
+        if(space.number_of_frames())
+            frame_number << (space.frame_index + 1) << " / " << space.number_of_frames();
+        else
+            frame_number << "0 / 0";
+        frame_number_label->copy_label(frame_number.str().c_str());
+    }
+    if(palette_text)
+    {
+        std::ostringstream palette;
+        palette << "Palette\n";
+        if(space.number_of_palettes())
+        {
+            int palette_index = space.palette_index;
+            if(space.number_of_frames())
+                palette_index = space.current_frame().palette_index;
+            LaserBoy_palette& active_palette = space.palette_picker(palette_index);
+            const int selected_index = (int)space.selected_color_index;
+            palette << "Name: " << (active_palette.name.size() ? active_palette.name : string("(unnamed)")) << "\n"
+                    << "Index: " << palette_index << "\n"
+                    << "Colors: " << active_palette.number_of_colors() << "\n";
+            if(selected_index >= 0 && selected_index < (int)active_palette.number_of_colors())
+            {
+                const LaserBoy_color& selected = active_palette[selected_index];
+                palette << "Selected: " << selected_index
+                        << "  RGB("
+                        << (int)selected.r << ", "
+                        << (int)selected.g << ", "
+                        << (int)selected.b << ")";
+            }
+            else
+                palette << "Selected: " << selected_index;
+        }
+        else
+            palette << "No palette loaded";
+        palette_text->copy_label(palette.str().c_str());
+    }
+    if(palette_display)
+        palette_display->redraw();
+    if(status_text)
+    {
+        string status;
+        if(space.current_menu_name.size())
+            status = space.current_menu_name;
+        if(space.TUI_clue.size())
+        {
+            if(status.size())
+                status += ": ";
+            status += space.TUI_clue;
+        }
+        if(!status.size())
+            status = "Ready";
+        status_text->copy_label(status.c_str());
+    }
+}
+
+//############################################################################
 void LaserBoy_FLTK_GUI::present_screen()
 {
+    update_gui_regions();
     if(display)
     {
         display->redraw();
@@ -249,6 +2440,18 @@ void LaserBoy_FLTK_GUI::focus_display()
         display->take_focus();
         Fl::focus(display);
     }
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::push_command_key(int key, int state)
+{
+    LaserBoy_GUI_Event command_event;
+    command_event.type = LASERBOY_GUI_KEYDOWN;
+    command_event.key.keysym.sym = key;
+    command_event.key.keysym.mod = state;
+    command_event.key.keysym.unicode = key;
+    event_queue.push_back(command_event);
+    focus_display();
 }
 
 //############################################################################
@@ -3116,6 +5319,8 @@ void LaserBoy_FLTK_GUI::check_for_digit_keys(LaserBoy_GUI_Key key)
     switch(key)
     {
         default:
+            if(key_is_nav_key(key))
+                break;
             space.TUI_clue = "bad key";
             break;
         //------------------------------------------------------------
@@ -17667,8 +19872,7 @@ int LaserBoy_FLTK_GUI::start_menu_loop()
     }
     //--------------------------------------------------------------------
     display_space();
-    space.display_ild_file_stats(counter);
-    wait_4_Esc();
+    update_gui_regions();
     while(running)
     {
         space.clean_screen();

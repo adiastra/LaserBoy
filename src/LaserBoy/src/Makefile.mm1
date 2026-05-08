@@ -1,0 +1,83 @@
+# ────────────────────────────────────────────────────────────
+#  LaserBoy-FLTK • macOS-Apple-Silicon Makefile
+#  Produces:
+#      • objects  →  ../build/*.oma
+#      • binary   →  ../LaserBoy_mm1
+#
+#  Prerequisites on Apple-Silicon macOS:
+#
+#   xcode-select --install
+#   brew update
+#   brew install boost fltk jpeg libpng zlib
+# ────────────────────────────────────────────────────────────
+
+BIN         := ../LaserBoy_mm1
+
+CXX         ?= clang++
+STRIP       ?= strip -u -r
+
+BREW_PREFIX := $(shell brew --prefix)
+INC_PATHS   := -I$(BREW_PREFIX)/include
+LIB_PATHS   := -L$(BREW_PREFIX)/lib
+
+CXXFLAGS    = -arch arm64                     \
+              -std=c++17                      \
+              -stdlib=libc++                  \
+              -O3                             \
+              -Wall -Wextra                   \
+              -frounding-math                 \
+              -Wno-unused-parameter           \
+              -Wno-implicit-fallthrough       \
+              -Wno-missing-field-initializers \
+              -Wno-misleading-indentation     \
+              -Wno-mismatched-new-delete      \
+              -D__BOOST_PROCESS_V1__          \
+              $(INC_PATHS)
+
+BOOST_LIBS  = -lboost_system                  \
+              -lboost_filesystem              \
+              -lboost_thread                  \
+              -lboost_chrono
+
+FLTK_LIBS   = -lfltk                          \
+              -lfltk_images
+
+IMG_LIBS    = -ljpeg                          \
+              -lpng                           \
+              -lz
+
+SYS_FW      = -framework Cocoa                \
+              -framework CoreGraphics         \
+              -framework CoreFoundation       \
+              -framework ApplicationServices
+
+LDFLAGS     = $(LIB_PATHS)                    \
+              -Wl,-search_paths_first         \
+              -Wl,-dead_strip                 \
+              $(BOOST_LIBS)                   \
+              $(FLTK_LIBS)                    \
+              $(IMG_LIBS)                     \
+              $(SYS_FW)
+
+SRC         := $(wildcard LaserBoy*.cpp)
+OBJ         := $(patsubst %.cpp,../build/%.oma,$(SRC))
+DEP         := $(OBJ:.oma=.dma)
+
+all: $(BIN) strip
+
+$(BIN): $(OBJ)
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS)
+
+../build/%.oma: %.cpp
+	$(CXX) $(CXXFLAGS) -MD -MF ../build/$*.dma -c $< -o $@
+
+-include $(DEP)
+
+strip:
+	@if [ -f $(BIN) ]; then $(STRIP) $(BIN); fi
+
+clean:
+	rm -f ../build/*.oma ../build/*.dma $(BIN)
+
+.PHONY: all clean strip
+

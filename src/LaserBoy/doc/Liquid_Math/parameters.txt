@@ -1,0 +1,517 @@
+###############################################
+#
+#   ASCII format version: LaserBoy-txt-08-30-2022
+#
+###############################################
+
+#----------------------------------------------
+# Complete list of parameters and their default values.
+#----------------------------------------------
+
+#----------------------------------------------
+#    valid numeric constants that may be
+#    used in place of any real number
+#
+#    quarter_pi
+#   -quarter_pi
+#    half_pi
+#   -half_pi
+#    three_quarters_pi
+#   -three_quarters_pi
+#    pi
+#   -pi
+#    pi_and_a_half
+#   -pi_and_a_half
+#    two_pi
+#   -two_pi
+#    e
+#   -e
+#    one_third
+#   -one_third
+#    two_thirds
+#   -two_thirds
+#
+#    false
+#    off
+#    no
+#    true
+#    on
+#    yes
+#
+#----------------------------------------------
+
+math  normalize_frames_with_origin   no
+math  normalize_frames_individually  no
+math  include_unit_reference         no
+
+math  save_true_color_dxf  no
+math  overwrite_txt_files  no
+math  bmp_render_vertices  no
+math  bmp_render_vectors   yes
+
+math  save_txt_with_color  {value of running app. Can be set yes or no}
+math  save_txt_color_hex   {value of running app. Can be set yes or no}
+
+math  disable_bmp  no
+math  disable_dxf  no
+math  disable_txt  no
+
+math  x_of_pi      no
+math  y_of_pi      no
+math  z_of_pi      no
+math  radii_of_pi  no
+
+math  intra_interval_interpolation no
+# {assumed to be no until an iii final parameter is defined. Can be set to no}
+
+math  moving_fulcrum               no
+# {assumed to be no until a   fulcrum_ parameter is defined. Can be set to no}
+
+math  to_space              0.9
+math  hues_span_factor      1.0
+math  hues_index_multiple   1
+math  hues_shift            0
+math  bmp_line_width        1
+
+math  phase_cycle           360.0
+math  rotation_cycle        1.0
+math  interval_cycle        1.0
+
+math  frames                3
+math  still_frames          1
+math  first_frames          1
+math  last_frames           1
+
+math  start                 0.0
+math _start                 0.0
+
+math  duration              1.0
+math _duration              1.0
+
+math  iterations            100.0
+math _iterations            100.0
+
+math  rhodonea_numerator    1.0
+math _rhodonea_numerator    1.0
+
+math  rhodonea_denominator  1.0
+math _rhodonea_denominator  1.0
+
+math  fixed_radius          1.0
+math _fixed_radius          1.0
+
+math  roller_radius         1.0
+math _roller_radius         1.0
+
+math  roller_offset         1.0
+math _roller_offset         1.0
+
+math  displacement     0.0  0.0  0.0
+math _displacement     0.0  0.0  0.0
+
+math  move_acceleration     0.0
+math _move_acceleration     0.0
+
+math  factor           1.0  1.0  1.0
+math  factor_          1.0  1.0  1.0
+math _factor           1.0  1.0  1.0
+math _factor_          1.0  1.0  1.0
+LBO
+math  scale_acceleration    0.0
+math _scale_acceleration    0.0
+
+math  fulcrum          0.0  0.0  0.0
+math  fulcrum_         0.0  0.0  0.0
+math _fulcrum          0.0  0.0  0.0
+math _fulcrum_         0.0  0.0  0.0
+
+math  fulcrum_acceleration  0.0
+math _fulcrum_acceleration  0.0
+
+math  rotation         0.0  0.0  0.0
+math _rotation         0.0  0.0  0.0
+
+math  rotation_acceleration 0.0
+math _rotation_acceleration 0.0
+
+math  P0              -1.0 -1.0 -1.0
+math _P0              -1.0 -1.0 -1.0
+math  P1               1.0  1.0  1.0
+math _P1               1.0  1.0  1.0
+
+
+#----------------------------------------------
+#
+# the LBO function parametercan be set to:
+#
+# math  LBO1  function        sin
+# math  LBO1  function        triangle
+# math  LBO1  function        ramp
+# math  LBO1  function        square
+# math  LBO1  function        pulse
+# math  LBO1  function        trapezoid
+# math  LBO1  function        circle
+#
+#----------------------------------------------
+
+
+math  LBO1  function        sin
+math  LBO1  amplitude       1.0
+math  LBO1  frequency       1.0
+math  LBO1  phase           0.0
+math  LBO1  duty_cycle      0.5
+math  LBO1  damping         0.0
+math  LBO1  offset          0.0
+math  LBO1  sin             1.0
+math  LBO1  triangle        0.0
+math  LBO1  ramp            0.0
+math  LBO1  square          0.0
+math  LBO1  pulse           0.0
+math  LBO1  trapezoid       0.0
+math  LBO1  circle          0.0
+
+math  LBO1_ function        sin
+math  LBO1_ amplitude       1.0
+math  LBO1_ frequency       1.0
+math  LBO1_ phase           0.0
+math  LBO1_ duty_cycle      0.5
+math  LBO1_ damping         0.0
+math  LBO1_ offset          0.0
+math  LBO1_ sin             1.0
+math  LBO1_ triangle        0.0
+math  LBO1_ ramp            0.0
+math  LBO1_ square          0.0
+math  LBO1_ pulse           0.0
+math  LBO1_ trapezoid       0.0
+math  LBO1_ circle          0.0
+
+math _LBO1  function        sin
+math _LBO1  amplitude       1.0
+math _LBO1  frequency       1.0
+math _LBO1  phase           0.0
+math _LBO1  duty_cycle      0.5
+math _LBO1  damping         0.0
+math _LBO1  offset          0.0
+math _LBO1  sin             1.0
+math _LBO1  triangle        0.0
+math _LBO1  ramp            0.0
+math _LBO1  square          0.0
+math _LBO1  pulse           0.0
+math _LBO1  trapezoid       0.0
+math _LBO1  circle          0.0
+
+math _LBO1_ function        sin
+math _LBO1_ amplitude       1.0
+math _LBO1_ frequency       1.0
+math _LBO1_ phase           0.0
+math _LBO1_ duty_cycle      0.5
+math _LBO1_ damping         0.0
+math _LBO1_ offset          0.0
+math _LBO1_ sin             1.0
+math _LBO1_ triangle        0.0
+math _LBO1_ ramp            0.0
+math _LBO1_ square          0.0
+math _LBO1_ pulse           0.0
+math _LBO1_ trapezoid       0.0
+math _LBO1_ circle          0.0
+
+math  LBO2  function        sin
+math  LBO2  amplitude       1.0
+math  LBO2  frequency       1.0
+math  LBO2  phase           0.0
+math  LBO2  duty_cycle      0.5
+math  LBO2  damping         0.0
+math  LBO2  offset          0.0
+math  LBO2  sin             1.0
+math  LBO2  triangle        0.0
+math  LBO2  ramp            0.0
+math  LBO2  square          0.0
+math  LBO2  pulse           0.0
+math  LBO2  trapezoid       0.0
+math  LBO2  circle          0.0
+
+math  LBO2_ function        sin
+math  LBO2_ amplitude       1.0
+math  LBO2_ frequency       1.0
+math  LBO2_ phase           0.0
+math  LBO2_ duty_cycle      0.5
+math  LBO2_ damping         0.0
+math  LBO2_ offset          0.0
+math  LBO2_ sin             1.0
+math  LBO2_ triangle        0.0
+math  LBO2_ ramp            0.0
+math  LBO2_ square          0.0
+math  LBO2_ pulse           0.0
+math  LBO2_ trapezoid       0.0
+math  LBO2_ circle          0.0
+
+math _LBO2  function        sin
+math _LBO2  amplitude       1.0
+math _LBO2  frequency       1.0
+math _LBO2  phase           0.0
+math _LBO2  duty_cycle      0.5
+math _LBO2  damping         0.0
+math _LBO2  offset          0.0
+math _LBO2  sin             1.0
+math _LBO2  triangle        0.0
+math _LBO2  ramp            0.0
+math _LBO2  square          0.0
+math _LBO2  pulse           0.0
+math _LBO2  trapezoid       0.0
+math _LBO2  circle          0.0
+
+math _LBO2_ function        sin
+math _LBO2_ amplitude       1.0
+math _LBO2_ frequency       1.0
+math _LBO2_ phase           0.0
+math _LBO2_ duty_cycle      0.5
+math _LBO2_ damping         0.0
+math _LBO2_ offset          0.0
+math _LBO2_ sin             1.0
+math _LBO2_ triangle        0.0
+math _LBO2_ ramp            0.0
+math _LBO2_ square          0.0
+math _LBO2_ pulse           0.0
+math _LBO2_ trapezoid       0.0
+math _LBO2_ circle          0.0
+
+math  LBO3  function        sin
+math  LBO3  amplitude       1.0
+math  LBO3  frequency       1.0
+math  LBO3  phase           0.0
+math  LBO3  duty_cycle      0.5
+math  LBO3  damping         0.0
+math  LBO3  offset          0.0
+math  LBO3  sin             1.0
+math  LBO3  triangle        0.0
+math  LBO3  ramp            0.0
+math  LBO3  square          0.0
+math  LBO3  pulse           0.0
+math  LBO3  trapezoid       0.0
+math  LBO3  circle          0.0
+
+math  LBO3_ function        sin
+math  LBO3_ amplitude       1.0
+math  LBO3_ frequency       1.0
+math  LBO3_ phase           0.0
+math  LBO3_ duty_cycle      0.5
+math  LBO3_ damping         0.0
+math  LBO3_ offset          0.0
+math  LBO3_ sin             1.0
+math  LBO3_ triangle        0.0
+math  LBO3_ ramp            0.0
+math  LBO3_ square          0.0
+math  LBO3_ pulse           0.0
+math  LBO3_ trapezoid       0.0
+math  LBO3_ circle          0.0
+
+math _LBO3  function        sin
+math _LBO3  amplitude       1.0
+math _LBO3  frequency       1.0
+math _LBO3  phase           0.0
+math _LBO3  duty_cycle      0.5
+math _LBO3  damping         0.0
+math _LBO3  offset          0.0
+math _LBO3  sin             1.0
+math _LBO3  triangle        0.0
+math _LBO3  ramp            0.0
+math _LBO3  square          0.0
+math _LBO3  pulse           0.0
+math _LBO3  trapezoid       0.0
+math _LBO3  circle          0.0
+
+math _LBO3_ function        sin
+math _LBO3_ amplitude       1.0
+math _LBO3_ frequency       1.0
+math _LBO3_ phase           0.0
+math _LBO3_ duty_cycle      0.5
+math _LBO3_ damping         0.0
+math _LBO3_ offset          0.0
+math _LBO3_ sin             1.0
+math _LBO3_ triangle        0.0
+math _LBO3_ ramp            0.0
+math _LBO3_ square          0.0
+math _LBO3_ pulse           0.0
+math _LBO3_ trapezoid       0.0
+math _LBO3_ circle          0.0
+
+math  LBO4  function        sin
+math  LBO4  amplitude       1.0
+math  LBO4  frequency       1.0
+math  LBO4  phase           0.0
+math  LBO4  duty_cycle      0.5
+math  LBO4  damping         0.0
+math  LBO4  offset          0.0
+math  LBO4  sin             1.0
+math  LBO4  triangle        0.0
+math  LBO4  ramp            0.0
+math  LBO4  square          0.0
+math  LBO4  pulse           0.0
+math  LBO4  trapezoid       0.0
+math  LBO4  circle          0.0
+z
+math  LBO4_ function        sin
+math  LBO4_ amplitude       1.0
+math  LBO4_ frequency       1.0
+math  LBO4_ phase           0.0
+math  LBO4_ duty_cycle      0.5
+math  LBO4_ damping         0.0
+math  LBO4_ offset          0.0
+math  LBO4_ sin             1.0
+math  LBO4_ triangle        0.0
+math  LBO4_ ramp            0.0
+math  LBO4_ square          0.0
+math  LBO4_ pulse           0.0
+math  LBO4_ trapezoid       0.0
+math  LBO4_ circle          0.0
+
+math _LBO4  function        sin
+math _LBO4  amplitude       1.0
+math _LBO4  frequency       1.0
+math _LBO4  phase           0.0
+math _LBO4  duty_cycle      0.5
+math _LBO4  damping         0.0
+math _LBO4  offset          0.0
+math _LBO4  sin             1.0
+math _LBO4  triangle        0.0
+math _LBO4  ramp            0.0
+math _LBO4  square          0.0
+math _LBO4  pulse           0.0
+math _LBO4  trapezoid       0.0
+math _LBO4  circle          0.0
+
+math _LBO4_ function        sin
+math _LBO4_ amplitude       1.0
+math _LBO4_ frequency       1.0
+math _LBO4_ phase           0.0
+math _LBO4_ duty_cycle      0.5
+math _LBO4_ damping         0.0
+math _LBO4_ offset          0.0
+math _LBO4_ sin             1.0
+math _LBO4_ triangle        0.0
+math _LBO4_ ramp            0.0
+math _LBO4_ square          0.0
+math _LBO4_ pulse           0.0
+math _LBO4_ trapezoid       0.0
+math _LBO4_ circle          0.0
+
+math  LBO5  function        sin
+math  LBO5  amplitude       1.0
+math  LBO5  frequency       1.0
+math  LBO5  phase           0.0
+math  LBO5  duty_cycle      0.5
+math  LBO5  damping         0.0
+math  LBO5  offset          0.0
+math  LBO5  sin             1.0
+math  LBO5  triangle        0.0
+math  LBO5  ramp            0.0
+math  LBO5  square          0.0
+math  LBO5  pulse           0.0
+math  LBO5  trapezoid       0.0
+math  LBO5  circle          0.0
+
+math  LBO5_ function        sin
+math  LBO5_ amplitude       1.0
+math  LBO5_ frequency       1.0
+math  LBO5_ phase           0.0
+math  LBO5_ duty_cycle      0.5
+math  LBO5_ damping         0.0
+math  LBO5_ offset          0.0
+math  LBO5_ sin             1.0
+math  LBO5_ triangle        0.0
+math  LBO5_ ramp            0.0
+math  LBO5_ square          0.0
+math  LBO5_ pulse           0.0
+math  LBO5_ trapezoid       0.0
+math  LBO5_ circle          0.0
+
+math _LBO5  function        sin
+math _LBO5  amplitude       1.0
+math _LBO5  frequency       1.0
+math _LBO5  phase           0.0
+math _LBO5  duty_cycle      0.5
+math _LBO5  damping         0.0
+math _LBO5  offset          0.0
+math _LBO5  sin             1.0
+math _LBO5  triangle        0.0
+math _LBO5  ramp            0.0
+math _LBO5  square          0.0
+math _LBO5  pulse           0.0
+math _LBO5  trapezoid       0.0
+math _LBO5  circle          0.0
+
+math _LBO5_ function        sin
+math _LBO5_ amplitude       1.0
+math _LBO5_ frequency       1.0
+math _LBO5_ phase           0.0
+math _LBO5_ duty_cycle      0.5
+math _LBO5_ damping         0.0
+math _LBO5_ offset          0.0
+math _LBO5_ sin             1.0
+math _LBO5_ triangle        0.0
+math _LBO5_ ramp            0.0
+math _LBO5_ square          0.0
+math _LBO5_ pulse           0.0
+math _LBO5_ trapezoid       0.0
+math _LBO5_ circle          0.0
+
+math  LBO6  function        sin
+math  LBO6  amplitude       1.0
+math  LBO6  frequency       1.0
+math  LBO6  phase           0.0
+math  LBO6  duty_cycle      0.5
+math  LBO6  damping         0.0
+math  LBO6  offset          0.0
+math  LBO6  sin             1.0
+math  LBO6  triangle        0.0
+math  LBO6  ramp            0.0
+math  LBO6  square          0.0
+math  LBO6  pulse           0.0
+math  LBO6  trapezoid       0.0
+math  LBO6  circle          0.0
+
+math  LBO6_ function        sin
+math  LBO6_ amplitude       1.0
+math  LBO6_ frequency       1.0
+math  LBO6_ phase           0.0
+math  LBO6_ duty_cycle      0.5
+math  LBO6_ damping         0.0
+math  LBO6_ offset          0.0
+math  LBO6_ sin             1.0
+math  LBO6_ triangle        0.0
+math  LBO6_ ramp            0.0
+math  LBO6_ square          0.0
+math  LBO6_ pulse           0.0
+math  LBO6_ trapezoid       0.0
+math  LBO6_ circle          0.0
+
+math _LBO6  function        sin
+math _LBO6  amplitude       1.0
+math _LBO6  frequency       1.0
+math _LBO6  phase           0.0
+math _LBO6  duty_cycle      0.5
+math _LBO6  damping         0.0
+math _LBO6  offset          0.0
+math _LBO6  sin             1.0
+math _LBO6  triangle        0.0
+math _LBO6  ramp            0.0
+math _LBO6  square          0.0
+math _LBO6  pulse           0.0
+math _LBO6  trapezoid       0.0
+math _LBO6  circle          0.0
+
+math _LBO6_ function        sin
+math _LBO6_ amplitude       1.0
+math _LBO6_ frequency       1.0
+math _LBO6_ phase           0.0
+math _LBO6_ duty_cycle      0.5
+math _LBO6_ damping         0.0
+math _LBO6_ offset          0.0
+math _LBO6_ sin             1.0
+math _LBO6_ triangle        0.0
+math _LBO6_ ramp            0.0
+math _LBO6_ square          0.0
+math _LBO6_ pulse           0.0
+math _LBO6_ trapezoid       0.0
+math _LBO6_ circle          0.0
+
