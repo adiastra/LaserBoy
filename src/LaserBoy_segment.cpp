@@ -27,7 +27,7 @@
 // along with LaserBoy. If not, see <http://www.gnu.org/licenses/>.
 //
 //############################################################################
-#include "LaserBoy_SDL_GUI.hpp"
+#include "LaserBoy_FLTK_GUI.hpp"
 
 //############################################################################
 LaserBoy_segment::LaserBoy_segment(LaserBoy_3D_short from,
@@ -2605,7 +2605,7 @@ LaserBoy_segment& LaserBoy_segment::normalize(double s)
             *this = rs;
             scale_around_origin(s);
         }
-        else    
+        else
         {
             LaserBoy_real_segment rs(palette_index, false);
             rs = to_real_segment(true);
@@ -2631,7 +2631,7 @@ LaserBoy_segment& LaserBoy_segment::normalize_vectors(double s)
             *this = rs;
             scale_around_origin(s);
         }
-        else    
+        else
         {
             LaserBoy_real_segment rs(palette_index, false);
             rs = to_real_segment(false);

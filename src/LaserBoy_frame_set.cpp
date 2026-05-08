@@ -27,7 +27,7 @@
 // along with LaserBoy. If not, see <http://www.gnu.org/licenses/>.
 //
 //############################################################################
-#include "LaserBoy_SDL_GUI.hpp"
+#include "LaserBoy_FLTK_GUI.hpp"
 
 //############################################################################
 LaserBoy_frame_set& LaserBoy_frame_set::operator += (const LaserBoy_frame& frame)
@@ -1884,7 +1884,8 @@ bool LaserBoy_frame_set::from_nothing()
     p_space->palette_index = LASERBOY_ILDA_DEFAULT;
     num_2D_frames = 0;
     num_3D_frames = 0;
-    p_space->p_GUI->display_state("NO DATA");
+    if(this == (LaserBoy_frame_set*)p_space)
+        p_space->p_GUI->display_state("NO DATA");
     return true;
 }
 
@@ -2369,6 +2370,7 @@ LaserBoy_Error_Code LaserBoy_frame_set::from_ifstream_ild(std::ifstream&        
     LaserBoy_frame       frame;
     LaserBoy_palette     palette;
     int                  file_sections = 0;
+    bool                 display_progress = (this == (LaserBoy_frame_set*)p_space);
     //------------------------------------------------------------------------
     clear();
     frame_set_error = LASERBOY_OK;
@@ -2377,7 +2379,8 @@ LaserBoy_Error_Code LaserBoy_frame_set::from_ifstream_ild(std::ifstream&        
     //------------------------------------------------------------------------
     p_space->palette_index = LASERBOY_ILDA_DEFAULT;
     //------------------------------------------------------------------------
-    p_space->p_GUI->display_state("opening ild file sections");
+    if(display_progress)
+        p_space->p_GUI->display_state("opening ild file sections");
     while(header.from_ifstream_ild(in, bytes_skipped))
     {
         if(header.quantity)
@@ -2394,7 +2397,8 @@ LaserBoy_Error_Code LaserBoy_frame_set::from_ifstream_ild(std::ifstream&        
                         frame.palette_index = p_space->palette_index;
                         frame.set_rgb_from_palette();
                         push_back(frame);
-                        p_space->p_GUI->display_progress(++file_sections);
+                        if(display_progress)
+                            p_space->p_GUI->display_progress(++file_sections);
                     }
                     else
                         frame_set_error |= LASERBOY_EOF;
@@ -2427,7 +2431,8 @@ LaserBoy_Error_Code LaserBoy_frame_set::from_ifstream_ild(std::ifstream&        
                             p_space->push_back_palette(palette);
                             p_space->palette_index = p_space->number_of_palettes() - 1;
                         }
-                        p_space->p_GUI->display_progress(++file_sections);
+                        if(display_progress)
+                            p_space->p_GUI->display_progress(++file_sections);
                         counter._2++;
                     }
                     else
@@ -2441,7 +2446,8 @@ LaserBoy_Error_Code LaserBoy_frame_set::from_ifstream_ild(std::ifstream&        
                         frame.is_2D() ? num_2D_frames++ : num_3D_frames++;
                         p_space->palette_index = LASERBOY_TRUE_COLOR;
                         push_back(frame);
-                        p_space->p_GUI->display_progress(++file_sections);
+                        if(display_progress)
+                            p_space->p_GUI->display_progress(++file_sections);
                         frame_set_error |= frame.segment_error;
                         counter._3++;
                     }
@@ -2457,7 +2463,8 @@ LaserBoy_Error_Code LaserBoy_frame_set::from_ifstream_ild(std::ifstream&        
                         frame.is_2D() ? num_2D_frames++ : num_3D_frames++;
                         frame.palette_index = LASERBOY_TRUE_COLOR;
                         push_back(frame);
-                        p_space->p_GUI->display_progress(++file_sections);
+                        if(display_progress)
+                            p_space->p_GUI->display_progress(++file_sections);
                     }
                     else
                         frame_set_error |= LASERBOY_EOF;

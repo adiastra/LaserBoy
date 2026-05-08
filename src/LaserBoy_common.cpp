@@ -850,12 +850,11 @@ int LaserBoy_version_check(string& version_string, string install_GUID, u_int ap
     using boost::asio::ip::tcp;
     try
     {
-        boost::asio::io_service io_service;
-        tcp::resolver resolver(io_service);
-        tcp::resolver::query query("laserboy.org", "http");
-        tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-        tcp::socket socket(io_service);
-        boost::asio::connect(socket, endpoint_iterator);
+        boost::asio::io_context io_context;
+        tcp::resolver resolver(io_context);
+        auto endpoints = resolver.resolve("laserboy.org", "http");
+        tcp::socket socket(io_context);
+        boost::asio::connect(socket, endpoints);
         boost::asio::streambuf request;
         std::ostream request_stream(&request);
         request_stream << "POST /cgi-bin/laserboy_version?"

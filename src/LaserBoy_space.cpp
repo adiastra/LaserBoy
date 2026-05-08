@@ -27,7 +27,7 @@
 // along with LaserBoy. If not, see <http://www.gnu.org/licenses/>.
 //
 //############################################################################
-#include "LaserBoy_SDL_GUI.hpp"
+#include "LaserBoy_FLTK_GUI.hpp"
 
 //############################################################################
 bool LaserBoy_settings::load_wtf_file(string wtf_file)
@@ -1319,7 +1319,7 @@ bool LaserBoy_settings::save_wtf_file(string wtf_file)
 }
 
 //############################################################################
-LaserBoy_space::LaserBoy_space(LaserBoy_SDL_GUI* gui)
+LaserBoy_space::LaserBoy_space(LaserBoy_FLTK_GUI* gui)
             : LaserBoy_settings      (   )
             , LaserBoy_frame_set     (   )
             , LaserBoy_palette_set   (   )

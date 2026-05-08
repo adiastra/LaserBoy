@@ -27,7 +27,7 @@
 // along with LaserBoy. If not, see <http://www.gnu.org/licenses/>.
 //
 //############################################################################
-#include "LaserBoy_SDL_GUI.hpp"
+#include "LaserBoy_FLTK_GUI.hpp"
 
 //############################################################################
 LaserBoy_frame::LaserBoy_frame(LaserBoy_vertex(*F)(int, int),

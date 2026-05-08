@@ -27,7 +27,9 @@
 // along with LaserBoy. If not, see <http://www.gnu.org/licenses/>.
 //
 //############################################################################
-#include "LaserBoy_SDL_GUI.hpp"
+#include "LaserBoy_FLTK_GUI.hpp"
+
+#include <cstdlib>
 
 //############################################################################
 int main(int argc, char *argv[])
@@ -41,7 +43,7 @@ int main(int argc, char *argv[])
     }
     if(xres < 0) return -1;
     if(yres < 0) return -1;
-    LaserBoy_SDL_GUI  LaserBoy_App(xres, yres);
+    LaserBoy_FLTK_GUI  LaserBoy_App(xres, yres);
     return LaserBoy_App.start_menu_loop();
 }
 

@@ -35,7 +35,7 @@
 #include "LaserBoy_palette_set.hpp"
 
 //############################################################################
-class LaserBoy_SDL_GUI;
+class LaserBoy_FLTK_GUI;
 
 //############################################################################
 class LaserBoy_settings
@@ -323,7 +323,7 @@ public:
 class LaserBoy_space : public LaserBoy_settings, public LaserBoy_frame_set, public LaserBoy_palette_set
 {
 public:
-    LaserBoy_space(LaserBoy_SDL_GUI* gui);
+    LaserBoy_space(LaserBoy_FLTK_GUI* gui);
     //------------------------------------------------------------------------
    ~LaserBoy_space()
     {
@@ -666,7 +666,7 @@ public:
     //------------------------------------------------------------------------
 //    void   tell(LaserBoy_wave_header header, string label) const;
     //------------------------------------------------------------------------
-                           LaserBoy_SDL_GUI *p_GUI;
+                           LaserBoy_FLTK_GUI *p_GUI;
                        struct  LaserBoy_bmp  bmp              , // a memory clone of screen
                                              background       , // empty for clearing screen
                                              background_bmp_2D, // possibly a bitmap picture

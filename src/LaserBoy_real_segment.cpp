@@ -27,7 +27,7 @@
 // along with LaserBoy. If not, see <http://www.gnu.org/licenses/>.
 //
 //############################################################################
-#include "LaserBoy_SDL_GUI.hpp"
+#include "LaserBoy_FLTK_GUI.hpp"
 
 //############################################################################
 LaserBoy_real_segment::LaserBoy_real_segment(LaserBoy_real_vertex from,

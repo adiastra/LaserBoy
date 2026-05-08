@@ -3,12 +3,14 @@
 # laserboy.org
 
 RM       = rm -f
+STRIP    = strip
 CPP      = g++
+FLTK_CONFIG ?= fltk-config
 INC      = -I/opt/homebrew/include
 LIB      = -L/opt/homebrew/lib
-LIBS     = -lSDL2 -lSDL2Main -lboost_filesystem -lboost_system -lpthread -framework Cocoa
+LIBS     = $(shell $(FLTK_CONFIG) --ldflags) -lboost_filesystem
 
-CPPFLAGS = -D__WITH_SDL2__ \
+CPPFLAGS = -D__WITH_FLTK__ \
            -std=c++17 \
            -O3 \
            -Wall \
@@ -22,6 +24,7 @@ CPPFLAGS = -D__WITH_SDL2__ \
            -Wno-unused-command-line-argument \
            -Wno-unsupported-floating-point-opt \
            -static \
+           $(shell $(FLTK_CONFIG) --cxxflags) \
            $(INC) \
            $(LIB) \
            $(LIBS)
@@ -47,7 +50,7 @@ HEADERS   = LaserBoy_includes.hpp \
             LaserBoy_palette.hpp \
             LaserBoy_palette_set.hpp \
             LaserBoy_wave.hpp \
-            LaserBoy_SDL_GUI.hpp \
+            LaserBoy_FLTK_GUI.hpp \
             LaserBoy_space.hpp \
             LaserBoy_TUI.hpp
 
@@ -68,7 +71,7 @@ OBJ      = ../build/LaserBoy.om1 \
            ../build/LaserBoy_wave.om1 \
            ../build/LaserBoy_space.om1 \
            ../build/LaserBoy_TUI.om1 \
-           ../build/LaserBoy_SDL_GUI.om1 \
+           ../build/LaserBoy_FLTK_GUI.om1 \
            ../build/LaserBoy_bmp.om1 \
            ../build/LaserBoy_font.om1
 
@@ -80,7 +83,7 @@ strip:
 	$(STRIP) $(BIN)
 
 clean:
-	$(RM) $(OBJ) $(BIN)
+	$(RM) ../build/*.om1 $(BIN)
 
 $(BIN): $(OBJ)
 	$(CPP) $(OBJ) -o $(BIN) $(LIB) $(LIBS)
@@ -88,8 +91,8 @@ $(BIN): $(OBJ)
 ../build/LaserBoy.om1: LaserBoy.cpp $(HEADERS)
 	$(CPP) -c LaserBoy.cpp -o ../build/LaserBoy.om1 $(CPPFLAGS)
 
-../build/LaserBoy_SDL_GUI.om1: LaserBoy_SDL_GUI.cpp $(HEADERS)
-	$(CPP) -c LaserBoy_SDL_GUI.cpp -o ../build/LaserBoy_SDL_GUI.om1 $(CPPFLAGS)
+../build/LaserBoy_FLTK_GUI.om1: LaserBoy_FLTK_GUI.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_FLTK_GUI.cpp -o ../build/LaserBoy_FLTK_GUI.om1 $(CPPFLAGS)
 
 ../build/LaserBoy_TUI.om1: LaserBoy_TUI.cpp $(HEADERS)
 	$(CPP) -c LaserBoy_TUI.cpp -o ../build/LaserBoy_TUI.om1 $(CPPFLAGS)

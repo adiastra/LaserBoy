@@ -36,7 +36,7 @@
 class LaserBoy_TUI : public LaserBoy_space
 {
 public:
-    LaserBoy_TUI(LaserBoy_SDL_GUI* gui)
+    LaserBoy_TUI(LaserBoy_FLTK_GUI* gui)
                 : LaserBoy_space            (gui),
                   TUI_palette_index         (  0),
                   current_menu_name_bc      (  0),
