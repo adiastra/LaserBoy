@@ -1,0 +1,667 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+#math  phase_cycle        360.0
+#math  rotation_cycle     1.0
+#math  interval_cycle     1.0
+
+math  frames                        100
+math  still_frames                  1
+math  first_frames                  1
+math  last_frames                   1
+
+math  normalize_frames_individually no
+math  normalize_frames_with_origin  no
+math  include_unit_reference        no
+
+math  save_true_color_dxf           no
+
+math  save_txt_with_color           yes
+math  save_txt_color_hex            yes
+math  overwrite_txt_files           yes
+
+math  bmp_line_width                4
+math  bmp_render_vectors            no
+math  bmp_render_vertices           yes
+math  disable_bmp                   yes
+
+math  x_of_pi                       yes
+math  y_of_pi                       yes
+math  z_of_pi                       no
+math  radii_of_pi                   no
+
+
+math  P0                       0.0 -0.5 -1.0
+math  P1                       4.0  0.5 -1.0
+math  rectangular_grid_x_units      0.5
+math  rectangular_grid_y_units      0.25
+math  rectangular_grid_xy
+math  color_rgb      0  0  128
+
+
+math  P0           0.0  0.0 -1.0
+math  P1           4.0  0.0 -1.0
+math  line
+math  color_rgb    255  0  0
+math composite
+math store reticle
+
+math  start             0.0
+math  duration          2.0
+math  iterations        1000
+
+math _start             0.0
+math _duration          2.0
+math _iterations        1000
+
+math  LBO1 function     sin
+math  LBO1 amplitude    half_pi
+math  LBO1 frequency    1.0
+math  LBO1 phase        0.0
+math  LBO1 duty_cycle   0.5
+math  LBO1 damping      0.0
+math  LBO1 offset       0.0
+
+math _LBO1 function     sin
+math _LBO1 amplitude    half_pi
+math _LBO1 frequency    1.0
+math _LBO1 phase        0.0
+math _LBO1 duty_cycle   0.5
+math _LBO1 damping      0.0
+math _LBO1 offset       0.0
+
+
+
+
+
+math  LBO1 function     sin
+math _LBO1 function     sin
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     triangle
+math _LBO1 function     triangle
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     ramp
+math _LBO1 function     ramp
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     square
+math _LBO1 function     square
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     pulse
+math _LBO1 function     pulse
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     trapezoid
+math _LBO1 function     trapezoid
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 function     circle
+math _LBO1 function     circle
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+
+
+
+
+
+math recall reticle
+
+math  LBO1 sin          1.0
+math  LBO1 triangle     1.0
+math  LBO1 ramp         1.0
+math  LBO1 square       1.0
+math  LBO1 pulse        1.0
+math  LBO1 trapezoid    1.0
+math  LBO1 circle       1.0
+
+math _LBO1 sin          1.0
+math _LBO1 triangle     1.0
+math _LBO1 ramp         1.0
+math _LBO1 square       1.0
+math _LBO1 pulse        1.0
+math _LBO1 trapezoid    1.0
+math _LBO1 circle       1.0
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.5
+math _LBO1 duty_cycle   0.5
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store one
+math  color_rgb         255 255 0
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   1.0
+math _LBO1 duty_cycle   0.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store two
+math  color_rgb         255 0 255
+math  composite
+
+#----------------------------------------------
+math  LBO1 duty_cycle   0.0
+math _LBO1 duty_cycle   1.0
+#     x = t
+#     y = LBO1(t)
+math  _oscillator
+math  store three
+math  color_rgb         0 255 255
+math  composite
+math  store four
+
+math  factor           0.0  1.0  0.0
+math  recall two
+math  scale
+math  delist two
+math  store two
+
+math  recall three
+math  scale
+math  delist three
+math  store three
+
+math  recall one
+math  recall two
+math _add
+math  recall three
+math _add
+math  color_rgb         0 255 0
+
+math  recall four
+math  swap
+math  composite
+
+math  render
+math  save_as_bmp sins 1920 1080
+
+math  delist one
+math  delist two
+math  delist three
+math  delist four
+
+#################################################
+#################################################
+

@@ -1,0 +1,378 @@
+###############################################
+#
+#   ASCII format version: LaserBoy-txt-08-30-2022
+#
+###############################################
+
+
+#----------------------------------------------
+# Directives
+#----------------------------------------------
+
+
+#----------------------------------------------
+# Reset the LBO to default values.
+math  LBO1  reset
+math  LBO1_ reset
+math _LBO1  reset
+math _LBO1_ reset
+
+math  LBO2  reset
+math  LBO2_ reset
+math _LBO2  reset
+math _LBO2_ reset
+
+math  LBO3  reset
+math  LBO3_ reset
+math _LBO3  reset
+math _LBO3_ reset
+
+math  LBO4  reset
+math  LBO4_ reset
+math _LBO4  reset
+math _LBO4_ reset
+
+math  LBO5  reset
+math  LBO5_ reset
+math _LBO5  reset
+math _LBO5_ reset
+
+math  LBO6  reset
+math  LBO6_ reset
+math _LBO6  reset
+math _LBO6_ reset
+
+math  LBO_reset_all
+
+
+
+
+#----------------------------------------------
+# Must be followed by three unsigned char values.
+# Sets the color of every vector in every frame
+# of the last frame_set loaded in the registers.
+math  color_rgb     255 255 255
+
+
+
+
+#----------------------------------------------
+# Must be followed by a value in hexadecimal
+# in 0xRRGGBB order.
+# Sets the color of every vector in every frame
+# of the last frame_set loaded in the registers.
+math  color_hex     0xffffff
+
+
+
+
+#----------------------------------------------
+# "hue" is an ordered set of the only 1530 RGB values
+# that are fully saturated color.
+# It is essentially the color wheel of RGB space.
+# it joins end-to-end seamlessly.
+#----------------------------------------------
+
+
+
+
+#----------------------------------------------
+# Sets the colors of every vertex in every frame
+# by indexing through hue.
+# hues_index_multiple indicates how many consecutive
+# vertices get each hue.
+# hues_shift indicates a shift in the starting point
+# in hues between frames in the frame_set
+# (color animation).
+math  hues_index_multiple   1
+math  hues_shift            0
+math  color_index_hues
+
+
+
+
+#----------------------------------------------
+# Sets the colors of every vertex in every frame
+# by spanning the vector sets with hue.
+# hues_span_factor indicates how many cycles of hue
+# span the vector sets.
+# hues_shift indicates a shift in the starting point
+# in hues between frames in the frame_set
+# (color animation).
+math  hues_span_factor      1.0
+math  hues_shift            0
+math  color_span_hues
+
+
+
+
+#----------------------------------------------
+# Sets the colors of each frame (one solid hue)
+# by indexing through hue.
+# hues_index_multiple indicates how many consecutive
+# frames get each hue.
+math  hues_index_multiple   1
+math  color_set_index_hues
+
+
+
+
+#----------------------------------------------
+# Sets the colors of each frame (one solid hue)
+# by spanning the frame_set with hue.
+# hues_span_factor indicates how many cycles of hue
+# span the frame_set.
+math  hues_span_factor      1.0
+math  color_set_span_hues
+
+
+
+
+#----------------------------------------------
+# Copies the last frame_set added to the registers
+# to the "list", a place to store frame_sets
+# outside of the registers.
+# First frame_set in the list must be named.
+math  store name
+
+
+
+
+#----------------------------------------------
+# Must be followed by a valid name in the frame_set list.
+# Finds name in list and copies it into the registers
+math  recall name
+
+
+
+
+#----------------------------------------------
+# Must be followed by a valid name in the frame_set list.
+# Creates a new frame_set in the registers by
+# splicing end-to-end, all frame_sets from name
+# to the last frame_set in list.
+# The new frame_set will have a number of frames
+# equal to the sum of the numbers of frames in each set.
+math  splice_list_from_name name
+
+
+
+
+#----------------------------------------------
+# Must be followed by a valid name in the frame_set list.
+# Creates a new frame_set in the registers by
+# splicing the contents of each frame (the vector images)
+# end-to-end. Each frame from every frame_set is added
+# together to make a new frame_set with a number of frames
+# equal to the highest number of frames of any of the
+# frame_sets composited together.
+math  composite_list_from_name name
+
+
+
+
+#----------------------------------------------
+# Must be followed by a valid name in the frame_set list.
+# Deletes the named frame_set from the list.
+math  delist name
+
+
+
+
+#----------------------------------------------
+# Deletes all unnamed frame_sets in the list.
+math  glean_list
+
+
+
+
+#----------------------------------------------
+# Deletes the entire list.
+math  clear_list
+
+
+
+
+#----------------------------------------------
+# Makes a copy of the last frame_set added to the
+# registers and scales it to fit inside of short integer space.
+# Loads copy into LaserBoy_space for viewing in the running app.
+# Effected by the values of
+math  normalize_frames_with_origin   no
+math  normalize_frames_individually  no
+math  include_unit_reference         no
+math  to_space                       0.9
+# The value of to_space is the portion of the whole cube
+# of short integer space for the real number frame_set
+# in the registers to be scaled.
+math  render
+
+
+
+
+#----------------------------------------------
+# Joins all of the frame_sets in the list from
+# name to the end of the list end-to-end and scales
+# them all together in the same dimensional space
+# to fit inside of short integer space.
+# loads this copy into LaserBoy_space for viewing.
+# Effected by the values of
+math  normalize_frames_with_origin   no
+math  normalize_frames_individually  no
+math  include_unit_reference         no
+math  to_space                       0.9
+# The value of to_space is the portion of the whole cube
+# of short integer space for the real number frame_set
+# in the registers to be scaled to.
+math  render_list_from_name
+
+
+
+
+#----------------------------------------------
+# Makes a copy of whatever is loaded into LaserBoy_space
+# before the txt file is loaded.
+# Scales the copy to unit space size
+# (from -1.0 to +1.0 in all axis)
+# and loads the copy into the registers.
+math  import_space
+
+
+
+
+#----------------------------------------------
+# Must be followed by valid file name inside of ./LaserBoy/txt/
+# Opens a LaserBoy formatted ASCII text file into the registers.
+math  import_txt file.txt
+
+
+
+
+#----------------------------------------------
+# Must be followed by valid directory name inside of ./LaserBoy/dxf/
+# Opens a dxf directory (set of frames) into the registers.
+math  import_dxf directory
+
+
+
+
+#----------------------------------------------
+# Must be followed by name x_res y_res.
+# Creates a directory inside  ./LaserBoy/bmp/
+# with the name given and fills that directory with
+# named_numbered bitmap files of x_res by y_res pixels.
+# Relies on the settings of
+math  bmp_render_vertices  no
+math  bmp_render_vectors   yes
+math  disable_bmp          no
+math  bmp_line_width       1
+# Setting "math disable_bmp yes" prevents the action
+# of saving any bmp files after it is defined.
+# Putting this at the top of the file acts as a
+# global switch to either save or not save bmp files
+# when loading the script.
+math  save_as_bmp image 1920 1080
+
+
+
+
+#----------------------------------------------
+# Must be followed by name.
+# Creates a directory inside  ./LaserBoy/dxf/
+# with the name given and fills that directory with
+# named_numbered dxf files of the frames in the last
+# frame_set added to the registers.
+# Relies on the settings of
+math  save_true_color_dxf  no
+math  disable_dxf          no
+# Setting "math disable_dxf yes" prevents the action
+# of saving any dxf files after it is defined.
+# Putting this at the top of the file acts as a
+# global switch to either save or not save dxf files
+# when loading the script.
+math  save_as_dxf
+
+
+
+
+#----------------------------------------------
+# Must be followed by name.
+# Saves the last frame_set added to the registers
+# in LaserBoy Formatted ASCII text (tables of vertex values)
+# to a file of name.txt inside ./LaserBoy/txt/
+# Relies on the settings of
+math  overwrite_txt_files  no
+math  save_txt_with_color  {value of running app. Can be set yes or no}
+math  save_txt_color_hex   {value of running app. Can be set yes or no}
+math  disable_txt          no
+# Setting "math disable_txt yes" prevents the action
+# of saving any txt files after it is defined.
+# Putting this at the top of the file acts as a
+# global switch to either save or not save txt files
+# when loading the script.
+math  save_as_txt
+
+
+
+
+#----------------------------------------------
+# Must be followed by list_name file_name x_res y_res
+# Makes a new frame_set by splicing all of the frame_sets
+# in list from list_name to the end of the list.
+# Creates a directory inside  ./LaserBoy/bmp/
+# with the file_name given and fills that directory with
+# named_numbered bitmap files of x_res by y_res pixels
+# from the spliced list.
+# Relies on the settings of
+math  bmp_render_vertices  no
+math  bmp_render_vectors   yes
+math  disable_bmp          no
+math  bmp_line_width       1
+# Setting "math disable_bmp yes" prevents the action
+# of saving any bmp files after it is defined.
+# Putting this at the top of the file acts as a
+# global switch to either save or not save bmp files
+# when loading the script.
+math  save_list_from_name_as_bmp list_name file_name x_res y_res
+
+
+
+
+#----------------------------------------------
+# Must be followed by list_name dxf_name
+# Makes a new frame_set by splicing all of the frame_sets
+# in list from list_name to the end of the list.
+# Creates a directory inside  ./LaserBoy/dxf/
+# with the dxf_name given and fills that directory with
+# named_numbered dxf files of the frames from the spliced list.
+# Relies on the settings of
+math  save_true_color_dxf  no
+math  disable_dxf          no
+# Setting "math disable_dxf yes" prevents the action
+# of saving any dxf files after it is defined.
+# Putting this at the top of the file acts as a
+# global switch to either save or not save dxf files
+# when loading the script.
+math  save_list_from_name_as_dxf list_name dxf_dir_name
+
+
+
+
+#----------------------------------------------
+# Must be followed by list_name file_name.
+# Makes a new frame_set by splicing all of the frame_sets
+# in list from list_name to the end of the list.
+# Saves the spliced list as
+# LaserBoy Formatted ASCII Text (tables of vertex values)
+# to a file of name.txt inside ./LaserBoy/txt/
+# Relies on the settings of
+math  overwrite_txt_files  no
+math  save_txt_with_color  {value of running app. Can be set yes or no}
+math  save_txt_color_hex   {value of running app. Can be set yes or no}
+math  disable_txt          no
+# Setting "math disable_txt yes" prevents the action
+# of saving any txt files after it is defined.
+# Putting this at the top of the file acts as a
+# global switch to either save or not save txt files
+# when loading the script.
+math  save_list_from_name_as_txt list_name file_name

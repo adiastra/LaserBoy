@@ -1,0 +1,65 @@
+
+1    Printed Circuit Board (PCB)
+1    2 x 13 pin Box Header
+1    DB25-F Ribbon (ILDA Port)
+1    1 x 6 Socket (signal inputs)
+1    1 x 3 Socket (USB power input)
+2    1 pin Socket (test points for V-off & GND)
+4    2 pin Headers for Jumpers
+4    Jumpers, red, green, blue, white
+3    8 pin IC sockets
+3    TLO72 op-amps
+1    D106E DC/DC Converter
+7    500 ohm 25 turn trim pots,  W501
+6    100K ohm 25 turn trim pots, W104
+6    10K 1% resistors, brown black black red brown
+6    15K 1% resistors, brown green black red brown
+1    120 ohm resistor, brown red black black brown
+1    470 ohm resistor, yellow violet black black brown
+4    5.1v zener diodes
+5    10uF Tantalum Capacitors
+1    LM337 Negative Voltage Regulator
+
+It is critical to align all the parts in the proper orientation!
+Note the location of the tops of the ICs and their sockets,
+the polarity of the zener diodes and Tantalum capacitors.
+Make sure the ribbon port header has the key slot toward the
+inside of the PCB. All of these parts can easily be put in wrong
+and that will not work!
+
+The 470 ohm resistor goes in the place marked 500 on the PCB.
+This resister is in series between the +5V USB power input
+and pin 13, the shutter actuator, on the ILDA connector.
+
+24AWG solid copper (telephone) wire fits nicely into the
+inputs, USB voltage and test point sockets.
+
+               ILDA PORT
+            [:::::::::::::]
+                  |-|  <- slot
+
+ * GND          [  ^  ]  5v zener :
+   (Off) (Gain) [TLO72] (Off) (Gain)
+        X       [opamp]    Green
+
+ * V_off        [  ^  ]  5v zener :
+   (Off) (Gain) [TLO72] (Off) (Gain)
+        Y       [opamp]     Blue
+
+   : 5v zener   [  ^  ]  5v zener :
+   (Off) (Gain) [TLO72] (Off) (Gain)
+       Red      [opamp]   Intensity
+
+
+   (adj)        [-vreg]
+                        power
+                        * * *
+                      GND | GND
+         INPUT           +5V
+      * * * * * *
+      X Y R G B I                   Extra Stimulus Inc. 2013
+
+
+Go here!:
+http://laserboy.org/forum/index.php?topic=561.0
+

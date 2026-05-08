@@ -1,0 +1,63 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+math  frames            400
+math  still_frames      400
+
+math  start             0.0
+math  duration          1000
+math  iterations        50000
+
+math _start             0.0
+math _duration          1000
+math _iterations        50000
+
+math  LBO1 phase        90.0
+
+#----------------------------------------------
+#  x = LBO1(t)
+#  y = LBO2(t)
+math  lissajou
+
+math  displacement         0 2.5 0
+math  move_acceleration    0
+math  move
+
+math  fulcrum              0 0 0
+math  rotation             0 0 1
+math  rotate_acceleration  0
+math  rotate_
+
+math  fulcrum              0 0 0
+math _fulcrum              0 0 0
+math  rotation             0 0 0
+math _rotation             0 0 2
+math  fulcrum_acceleration 0
+math  rotate_acceleration  0
+math _rotate
+
+math  fulcrum              0 6 0
+math  rotation             3 0 0
+math  rotate_acceleration  0
+math  rotate_
+
+math  hues_span_factor     12
+math  color_span_hues
+math  render
+
+#################################################
+#################################################
+

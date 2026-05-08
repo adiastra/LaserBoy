@@ -1,0 +1,448 @@
+###############################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display application
+#   that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+###############################################
+
+#math phase_cycle        360.0
+#math rotation_cycle     1.0
+#math interval_cycle     1.0
+
+math  iterations       6000
+math _iterations       6000
+
+math frames            100
+math still_frames      1
+math first_frames      10
+math last_frames       10
+
+math hues_span_factor  1.0
+math hues_shift        5
+
+math normalize_frames_individually 0
+math normalize_frames_with_origin  0
+math include_unit_reference        0
+#math intra_interval_interpolation  0
+
+#----------------------------------------------
+#             single frame forms
+#----------------------------------------------
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Rhodonea
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    LBO3 phase += (phase_cycle / 4)
+#    ratio = rhodonea_numerator / rhodonea_denominator
+#
+#        x = radius * LBO1(ratio * t) * LBO2(t)
+#        y = radius * LBO3(ratio * t) * LBO4(t)
+
+math  fixed_radius      1.0
+math  rhodonea_numerator    37.0
+math  rhodonea_denominator  91.0
+
+math  LBO1 function     triangle
+math  LBO2 function     trapezoid
+math  LBO3 function     triangle
+math  LBO4 function     trapezoid
+
+math duration           45.5
+
+math oscillator_rhodonea
+
+math color_rgb          255 0 0
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epicycloid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * LBO1(t)
+#            - roller_radius * LBO2((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * LBO3(t)
+#            - roller_radius * LBO4((ratio + 1) * t)
+
+math  fixed_radius      1.0
+math  roller_radius     37.0
+
+math  LBO1 pulse        1.0
+math  LBO3 pulse        1.0
+
+math duration           37.0
+
+math oscillator_epicycloid
+
+math color_rgb          255 255 0
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epitrochoid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * LBO1(t)
+#            - roller_offset * LBO2((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * LBO3(t)
+#            - roller_offset * LBO4((ratio + 1) * t)
+
+math fixed_radius       1.0
+math roller_radius      71.0
+math roller_offset      62.0
+
+math  LBO2 duty_cycle   0.25
+math  LBO2 sin          0.0
+math  LBO2 ramp         1.0
+math  LBO2 pulse        0.5
+math  LBO2 trapezoid    1.0
+
+math  LBO4 duty_cycle   0.25
+math  LBO4 sin          0.0
+math  LBO4 ramp         1.0
+math  LBO4 pulse        0.5
+math  LBO4 trapezoid    1.0
+
+math duration           71.0
+
+math oscillator_epitrochoid
+
+math color_rgb          255 0 127
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypocycloid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius
+#
+#        x =    (fixed_radius - roller_radius) * LBO1(t)
+#             + roller_radius * LBO2((ratio - 1) * t)
+#
+#        y =    (fixed_radius - roller_radius) * LBO3(t)
+#             - roller_radius * LBO4((ratio - 1) * t)
+
+math fixed_radius       91.0
+math roller_radius      50.0
+
+math  LBO1 sin          0.0
+math  LBO1 pulse        1.0
+math  LBO1 trapezoid    1.0
+
+math  LBO2 function     trapezoid
+
+math  LBO3 sin          0.0
+math  LBO3 triangle     1.0
+math  LBO3 pulse        1.0
+
+math  LBO4 function     trapezoid
+
+math duration           50.0
+
+math oscillator_hypocycloid
+
+math color_rgb          0 255 255
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypotrochoid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = center_radius / roller_radius
+#
+#        x =    (center_radius - roller_radius) * LBO1(t)
+#             + roller_offset * LBO2((ratio - 1) * t)
+#
+#        y =    (center_radius - roller_radius) * LBO3(t)
+#             - roller_offset * LBO4((ratio - 1) * t)
+
+math fixed_radius       91.0
+math roller_radius      1.0
+math roller_offset      40.0
+
+math  LBO1 frequency    2.0
+math  LBO1 duty_cycle   0.25
+
+math  LBO2 frequency    3.0
+
+math  LBO3 frequency    2.0
+
+math  LBO4 frequency    3.0
+
+math duration           0.5
+
+math oscillator_hypotrochoid
+
+math color_rgb          127 0 127
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+#            animated frames forms
+#----------------------------------------------
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Rhodonea
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    LBO3 phase += (phase_cycle / 4)
+#    ratio = rhodonea_numerator / rhodonea_denominator
+#
+#        x = radius * LBO1(ratio * t) * LBO2(t)
+#        y = radius * LBO3(ratio * t) * LBO4(t)
+
+math  fixed_radius          1.0
+math  rhodonea_numerator    7.5
+math  rhodonea_denominator  8.0
+
+math _fixed_radius          1.0
+math _rhodonea_numerator    8.5
+math _rhodonea_denominator  8.0
+
+math _LBO2 function     trapezoid
+
+math _LBO4 function     trapezoid
+
+math  start             0.0
+math  duration          16.0
+
+math _start             0.0
+math _duration          16.0
+
+math _oscillator_rhodonea
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epicycloid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * LBO1(t)
+#            - roller_radius * LBO2((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * LBO3(t)
+#            - roller_radius * LBO4((ratio + 1) * t)
+
+math  fixed_radius      7.0
+math  roller_radius     37.0
+
+math _fixed_radius      7.0
+math _roller_radius     37.0
+
+math  LBO1 function     square
+
+math  LBO3 function     square
+
+math  duration          37.0
+math _duration          37.0
+
+math _oscillator_epicycloid
+
+math color_rgb          255 0 127
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epitrochoid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * LBO1(t)
+#            - roller_offset * LBO2((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * LBO3(t)
+#            - roller_offset * LBO4((ratio + 1) * t)
+
+math  fixed_radius      1.0
+math  roller_radius     1.0
+math  roller_offset     36.0
+
+math _fixed_radius      37.0
+math _roller_radius     1.0
+math _roller_offset     36.0
+
+math  LBO1 function     trapezoid
+math  LBO2 function     trapezoid
+math  LBO3 function     trapezoid
+math  LBO4 function     trapezoid
+
+math _LBO1 function     triangle
+math _LBO2 function     triangle
+math _LBO3 function     triangle
+math _LBO4 function     triangle
+
+math  start             0.1
+math  duration          1.0
+
+math _start             0.1
+math _duration          1.0
+
+math _oscillator_epitrochoid
+
+math color_rgb          127 0 255
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypocycloid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius
+#
+#        x =    (fixed_radius - roller_radius) * LBO1(t)
+#             + roller_radius * LBO2((ratio - 1) * t)
+#
+#        y =    (fixed_radius - roller_radius) * LBO3(t)
+#             - roller_radius * LBO4((ratio - 1) * t)
+
+math  fixed_radius      3.0
+math  roller_radius     2.0
+
+math _fixed_radius      3.0
+math _roller_radius     1.993
+
+math  LBO1 function     ramp
+math  LBO2 function     triangle
+math  LBO3 function     ramp
+math  LBO4 function     triangle
+
+math _LBO1 function     ramp
+math _LBO2 function     trapezoid
+math _LBO3 function     ramp
+math _LBO4 function     trapezoid
+
+math  start             0.25
+math  duration          2.0
+
+math _start             0.25
+math _duration          100.0
+
+math _oscillator_hypocycloid
+
+math color_rgb          255 255 0
+math render
+
+math LBO_reset_all
+
+
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypotrochoid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = center_radius / roller_radius
+#
+#        x =    (center_radius - roller_radius) * LBO1(t)
+#             + roller_offset * LBO2((ratio - 1) * t)
+#
+#        y =    (center_radius - roller_radius) * LBO3(t)
+#             - roller_offset * LBO4((ratio - 1) * t)
+
+math  fixed_radius      6.4
+math  roller_radius     13.0
+math  roller_offset     11.0
+
+math _fixed_radius      6.6
+math _roller_radius     13.0
+math _roller_offset     11.0
+
+math  LBO1 function     triangle
+math  LBO2 function     trapezoid
+math  LBO3 function     triangle
+math  LBO4 function     trapezoid
+
+math _LBO1 function     triangle
+math _LBO2 function     trapezoid
+math _LBO3 function     triangle
+math _LBO4 function     trapezoid
+
+math  start             0.25
+math  duration          65.0
+
+math _start             0.25
+math _duration          65.0
+
+math _oscillator_hypotrochoid
+
+math color_rgb           127 255 127
+math render
+
+math LBO_reset_all
+
+###############################################
+###############################################

@@ -1,0 +1,51 @@
+LaserBoy.exe is a 64-bit Windows application linked to SDL2.dll.
+
+This means that the version of SDL2.dll that comes in the
+LaserBoy distribution zip is the 64-bit version!
+
+There is also a 32-bit version SDL2.dll. They are not interchangeable!
+
+On a 64-bit Windows machine, SDL2.dll can be moved to C:\Windows\System32\
+
+Other Windows variations of LaserBoy can be built from the src directory.
+Be aware that there are 32-bit and 64-bit versions of both SDL and SDL2.
+
+Look at the Makefiles in the src directory.
+
+Makefile.win        builds LaserBoyXP.exe        Win32 XP and below      SDL2
+Makefile_sdl1.win   builds LaserBoy_sdl1_XP.exe  Win32 XP and below      SDL
+
+Makefile.w32        builds LaserBoyXP.exe        Win32 Vista and above   SDL2
+Makefile_sdl1.w32   builds LaserBoyXP.exe        Win32 Vista and above   SDL
+
+Makefile.w64        builds LaserBoy.exe          Win64                   SDL2
+Makefile_sdl1.w64   builds LaserBoy_sdl1.exe     Win64                   SDL
+
+Makefile            builds LaserBoy              Linux x86 PC            SDL2
+Makefile_sdl1       builds LaserBoy_sdl1         Linux x86 PC            SDL
+
+Makefile.rpi        builds LaserBoy_rpi          Linux Raspberry Pi      SDL2
+Makefile_sdl1.rpi   builds LaserBoy_sdl1_rpi     Linux Raspberry Pi      SDL
+
+Makefile.osx        builds LaserBoy              MacOS                   SDL2
+
+Note:
+Both the Linux_x86 and the MacOS versions of Makefile build an executable of
+the same name (LaserBoy) in the same LaserBoy installation folder.
+
+They are not interchangeable!
+
+If both executables are desired, either change the name of one of them
+after the compile is complete or find the line...
+
+BIN      = ../LaserBoy
+
+...in either Makefile (Linux) or Makefile.osx (MacOS) and change the name there
+before running make to build it.
+
+Calling
+
+make ... clean
+
+will delete the named BIN file (in all version of Makefile).
+

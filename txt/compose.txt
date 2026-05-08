@@ -1,0 +1,184 @@
+############################################################
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multi platform laser display application
+#   that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-11-23-2022
+############################################################
+
+
+
+
+
+#comment_block_start
+#----------------------------------------------------
+text super_diacritic_gap 0.10
+text font_name    le_diacritic
+text compose
+
+diacritic 0x0000
+R
+Ӣ
+
+diacritic 0x0001
+R
+ӣ
+
+diacritic 0x0002
+R
+Ӥ
+
+diacritic 0x0003
+R
+ӥ
+
+
+
+diacritic 0x0000
+Q
+Ӟ
+
+reverse
+Q
+ӟ
+
+invert
+Q
+Ӡ
+
+rotate
+Q
+ӡ
+
+!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ıȷ ̀  ́  ̂  ̃  ̄  ̆  ̇  ̈  ̊  ̋  ̌  ̏  ̑  ̓  ̦  ̧  ̨
+!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ıȷ ̀  ́  ̂  ̃  ̄  ̆  ̇  ̈  ̊  ̋  ̌  ̏  ̑  ̓  ̦  ̧  ̨
+
+ABEZHIKMNOPTYXoSIJABEMHOPCTXaeopcyxsijYIIQqWw
+ΑΒΕΖΗΙΚΜΝΟΡΤΥΧοЅІЈАВЕМНОРСТХаеорсухѕіјҮӀӏԚԛԜԝ
+
+diacritic 0x0300
+AaEeIıOoUu   EeNn
+ÀàÈèÌìÒòÙù   ЀѐǸǹ
+
+diacritic 0x0301
+AaEeIıOoUuYy CcGgLlNnoRrSsuZz
+ÁáÉéÍíÓóÚúÝý ĆćǴǵĹĺŃńόŔŕŚśύŹź
+
+diacritic 0x0302
+AaEeIıOoUuYy CcGgHhJȷSsWw
+ÂâÊêÎîÔôÛûŶŷ ĈĉĜĝĤĥĴĵŜŝŴŵ
+
+diacritic 0x0303
+Aa  IıOoUu   Nn
+Ãã  ĨĩÕõŨũ   Ññ
+
+diacritic 0x0304
+AaEeIıOoUuYy y
+ĀāĒēĪīŌōŪūȲȳ ӯ
+
+diacritic 0x0306
+AaEeIıOoUu   AaEeGg
+ĂăĔĕĬĭŎŏŬŭ   ӐӑӖӗĞğ
+
+diacritic 0x0307
+AaEeI Oo     CcGgZz
+ȦȧĖėİ Ȯȯ     ĊċĠġŻż
+
+diacritic 0x0308
+AaEeIıOoUuYy AaEeIIOoYy
+ÄäËëÏïÖöÜüŸÿ ӒӓЁёΪЇӦӧΫӱ
+
+diacritic 0x030a
+Aa      Uu
+Åå      Ůů
+
+diacritic 0x030b
+      OoUuy
+      ŐőŰűӳ
+
+diacritic 0x030c
+AaEeIıOoUu   CcDGgHhȷKkNnRrSsTZz
+ǍǎĚěǏǐǑǒǓǔ   ČčĎǦǧȞȟǰǨǩŇňŘřŠšŤŽž
+
+diacritic 0x030f
+AaEeIıOoUu   Rr
+ȀȁȄȅȈȉȌȍȔȕ   Ȑȑ
+
+diacritic 0x0311
+AaEeIıOoUu   Rr
+ȂȃȆȇȊȋȎȏȖȗ   Ȓȓ
+
+diacritic 0x0313
+             g
+             ģ
+
+diacritic 0x0326
+             GKkLlNnRrSsTt
+             ĢĶķĻļŅņŖŗȘșȚț
+
+diacritic 0x0327
+  Ee         CcSsTt
+  Ȩȩ         ÇçŞşŢţ
+
+diacritic 0x0328
+AaEecIıOoUu
+ĄąĘęҫĮįǪǫŲų
+
+diacritic 0x0308
+diacritic 0x0304
+Aa    OoUu
+Ǟǟ    ȪȫǕǖ
+
+diacritic 0x0307
+diacritic 0x0304
+Aa    Oo
+Ǡǡ    Ȱȱ
+
+diacritic 0x0304
+diacritic 0x0328
+      Oo
+      Ǭǭ
+
+diacritic 0x0303
+diacritic 0x0304
+      Oo
+      Ȭȭ
+
+diacritic 0x030a
+diacritic 0x0301
+Aa
+Ǻǻ
+
+diacritic 0x0308
+diacritic 0x0301
+        Uu
+        Ǘǘ
+
+diacritic 0x0308
+diacritic 0x030c
+        Uu
+        Ǚǚ
+
+diacritic 0x0308
+diacritic 0x0300
+        Uu
+        Ǜǜ        
+
+<<__TEXT_END__>>
+
+#comment_block_end
+
+
+
+
+
+
+
+
+

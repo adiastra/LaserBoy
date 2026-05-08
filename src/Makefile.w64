@@ -1,0 +1,166 @@
+# Project: LaserBoy
+# by James Lehman.
+
+RM       = rm -f
+STRIP    = strip -s -v
+CPP      = x86_64-w64-mingw32-g++.exe
+INC      = -I/c/msys64/mingw64/include
+LIB      = -L/c/msys64/mingw64/lib
+
+LIBS     = -lmingw32 \
+           -lws2_32 \
+           -lSDL2main \
+           -lSDL2 \
+           -static-libstdc++ \
+           -static-libgcc \
+           -Wl,-Bstatic \
+           -lgcc \
+           -lstdc++ \
+           -lpthread \
+           -lboost_filesystem-mt \
+           -lboost_system-mt \
+           -Wl,-Bdynamic
+
+HEADERS   = LaserBoy_includes.hpp \
+            LaserBoy_macros.hpp \
+            LaserBoy_common.hpp \
+            LaserBoy_oscillator.hpp \
+            LaserBoy_utility.hpp \
+            LaserBoy_font.hpp \
+            LaserBoy_bmp.hpp \
+            LaserBoy_3D_short.hpp \
+            LaserBoy_color.hpp \
+            LaserBoy_vertex.hpp \
+            LaserBoy_segment.hpp \
+            LaserBoy_3D_double.hpp \
+            LaserBoy_real_vertex.hpp \
+            LaserBoy_real_segment.hpp \
+            LaserBoy_real_segment_set.hpp \
+            LaserBoy_ild_header.hpp \
+            LaserBoy_frame.hpp \
+            LaserBoy_frame_set.hpp \
+            LaserBoy_palette.hpp \
+            LaserBoy_palette_set.hpp \
+            LaserBoy_wave.hpp \
+            LaserBoy_SDL_GUI.hpp \
+            LaserBoy_space.hpp \
+            LaserBoy_TUI.hpp
+
+OBJ      = ../build/LaserBoy.o64 \
+           ../build/LaserBoy_common.o64 \
+           ../build/LaserBoy_oscillator.o64 \
+           ../build/LaserBoy_frame.o64 \
+           ../build/LaserBoy_frame_effects.o64 \
+           ../build/LaserBoy_selected_frames_effects.o64 \
+           ../build/LaserBoy_frame_set.o64 \
+           ../build/LaserBoy_frame_set_effects.o64 \
+           ../build/LaserBoy_ild_header.o64 \
+           ../build/LaserBoy_segment.o64 \
+           ../build/LaserBoy_palette.o64 \
+           ../build/LaserBoy_palette_set.o64 \
+           ../build/LaserBoy_real_segment.o64 \
+           ../build/LaserBoy_real_segment_set.o64 \
+           ../build/LaserBoy_wave.o64 \
+           ../build/LaserBoy_space.o64 \
+           ../build/LaserBoy_TUI.o64 \
+           ../build/LaserBoy_SDL_GUI.o64 \
+           ../build/LaserBoy_bmp.o64 \
+           ../build/LaserBoy_font.o64
+
+CPPFLAGS = -D__MINGW_LASERBOY__ \
+           -D__WITH_SDL2__ \
+           -Dmain=SDL_main \
+           $(INC) \
+           $(LIB) \
+           $(LIBS) \
+           -std=c++17 \
+           -O3 \
+           -m64 \
+           -msse2 \
+           -mfpmath=sse \
+           -mwindows \
+           -Wcpp \
+           -Wall \
+           -Wextra \
+           -Wno-unused-parameter \
+           -Wno-implicit-fallthrough \
+           -Wno-misleading-indentation \
+           -Wno-missing-field-initializers \
+           -Wno-unused-but-set-variable \
+           -Wno-mismatched-new-delete \
+           -frounding-math \
+           -fsignaling-nans \
+           -fexpensive-optimizations
+
+BIN       = ../LaserBoy.exe
+
+all: $(BIN) strip
+
+strip:
+	$(STRIP) $(BIN)
+
+clean:
+	$(RM) $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(OBJ) -o $(BIN) $(LIB) $(LIBS)
+
+../build/LaserBoy.o64: LaserBoy.cpp $(HEADERS)
+	$(CPP) -c LaserBoy.cpp -o ../build/LaserBoy.o64 $(CPPFLAGS)
+
+../build/LaserBoy_SDL_GUI.o64: LaserBoy_SDL_GUI.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_SDL_GUI.cpp -o ../build/LaserBoy_SDL_GUI.o64 $(CPPFLAGS)
+
+../build/LaserBoy_TUI.o64: LaserBoy_TUI.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_TUI.cpp -o ../build/LaserBoy_TUI.o64 $(CPPFLAGS)
+
+../build/LaserBoy_space.o64: LaserBoy_space.cpp  $(HEADERS)
+	$(CPP) -c LaserBoy_space.cpp -o ../build/LaserBoy_space.o64 $(CPPFLAGS)
+
+../build/LaserBoy_frame_set_effects.o64: LaserBoy_frame_set_effects.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_frame_set_effects.cpp -o ../build/LaserBoy_frame_set_effects.o64 $(CPPFLAGS)
+
+../build/LaserBoy_selected_frames_effects.o64: LaserBoy_selected_frames_effects.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_selected_frames_effects.cpp -o ../build/LaserBoy_selected_frames_effects.o64 $(CPPFLAGS)
+
+../build/LaserBoy_frame_effects.o64: LaserBoy_frame_effects.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_frame_effects.cpp -o ../build/LaserBoy_frame_effects.o64 $(CPPFLAGS)
+
+../build/LaserBoy_palette_set.o64: LaserBoy_palette_set.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_palette_set.cpp -o ../build/LaserBoy_palette_set.o64 $(CPPFLAGS)
+
+../build/LaserBoy_palette.o64: LaserBoy_palette.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_palette.cpp -o ../build/LaserBoy_palette.o64 $(CPPFLAGS)
+
+../build/LaserBoy_frame_set.o64: LaserBoy_frame_set.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_frame_set.cpp -o ../build/LaserBoy_frame_set.o64 $(CPPFLAGS)
+
+../build/LaserBoy_frame.o64: LaserBoy_frame.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_frame.cpp -o ../build/LaserBoy_frame.o64 $(CPPFLAGS)
+
+../build/LaserBoy_ild_header.o64: LaserBoy_ild_header.cpp LaserBoy_ild_header.hpp LaserBoy_common.hpp LaserBoy_macros.hpp LaserBoy_includes.hpp
+	$(CPP) -c LaserBoy_ild_header.cpp -o ../build/LaserBoy_ild_header.o64 $(CPPFLAGS)
+
+../build/LaserBoy_bmp.o64: LaserBoy_bmp.cpp LaserBoy_bmp.hpp LaserBoy_font.hpp LaserBoy_color.hpp LaserBoy_common.hpp LaserBoy_macros.hpp LaserBoy_includes.hpp
+	$(CPP) -c LaserBoy_bmp.cpp -o ../build/LaserBoy_bmp.o64 $(CPPFLAGS)
+
+../build/LaserBoy_font.o64: LaserBoy_font.cpp LaserBoy_font.hpp
+	$(CPP) -c LaserBoy_font.cpp -o ../build/LaserBoy_font.o64 $(CPPFLAGS)
+
+../build/LaserBoy_segment.o64: LaserBoy_segment.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_segment.cpp -o ../build/LaserBoy_segment.o64 $(CPPFLAGS)
+
+../build/LaserBoy_real_segment.o64: LaserBoy_real_segment.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_real_segment.cpp -o ../build/LaserBoy_real_segment.o64 $(CPPFLAGS)
+
+../build/LaserBoy_real_segment_set.o64: LaserBoy_real_segment_set.cpp $(HEADERS)
+	$(CPP) -c LaserBoy_real_segment_set.cpp -o ../build/LaserBoy_real_segment_set.o64 $(CPPFLAGS)
+
+../build/LaserBoy_wave.o64: LaserBoy_wave.cpp LaserBoy_wave.hpp LaserBoy_common.hpp LaserBoy_macros.hpp LaserBoy_includes.hpp
+	$(CPP) -c LaserBoy_wave.cpp -o ../build/LaserBoy_wave.o64 $(CPPFLAGS)
+
+../build/LaserBoy_oscillator.o64: LaserBoy_oscillator.cpp LaserBoy_oscillator.hpp LaserBoy_common.hpp LaserBoy_includes.hpp
+	$(CPP) -c LaserBoy_oscillator.cpp -o ../build/LaserBoy_oscillator.o64 $(CPPFLAGS)
+
+../build/LaserBoy_common.o64: LaserBoy_common.cpp LaserBoy_common.hpp LaserBoy_macros.hpp LaserBoy_includes.hpp
+	$(CPP) -c LaserBoy_common.cpp -o ../build/LaserBoy_common.o64 $(CPPFLAGS)

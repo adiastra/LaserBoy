@@ -1,0 +1,329 @@
+###############################################
+#
+#   ASCII format version: LaserBoy-txt-08-30-2022
+#
+###############################################
+
+
+#----------------------------------------------
+# Unary operators work on last frame_set added to the registers.
+# Parameter values used by operators are shown with their default values.
+#----------------------------------------------
+
+#----------------------------------------------
+# ... except for this one which takes its own parameter when called.
+# Must be followed by a real number from the origin to the 3D edge
+# of space on the 3 axis (the cube of twice this dimension).
+# The value 1.0 normalizes frame_set to unit space
+# from -1.0 to +1.0 in xyz.
+math  size              1.0
+
+
+
+
+#----------------------------------------------
+# Adds displacement xyz to every vertex in every frame
+math  displacement      0.0  0.0  0.0
+math  move
+
+
+
+
+#----------------------------------------------
+# Adds from displacement to _displacement xyz,
+# a linear interpolation of initial to final to
+# each frame in a frame_set
+math  displacement      0.0  0.0  0.0
+math _displacement      0.0  0.0  0.0
+math _move
+
+
+
+
+#----------------------------------------------
+# Multiplies every vertex in every frame by factor xyz.
+math  factor            0.0  0.0  0.0
+math  scale
+
+
+
+
+#----------------------------------------------
+# Multiplies from factor to _factor xyz,
+# by a linear interpolation of initial to final of
+# each frame in a frame_set
+math  factor            0.0  0.0  0.0
+math _factor            0.0  0.0  0.0
+math _scale
+
+
+
+
+#----------------------------------------------
+# Rotation of xyz around each axis of fulcrum
+# fulcrum_ can be used with moving_fulcrum enabled.
+# connected with the parameter "moving_fulcrum"
+# which is assumed to be no until a fulcrum_ parameter
+# is defined. Can be set to no after which any fulcrum_
+# parameters are set to (initial) fulcrum.
+# the value of fulcrum_acceleration determines
+# the rate of change of the position of the
+# moving_fulcrum per vertex.
+math  moving_fulcrum         no
+math  rotation          0.0  0.0  0.0
+math  fulcrum           0.0  0.0  0.0
+math  fulcrum_          0.0  0.0  0.0
+math  fulcrum_acceleration   0.0
+math  rotate
+
+
+
+
+#----------------------------------------------
+# This is the animated version of rotate.
+# Essentially it is rotate but with initial frame
+# and final frame parameters. All frames in between
+# are made by linear interpolation between the parameters.
+math  fulcrum           0.0  0.0  0.0
+math  fulcrum_          0.0  0.0  0.0
+math _fulcrum           0.0  0.0  0.0
+math _fulcrum_          0.0  0.0  0.0
+math  fulcrum_acceleration   0.0
+math _fulcrum_acceleration   0.0
+math  rotation          0.0  0.0  0.0
+math _rotation          0.0  0.0  0.0
+math _rotate
+
+
+
+
+#----------------------------------------------
+# P0 defines the bottom, left,  rear  coordinate,
+# P1 defines the top,    right, front coordinate
+# of a 3D rectangular solid clipping region.
+# A call to "clip" eliminates vectors outside
+# of this region and properly terminates any
+# vectors piercing through the walls.
+math  P0          -1.0 -1.0 -1.0
+math  P1           1.0  1.0  1.0
+math  clip
+
+
+
+
+#----------------------------------------------
+# This is the animated version of clip.
+# the clipping region defined by P0 and P1
+# can move, change size and proportion
+# through the frames in a frame_set
+math  P0          -1.0 -1.0 -1.0
+math _P0          -1.0 -1.0 -1.0
+math  P1           1.0  1.0  1.0
+math _P1           1.0  1.0  1.0
+math _clip
+
+
+
+
+#----------------------------------------------
+math  displacement      0.0  0.0  0.0
+math  move_acceleration      0.0
+# math  spread_move is now
+math  move_
+
+
+
+
+#----------------------------------------------
+math  displacement      0.0  0.0  0.0
+math _displacement      0.0  0.0  0.0
+math  move_acceleration      0.0
+math _move_acceleration      0.0
+# math _spread_move is now
+math _move_
+
+
+
+
+#----------------------------------------------
+math  factor            0.0  0.0  0.0
+math  factor_           0.0  0.0  0.0
+math  scale_acceleration     0.0
+# math  spread_scale is now
+math  scale_
+
+
+
+
+#----------------------------------------------
+math  factor            0.0  0.0  0.0
+math  factor_           0.0  0.0  0.0
+math _factor            0.0  0.0  0.0
+math _factor_           0.0  0.0  0.0
+math  scale_acceleration     0.0
+math _scale_acceleration     0.0
+# math _spread_scale is now
+math _scale_
+
+
+
+
+#----------------------------------------------
+math  fulcrum           0.0  0.0  0.0
+math  fulcrum_          0.0  0.0  0.0
+math  fulcrum_acceleration   0.0
+math  rotation          0.0  0.0  0.0
+math  rotate_acceleration    0.0
+# math  spread_rotate is now
+math  rotate_
+
+
+
+
+#----------------------------------------------
+math  fulcrum           0.0  0.0  0.0
+math  fulcrum_          0.0  0.0  0.0
+math _fulcrum           0.0  0.0  0.0
+math _fulcrum_          0.0  0.0  0.0
+math  fulcrum_acceleration   0.0
+math _fulcrum_acceleration   0.0
+math  rotation          0.0  0.0  0.0
+math _rotation          0.0  0.0  0.0
+math  rotate_acceleration    0.0
+math _rotate_acceleration    0.0
+# math _spread_rotate is now
+math _rotate_
+
+
+
+
+#----------------------------------------------
+# joins every frame end-to-end into one frame.
+math  collapse_frames
+
+
+
+
+#----------------------------------------------
+# reverses the order of the frame_set frames.
+math  reverse_frames
+
+
+
+
+#----------------------------------------------
+# reverses the order of vector set in every frame.
+math  reverse_vectors
+
+
+
+
+#----------------------------------------------
+# creates a new frame_set of only the change
+# from each vector to the next of every frame.
+math  differences
+
+
+
+
+#----------------------------------------------
+# creates a new frame_set by adding the XYZ
+# vales cumulatively. This is the oposite of
+# "math  differences"
+math  sums
+
+
+
+
+
+
+
+#----------------------------------------------
+# Binary operators work on both frame_sets in the registers.
+#----------------------------------------------
+
+#----------------------------------------------
+# swap the registers
+math  swap
+
+
+
+#----------------------------------------------
+# join the register frame_sets end-to-end
+math  splice
+
+
+
+#----------------------------------------------
+# join the vector sets from each frame end-to-end.
+math  composite
+
+
+
+#----------------------------------------------
+# add vertex to vertex the frame_set
+# in A to the first frame in B
+math  add
+
+
+
+#----------------------------------------------
+# add vertex to vertex the frame_set
+# in A to the frame_set in B
+math _add
+
+
+
+#----------------------------------------------
+# multiply vertex to vertex the frame_set
+# in A to the first frame in B
+math  multiply
+
+
+
+#----------------------------------------------
+# multiply vertex to vertex the frame_set
+# in A to the frame_set in B
+math _multiply
+
+
+
+#----------------------------------------------
+# uses the xyz values of each vertex in the first
+# frame of B to rotate the corresponding vertices
+# in every frame of A around fulcrum.
+math  fulcrum          0.0  0.0  0.0
+math  fulcrum_         0.0  0.0  0.0
+math  fulcrum_acceleration  0.0
+math  warp
+
+
+
+#----------------------------------------------
+# uses the xyz values of each vertex in the first
+# frame of B to rotate the corresponding vertices
+# in every frame of A around fulcrum.
+math  fulcrum          0.0  0.0  0.0
+math  fulcrum_         0.0  0.0  0.0
+math _fulcrum          0.0  0.0  0.0
+math _fulcrum_         0.0  0.0  0.0
+math  fulcrum_acceleration  0.0
+math _fulcrum_acceleration  0.0
+math _warp
+
+
+
+#----------------------------------------------
+# uses the xyz values in the first frame in B
+# to set the rgb values in every frame of A.
+# normalized to -1.0 to +1.0 for 0 to 255
+math  xyz_rgb
+
+
+
+#----------------------------------------------
+# uses the xyz values in every frame in B
+# to set the rgb values in corresponding frame of A.
+# normalized to -1.0 to +1.0 for 0 to 255
+math _xyz_rgb
+

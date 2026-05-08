@@ -1,0 +1,1190 @@
+############################################################
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multi platform laser display application
+#   that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+############################################################
+
+#     All available font_names
+
+#     arial
+#     comic_sans
+#     courier_new
+#     impact
+#     laserellipse
+#     lfi_vector
+#     lucida
+#     narrow_vector
+#     square
+#     times_new_roman
+#     wide_vector
+
+#     All available glyphs
+
+#     ! " # $ % & ' ( ) *
+#     + , - . / 0 1 2 3 4
+#     5 6 7 8 9 : ; < = >
+#     ? @ A B C D E F G H
+#     I J K L M N O P Q R
+#     S T U V W X Y Z [ \
+#     ] ^ _ ` a b c d e f
+#     g h i j k l m n o p
+#     q r s t u v w x y z
+#     { | } ~
+
+#     LaserBoy font files are ild files with 94 glyphs.
+#     Each glyph is registered to the origin and is scaled
+#     to fit all positive X and Y space that is 32767 vector
+#     coordinates square (in signed short integer space).
+
+#     The square.
+
+#     LaserBoy renders "text" in two ways:
+#     "fixed" or "variable".
+
+# text fixed (type)
+#     all the glyphs are the same distance apart
+#     from each other in a line. A space character is the
+#     same displacement, but no glyph is rendered.
+
+# text fixed_space (value)
+#     is a portion of the width of the square.
+# text fixed_space 1.00
+#     is square; as much width as height.
+#     Values can be less than or greater than 1.00
+
+# text variable (type)
+#     each glyph is placed according to its own width,
+#     plus a settable gap and space.
+
+# text vari_space (value)
+#     is the width of a single space character in
+#     variable text as a portion of the square.
+#     Since the font is rendered according to the
+#     width of each visible glyph, it is necessary
+#     to designate a value for the space character,
+#     which has no measurable width.
+# text vari_space 0.67
+#     designates 67% of the width of the square.
+# text vari_space -1
+#     A value of -1 sets the variable space width
+#     to be equal to the widest character in the font.
+
+# text vari_gap (value)
+#     is a portion of the square used as the gap
+#     between the glyphs (in a word).
+# text vari_gap 0.20
+#     is 20% of the square.
+#     This gap is used to space all of the characters
+#     in a text string, including the space character.
+
+#     The actual gap between words rendered from a
+#     single space character is
+#     vari_gap + vari_space + vari_gap
+#     the last visible character of a word, followed by
+#     its vari_gap, plus the width of a space character
+#     (vari_space) followed by its vari_gap.
+
+# text line_space (value)
+#     is a portion of the square (height) that sets
+#     the space between lines of a multi-line text form.
+
+# text font_name (name)
+#     designates the name of a font in the
+#     ./LaserBoy/ild/fonts/
+#     directory (without the .ild extension).
+# text font_name square
+#     is included for demonstration of glyph space.
+
+#     Note: since every glyph of
+# text font_name square
+#     takes up all of the space, height and width of
+#     the square, using it in a "variable" text form will
+#     result in every visible glyph having the same width
+#     (all there is to have).
+
+#     Each glyph is placed into real coordinate space
+#     (3D double float) to form a line or a page of text.
+#     This real space is then scaled to fit
+#     signed short integer space.
+
+# text to_space (value)
+#     is the portion of all short int space to fill,
+#     aka a LaserBoy frame.
+# text to_space 1.00
+#     fills the whole frame between at least two edges.
+#     Any value above 1.00 is considered 1.00.
+
+#     If a glyph is made of more than one lit segment,
+#     the lit segments are bonded together with lit black.
+#     When LaserBoy looks for lit segments to treat as
+#     individual elements in a vector image, it sees
+#     whole glyphs (not their separate strokes).
+
+#     By default, all fonts that come with LaserBoy
+#     have bonded glyphs
+
+# text bond_word (0 or 1)
+#     With this setting LaserBoy will render text
+#     with bonded words, so that individual words
+#     are seen as whole objects.
+# text bond_word 1
+#     enables word bonding.
+# text bond_word 0
+#     disables word bonding.
+
+# text bond_line (0 or 1)
+#     With this setting LaserBoy will render text
+#     with bonded lines, so that individual lines
+#     are seen as whole objects.
+# text bond_line 1
+#     enables line bonding.
+# text bond_line 0
+#     disables line bonding.
+
+#     In the app, menu h, option b or B converts
+#     lit black to blank for ild file compatibility.
+
+# text still_frames (value)
+#     is the introduction to the animated
+#     LaserBoy text forms. It is an integer
+#     number of frames to be added to the
+#     LaserBoy frame set that are all the
+#     same frame as described in a single
+#     frame text form. This is for setting
+#     and holding a single frame of text
+#     for multiple frames of time.
+
+# text view_span (value)
+#     is the width or height of the visible text
+#     window in an animated text form.
+#     This only defines one dimension as the other
+#     comes from the rendered size of the text.
+# text view_span 8.00
+#     shows 8 whole squares.
+
+# text move_per_frame (value)
+#     With the animated text forms each frame
+#     represents a change in text position of a
+#     portion of the square as it appears after
+#     being clipped by the visible text window.
+# text move_per_frame 0.15
+#     moves the text by 15% of the square.
+
+#     With the marquee form, the visible window
+#     has a height of however many lines are in
+#     the text, including blank lines between the
+#     first and last visible line.
+#     The width is set by view_span.
+
+#     With the scroll form, the visible window
+#     has a width of the widest line of text.
+#     The height is set by view_span.
+
+#     The scroll starwars text forms are not effected
+#     by the value of view_span. The visible window
+#     is set to twice as high as it is wide.
+
+#     All available settings and their default values.
+#     None of them need to be set to render text.
+
+#text fixed_space     0.70
+#text line_space      1.10
+#text vari_space      1.00
+#text vari_gap        0.20
+#text to_space        0.85
+#text font_name       laserellipse
+#text color_rgb       255 255 255
+#text bond_word       0
+#text bond_line       0
+#text still_frames    1
+#text move_per_frame  0.15
+#text view_span       8.00
+
+#     All available forms
+
+#     (single frame forms)
+# text fixed line
+# text fixed left
+# text fixed right
+# text fixed center
+# text fixed just
+# text fixed at
+# text variable line
+# text variable left
+# text variable right
+# text variable center
+# text variable just
+# text variable at
+
+#     (animated frames forms)
+# text fixed marquee
+# text fixed scroll left
+# text fixed scroll right
+# text fixed scroll center
+# text fixed scroll just
+# text fixed scroll starwars
+# text variable marquee
+# text variable scroll left
+# text variable scroll right
+# text variable scroll center
+# text variable scroll just
+# text variable scroll starwars
+
+# <<__TEXT_END__>>    This tag right here needs to be the
+#                     last line of any multi line text form
+#                     or else LB will render everything to
+#                     the end of the file.
+
+#     The comment mark '#' has no meaning within text
+#     that is headed for rendering. It will be rendered.
+
+#####################################################
+
+
+
+
+
+
+
+#----------------------------------------------------
+#     Let the frame rendering begin!
+#----------------------------------------------------
+
+
+
+
+
+
+
+
+text still_frames 1
+
+#     Once a value is set it applies to any text forms
+#     that follow it until it is set again with a
+#     different value.
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed line
+
+This is the first single line of visible glyphs after "text fixed line".
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+
+text vari_space  0.20
+text vari_gap    0.20
+text font_name    comic_sans
+text color_rgb    127 255 0
+text variable line
+
+This is a single line of variable width text.
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  0.90
+text to_space     0.95
+text font_name    lfi_vector
+text color_rgb    255 255 0
+text fixed line
+# <-- This comment mark is rendered!
+# but not this one!
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  1.00
+text line_space   2.00
+text to_space     0.95
+text font_name    square
+text color_rgb    255 255 255
+text fixed left
+   ! " # $ % & ' ( ) *
+   + , - . / 0 1 2 3 4
+   5 6 7 8 9 : ; < = >
+   ? @ A B C D E F G H
+   I J K L M N O P Q R
+   S T U V W X Y Z [ \
+   ] ^ _ ` a b c d e f
+   g h i j k l m n o p
+   q r s t u v w x y z
+   { | } ~
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  0.60
+text line_space   1.00
+text to_space     0.95
+text font_name    laserellipse
+text color_rgb    127 127 255
+text fixed left
+ _____________________________________________________
+|H |                                               |He|
+|_____________________________________________________|
+|Li|Be|                             |B |C |N |O |F |Ne|
+|_____________________________________________________|
+|Na|Mg|                             |Al|Si|P |S |Cl|Ar|
+|_____________________________________________________|
+|K |Ca|Sc|Ti|V |Cr|Mn|Fe|Co|Ni|Cu|Zn|Ga|Ge|As|Se|Br|Kr|
+|_____________________________________________________|
+|Rb|Sr|Y |Zr|Nb|Mo|Tc|Ru|Rh|Pd|Ag|Cd|In|Sn|Sb|Te|I |Xe|
+|_____________________________________________________|
+|Cs|Ba|* |Hf|Ta|W |Re|Os|Ir|Pt|Au|Hg|Tl|Pb|Bi|Po|At|Rn|
+|_____________________________________________________|
+|Fr|Ra|**|Rf|Db|Sg|Bh|Hs|Mt|Ds|Rg|Cn|Nh|Fl|Mc|Lv|Ts|Og|
+|_____________________________________________________|
+|        |La|Ce|Pr|Nd|Pm|Sm|Eu|Gd|Tb|Dy|Ho|Er|Tm|Yb|Lu|
+|_____________________________________________________|
+|        |Ac|Th|Pa|U |Np|Pu|Am|Cm|Bk|Cf|Es|Fm|Md|No|Lr|
+|_____________________________________________________|
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  0.80
+text line_space   1.00
+text to_space     0.95
+text font_name    laserellipse
+text color_rgb    255 255 255
+text fixed left
+//#######################################################
+bool clear_to_alpha(std::ifstream& in, int& line_number)
+{
+    u_int next_char = '\0';
+    while(in.good())
+    {
+        next_char = in.peek();
+        if(!isalpha(next_char))
+        {
+            in.get(); // eat it!
+            if(next_char == '\n') // end of the line!
+            {
+                line_number++;
+            }
+            if(next_char == '#') // comment
+            {
+                in.ignore(99999, '\n');
+                line_number++;
+            }
+        }
+        else // next_char is alpha
+            break;
+    }
+    return in.good();
+}
+
+//#######################################################
+bool clear_to_digit(std::ifstream& in, int& line_number)
+{
+    u_int next_char = '\0';
+    while(in.good())
+    {
+        next_char = in.peek();
+        if(    !isdigit(next_char)
+            && next_char != '.'
+            && next_char != '-'
+            && next_char != '+'
+          )
+        {
+            in.get(); // eat it!
+            if(next_char == '\n') // end of the line!
+            {
+                line_number++;
+            }
+            if(next_char == '#') // comment
+            {
+                in.ignore(99999, '\n');
+                line_number++;
+            }
+        }
+        else // next_char is a digit or '.' or '-'
+            break;
+    }
+    return in.good();
+}
+
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text line_space   1.00
+text vari_space   0.70
+text vari_gap     0.10
+text to_space     0.90
+text font_name    wide_vector
+text color_rgb    255 80 255
+text variable left
+This is variable
+spaced text
+
+aligned to the left,
+with a blank line.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  0.70
+text line_space   1.30
+text to_space     0.85
+text font_name    lucida
+text color_rgb    63 63 255
+text fixed right
+
+This is multiple lines
+of fixed width
+text, justified
+to the right
+
+with a blank line
+in the middle.
+
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+#text still_frames    33
+text line_space   1.30
+text vari_space   -1
+text vari_gap     0.10
+text to_space     0.35
+text font_name    narrow_vector
+text color_rgb    255 127 0
+text variable right
+This is multiple lines
+of variable width
+text, blah blah
+blah...
+
+This is something
+totally new!
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  0.80
+text line_space   1.30
+text to_space     0.85
+text font_name    courier_new
+text color_rgb    0 255 255
+text fixed center
+It's pretty easy to see
+what this is
+if you look at
+
+text.txt
+
+in the folder
+
+./LaserBoy/txt/
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text line_space   1.30
+text vari_space   0.70
+text vari_gap     0.10
+text to_space     0.667
+text font_name    times_new_roman
+text color_rgb    127 0 255
+#text still_frames 40
+text variable center
+There is a
+pretty crazy
+amount of
+math going on
+here.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space  0.80
+text line_space   0.95
+text to_space     0.95
+text font_name    laserellipse
+text color_rgb    255 255 255
+#text still_frames 45
+text fixed just
+X
+XX
+X X
+XX XX
+X X X
+XX XX XX
+X X X X
+XX XX XX XX
+X X X X X
+XX XX XX XX XX
+X X X X X X
+XX XX XX XX XX XX
+
+ # $ % * + ; :
+   123458901 12 123 1234 12345 123456 12345671
+   23456786789 123458901 12 123 1234 1234
+   3456789 12345601 1212234 12345 123456 123
+
+   4567 12345678 123489 1234789
+   23456 1234567 123456 123 789 123456 01
+    12 123 1234 12345 123456 1267 5678 1234
+
+.:.
+
+    56789 1235901 12 123 1234 1234
+   5 123456 1234567 12345678 1234789 1234501
+
+   Y
+
+   12 123 1234 12345 123456 1234567 12345345678
+   78 123456 This is fucking art. 78 123456
+   45678 1234589 12348901 12 123 1234 12345 123
+
+   LaserBoy.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text line_space   1.10
+text vari_space   0.75
+text vari_gap     0.15
+text to_space     0.90
+text font_name    times_new_roman
+text color_rgb    255 200 0
+text variable just
+"just" alignment aligns
+both the left and right
+margins based on the
+width of the longest
+line.
+
+Spaces between the
+words are variable per
+line
+
+
+Lines can be skipped.
+
+
+and a line can contain
+a single word.
+
+
+
+Puppy!
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     1.00
+text line_space      1.00
+text font_name       laserellipse
+text color_rgb       255 0 255
+#             squares   X  Y
+text fixed at 20       -1  19
+ 19
+ 18
+ 17
+ 16
+ 15
+ 14
+ 13
+ 12  text fixed
+ 11  at squares per
+ 10  half space
+ 9
+ 8   located by X Y
+ 7   { -/+ squares }
+ 6
+ 5   character
+ 4   coordinates
+ 3
+ 2
+ 1
+ 01234567890123456789
+-1
+-2
+-3
+-4
+-5
+-6
+-7
+-8
+-9
+-10
+-11
+-12
+-13
+-14
+-15
+-16
+-17
+-18
+-19
+-20
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     1.00
+text vari_space      1.00
+text line_space      1.00
+text font_name       laserellipse
+text color_rgb       255 0 255
+#                squares   X  Y
+text variable at 20       -1  19
+ 19
+ 18
+ 17
+ 16
+ 15
+ 14
+ 13
+ 12  text fixed
+ 11   at squares per
+ 10  half space
+ 9
+ 8   located by X Y
+ 7   { -/+ squares }
+ 6
+ 5   character
+ 4   coordinates
+ 3
+ 2
+ 1
+ 01234567890123456789
+-1
+-2
+-3
+-4
+-5
+-6
+-7
+-8
+-9
+-10
+-11
+-12
+-13
+-14
+-15
+-16
+-17
+-18
+-19
+-20
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     0.70
+text line_space      0.70
+text font_name       laserellipse
+text color_rgb       255 255 0
+text move_per_frame  0.25
+text view_span       20.00
+text fixed marquee
+    <<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>
+  <<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
+ <<<                                           >>>
+<<<< LaserBoy has another totally new feature! >>>>
+ <<<                                           >>>
+  <<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
+    <<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text vari_space      0.65
+text vari_gap        0.10
+text color_rgb       0 255 0
+text move_per_frame  0.15
+text view_span       10.00
+text variable marquee
+||||||||||||||||||||||||||||||||||||||||||
+******************************************
+##########################################
+
+Plain ASCII text formatted font rendering!
+
+##########################################
+******************************************
+
+||||||||||||||||||||||||||||||||||||||||||
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     0.80
+text line_space      1.65
+text font_name       courier_new
+text to_space        0.65
+text color_rgb       0 255 255
+text move_per_frame  0.075
+text view_span       6.00
+text fixed scroll left
+For several
+years, LaserBoy
+has been able
+to render lines
+of text into
+frames.
+
+But now it is
+possible to do
+it in several
+different formats
+simply by writing
+some very easy to
+understand
+instructions
+in an ordinary
+text file and
+opening that
+in LaserBoy.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text line_space      1.50
+text vari_space      0.50
+text vari_gap        0.15
+text font_name       arial
+text color_rgb       255 160 160
+text to_space        0.50
+text view_span       8.00
+text move_per_frame  0.10
+text variable scroll left
+Several different fonts
+come with LaserBoy.
+
+    arial
+    comic_sans
+    courier_new
+    impact
+    laserellipse
+    lfi_vector
+    lucida
+    narrow_vector
+    square
+    times_new_roman
+    wide_vector
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     0.66
+text font_name       laserellipse
+text color_rgb       255 127 255
+text view_span       3.50
+text to_space        0.70
+text move_per_frame  0.075
+text fixed scroll right
+A new font was
+created just
+for this release
+called
+
+laserellipse.
+
+It is a single
+stroke font
+
+{this one}
+
+made in CAD,
+saved as DXF
+and converted
+to ild vector
+format in
+LaserBoy.
+
+It is made of
+nothing but
+straight lines
+and elliptical
+arcs.
+
+A derivative of
+this font,
+called square,
+is also
+included as a
+demonstration
+of the font
+space square;
+
+a concept used
+as a measure of
+things rendered
+in LaserBoy
+text formats.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text vari_space      0.50
+text vari_gap        0.16
+text font_name       wide_vector
+text color_rgb       200 100 255
+text view_span       10.00
+text to_space        0.67
+text move_per_frame  0.08
+text variable scroll right
+It is possible to
+control several
+aspects of style
+within the contents
+of a LaserBoy font
+rendering text file.
+
+The current version
+of LaserBoy comes
+with a file called
+
+text.txt
+
+that has all of
+the instructions
+and examples of
+every kind of text
+form LaserBoy
+currently knows
+how to read
+and render.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text font_name       lucida
+text color_rgb       255 255 255
+text view_span       10.00
+text to_space        0.80
+text move_per_frame  0.10
+text fixed scroll center
+This video
+is,
+in fact,
+the contents
+of
+that file!
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text font_name       arial
+text color_rgb       127 255 0
+text view_span       20.00
+text to_space        0.55
+text move_per_frame  0.15
+text variable scroll center
+Obviously it doesn't
+take a lot of text
+to make frames that
+have way too many
+vectors to make any
+sense at all for
+laser projection.
+
+But this offers
+a way to get text
+into 3D vector
+space for other
+purposes.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     0.80
+text line_space      1.75
+text font_name       courier_new
+text color_rgb       0 255 255
+text view_span       8.00
+text to_space        0.55
+text move_per_frame  0.075
+text fixed scroll just
+There is another related
+art-form out there, enjoyed
+by an increasing number of
+people, of putting images on
+
+X Y vector scopes,
+oscilloscopes,
+CRTs.
+
+These devices have a much
+higher input bandwidth.
+
+They can handle DAC clocks
+in the megahertz region and
+have no issue with vector
+jumps that track the beam
+clear across the display
+area in almost no time at
+all.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text line_space      1.15
+text font_name       narrow_vector
+text vari_space      0.40
+text vari_gap        0.15
+text color_rgb       255 160 64
+text view_span       6.00
+text to_space        0.50
+text move_per_frame  0.04
+text variable scroll just
+Some people
+like to make
+art in a vector
+environment and
+export it as
+raster video,
+
+such as this one
+being presented
+right now, made
+of LaserBoy
+bitmaps and
+ffmpeg.
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text fixed_space     0.70
+text line_space      1.66
+text font_name       lucida
+text color_rgb       255 255 0
+text to_space        0.90
+text move_per_frame  0.10
+text fixed scroll starwars
+A long time ago in a
+galaxy far, far away....
+
+
+
+
+It is a period of civil war.
+Rebel spaceships, striking
+from a hidden base, have won
+their first victory against
+the evil Galactic Empire.
+
+During the battle, Rebel
+spies managed to steal secret
+plans to the Empire's
+ultimate weapon, the DEATH
+STAR, an armored space
+station with enough power to
+destroy an entire planet.
+
+Pursued by the Empire's
+sinister agents, Princess
+Leia races home aboard her
+starship, custodian of the
+stolen plans that can save
+her people and restore
+freedom to the galaxy.....
+<<__TEXT_END__>>
+
+
+
+
+
+
+
+
+#----------------------------------------------------
+text line_space      1.40
+text vari_space      0.30
+text vari_gap        0.10
+text font_name       times_new_roman
+text color_rgb       255 80 200
+text variable scroll starwars
+|||| #### ||||
+## Be safe. ##
+|||| #### ||||
+## Wear mask. ##
+|||| #### ||||
+#### |||| ####
+|||| #### ||||
+
+
+~ laserboy.org ~
+
+
+L a s e r B o y !!!
+. 2020 .
+
+
+* James Lehman *
+Extra Stimulus
+. Inc. .
+<<__TEXT_END__>>
+
+############################################################
+////////////////////////////////////////////////////////////
+############################################################
+

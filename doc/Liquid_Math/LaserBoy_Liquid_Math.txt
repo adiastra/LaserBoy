@@ -1,0 +1,1505 @@
+###############################################
+#
+#   ASCII format version: LaserBoy-txt-08-30-2022
+#
+###############################################
+
+##################################_unwrap_text_to_here_###################################
+
+LaserBoy Liquid Math (Language)
+
+LaserBoy Liquid Math is an animated 3D color vector function graphing calculator that reads and executes plain ASCII text files containing instructions for setting parameters and calling generators, operators and directives.
+
+It is a subset of the LaserBoy_ASCII_text format.
+
+Everything within this subset begins with the keyword:
+
+math
+
+Each individual statement is complete on one line of text.
+
+Tokens on a single line are separated by any number of [space] characters.
+
+Any line that begins with a hash is a comment and ignored by the interpreter. Blank lines are also ignored.
+
+
+
+
+
+# This is a comment!
+
+# This is a circle:
+
+math  LBO1  phase       90.0
+
+# x = LBO1(t)
+# y = LBO2(t)
+math  lissajou
+
+math  render
+
+
+
+
+There are only three Liquid Math statements in this example.
+
+
+
+
+
+A "frame_set" in this context refers to a consecutive series of one or more frames.
+
+Each frame is a consecutive series of two or more vertices. A vertex is a 3D (xyz) coordinate location in real number space.
+
+A line that connects two consecutive vertices in a frame is a vector. Every vector is defined by two consecutive vertices, the "anchor" and the "destination" in that order and direction.
+
+The first vertex in a frame (at index 0) can only be an anchor and the last vertex can only be a destination. All others in between are both. Frames are connect-the-dots drawings in 3D real numbers.
+
+The vertex at the destination end of a vector designates an rgb color and the status of being "lit" (visible) or "blank" (invisible) for either the vector it terminates or just the vertex itself, depending on how the frame is "rendered" (made visible in some way).
+
+This is all in 3D space no matter what. "2D" may be used to describe a set of vertices that all have z values of 0.0, but they are still in 3D for any math that would move them in 3D space.
+
+A frame_set is typically an animated sequence of frames. Liquid Math script manages multiple frames_sets as elements of computation.
+
+This space is purely conceptualized in memory objects and imagination. There are no hardware display devices that can display this space in its actual form.
+
+
+
+
+
+All of the math that makes this work is done with double precision floating point numbers.
+
+There are no practical limits of size in this space. Math figures may be a low order of magnitude and fit well within unit xyz coordinate space (-1.0 to +1.0) or they may be of high magnitude and have coordinate values in the trillions and beyond.
+
+From the size of atoms to the size of The Universe, "Actual size" in real number space is more or less irrelevant. It is appropriately conceived as (near) infinite numeric resolution. Just don't divide by zero!
+
+But it is relative to itself.
+
+The origin of this space { 0.0  0.0  0.0 } and the positions of "fulcrum", "displacement", "P0" and "P1" parameters are in units of this space. The sin(t) function oscillates from -1.0 to +1.0 over any interval of real numbers (t).
+
+Since this space is any size, it is no size in particular. In order to see this space in any way it must be "rendered" into some kind of finite coordinate space.
+
+Changing the size of a set of math generated vector frames is done by multiplying every vertex of every frame by some constant real number.
+
+When LaserBoy reads a Liquid Math file, it manages all of its frame_sets in real number space and offers parameters and settings that control how that space is "normalized" to fit into a finite coordinate system like LaserBoy 3D signed short integers from -32767 to +32767 or a set of 2D bitmap images of some width and height in pixels.
+
+Even the finite 3D short integer LaserBoy_space must be rendered by the running LaserBoy application to make the 2D display of pixels on the screen that represents its current view (also a bitmap).
+
+A directive from the script can save real number frame_sets as-is in either dxf or LaserBoy_ASCII_text tabular form (because both of these are ASCII text real number file formats as well).
+
+Bitmap images rendered directly from a Liquid Math script show 3D space from the front only. Any rotation of 3D frames is done in the math of the script before rendering.
+
+
+
+
+
+It is difficult to document a text-to-math script language system in a linear order because it is all interdependent. It may take a few reads of this document for it to make sense.
+
+
+
+
+
+Liquid Math uses two invisible internal registers, A and B, that hold whole "frame_sets" of 3D real number color vector art animation frames.
+
+
+
+
+
+There is a set of predefined "parameters" that can be changed from their default values.
+
+See parameters.txt.
+
+These parameters are used by a set of instructions that "generate" either a (single) "still" frame (a frame_set with one frame) or an entire animated frame_set.
+
+See generators.txt.
+
+
+
+
+
+
+
+This is a list of all of the currently defined still_frame generators (parametric expression templates). There are actually two complete sets of generators. The names of the animated versions of these generators all begin with an underscore.
+
+math  rhodonea
+math  epicycloid
+math  epitrochoid
+math  hypocycloid
+math  hypotrochoid
+
+math  oscillator_rhodonea
+math  oscillator_epicycloid
+math  oscillator_epitrochoid
+math  oscillator_hypocycloid
+math  oscillator_hypotrochoid
+
+math  oscillator
+math  oscillator_sum
+
+math  oscillator_xy
+math  oscillator_xyz
+math  lissajou
+math  lissajou_xyz
+
+math  harmonograph
+math  harmonograph_xyz
+
+math  amplitude_mod
+math  amplitude_mod_xy
+math  amplitude_mod_xyz
+
+math  frequency_mod
+math  frequency_mod_xy
+math  frequency_mod_xyz
+
+math  phase_mod
+math  phase_mod_xy
+math  phase_mod_xyz
+
+math  polar
+math  polar_sum
+math  polar_amplitude_mod
+math  polar_frequency_mod
+math  polar_phase_mod
+
+The generators "oscillator_xy" and "lissajou" are the same and "oscillator_xyz" is the same as "lissajou_xyz".
+
+
+
+
+
+Calling a generator is typically how a frame_set gets loaded into a register (A or B).
+
+It is also possible to load frame_sets by importing dxf, LaserBoy_ASCII_txt or whatever is currently loaded in "LaserBoy_space" (the running application) before opening a LaserBoy_ASCII_txt file containing an import directive.
+
+
+
+
+
+There is a set of instructions that "operate" on whatever is in registers A and B.
+
+See operators.txt.
+
+Some operators are unary (one operand per operation). These can be called with only one frame_set loaded in the registers (A). In this case B gets loaded with ƒ(A).
+
+B = ƒ(A)
+
+If both registers are loaded, a unary operator pushes B to A and leaves the result of ƒ(B) in B.
+
+C = ƒ(B)
+delete A
+A = B
+B = C
+
+Some operators are binary (two operands per operation) and calculate the expression A ƒ B, push B to A and leave the result of A ƒ B in B.
+
+C = A ƒ B
+delete A
+A = B
+B = C
+
+Binary operators can only be called if both registers are loaded.
+
+"C" in the expressions above is temporary and has no meaning after an operator instruction is complete.
+
+When an instruction pushes B to A, the previous frame_set in A is deleted.
+
+
+
+
+
+The "result" of any instruction that effects the registers is typically in B, unless it is the first instruction that puts a frame_set into empty registers which goes in A.
+
+The result of an operator is always in B because it requires at least one frame_set to be loaded in the registers.
+
+This result can be rendered into LaserBoy_space, saved as txt, dxf or bitmaps.
+
+See directives.txt.
+
+It can also be stored in a temporary "list" of frame_sets and later recalled and loaded into B for further calculations (within the same script), pushing the previous B to A.
+
+Multiple frame_sets in this list can be combined into one frame_set and rendered into LaserBoy_space, saved as txt, dxf or bitmaps.
+
+Once a Liquid Math generated frame_set is loaded into LaserBoy_space, it is in signed short integers and can be saved as ILDA, or optimized wave.
+
+
+
+
+
+All of the generators that calculate the contents of a frame or frame_set are based on the values of a set of named parameters.
+
+All of these parameters have default values and only changes in their values need to be indicated in the txt before calling any of the generators or operators that use them.
+
+A generator that populates a still_frame is calculated over an "interval" from "start" to start + "duration" in "iterations" steps (consecutive vectors in the frame).
+
+Some of the generators that populate frames are different types of "cycloids" that are the math of Spirograph.
+
+These use the parameters:
+
+math  rhodonea_numerator   1.0
+math  rhodonea_denominator 1.0
+math  fixed_radius         1.0
+math  roller_radius        1.0
+math  roller_offset        1.0
+
+The Default values are shown.
+
+
+
+
+
+There are three parameters that can be set to express units of one complete cycle or period.
+
+One complete cycle around the unit circle is normally thought of as 0.0 to two_pi radians.
+
+The token "two_pi" is used in this text because it can be used in the script in the place of any other real number.
+
+math  phase_cycle       360.0
+
+The value of "phase_cycle" pertains to the "phase" parameter of any of the LBOs.
+
+The default value 360.0 sets the units of LBO phase to degrees. 0.0 to 360.0 is one cycle.
+
+math  rotation_cycle    1.0
+
+The value of "rotation_cycle" pertains to operators that use the parameter "rotation". The default value of 1.0 sets the units to whole rotations. 0.0 to 1.0 is one full rotation.
+
+math  interval_cycle    1.0
+
+The value of "interval_cycle" pertains to the parameters of "start" and "duration" of the interval. The default value of 1.0 sets the units to whole cycles of two_pi. Every whole number is a multiple of two_pi.
+
+The values of start and duration are relative to interval_cycle.
+
+(actual_value_in_radians) = start    * (two_pi / interval_cycle)
+(actual_value_in_radians) = duration * (two_pi / interval_cycle)
+
+These three settings are used to set the units of parameters' values that pertain to rotation or angle.
+
+The only values that make any sense for these three cycle scales are:
+
+# 1.0    (in whole rotations)
+# two_pi (in radians)
+# 360.0  (in degrees)
+
+math  phase_cycle       360.0
+math  rotation_cycle    1.0
+math  interval_cycle    1.0
+
+Default values shown.
+
+
+
+
+
+Many of the math generators use objects of the class LaserBoy_oscillator.
+
+A LaserBoy_oscillator is a mathematical model of one axis of a pendulum. A real pendulum can swing in two axis, tracing out a spiraling elliptical pattern (a natural occurrence of the sin function) until it loses all of its momentum and comes to rest (with damping).
+
+It takes two LBOs to model this; one for the x axis and one for y; LBO1 and LBO2.
+
+This was the original design concept of the LaserBoy_oscillator class. But it developed into much more than just a pendulum simulator.
+
+
+
+
+
+An "LBO" is a function itself.
+
+It is modeled from the function sin(t) where t is a real_number on an interval.
+
+Each LBO has the following set of parameters:
+
+
+# mixer presets
+math  LBO1  function    sin
+
+# expression coefficients
+math  LBO1  amplitude   1.0
+math  LBO1  frequency   1.0
+math  LBO1  phase       0.0
+math  LBO1  duty_cycle  0.5
+math  LBO1  damping     0.0
+math  LBO1  offset      0.0
+
+# function mixer
+math  LBO1  sin         1.0
+math  LBO1  triangle    0.0
+math  LBO1  ramp        0.0
+math  LBO1  square      0.0
+math  LBO1  pulse       0.0
+math  LBO1  trapezoid   0.0
+math  LBO1  circle      0.0
+
+
+
+
+
+These are used in the expression:
+
+LBO(t) == amplitude * function(t * frequency + phase) * e^(-damping / t) + offset
+
+The default values of every LBO form this expression:
+
+LBO(t) == 1.0 * sin(t * 1.0 + 0.0) * e^(-0.0 / t) + 0.0
+
+This simplifies to:
+
+LBO(t) == sin(t)
+
+
+
+The parameter "amplitude" determines the peak-to-peak value (from -amplitude to +amplitude) of the function itself before damping or offset.
+
+
+The parameter "frequency" determines the number of cycles of the periodic function within one interval of two_pi.
+
+
+The parameter "phase" determines the starting position of the periodic function at t = 0.0.
+
+The sin(t) function has no phase offset. It starts at 0.0 at t = 0.0.
+
+The cos(t) function is 90 degrees ahead of the sin(t) function and can therefor be expressed as the sin(t + 90.0) with the default "phase_cycle" value of 360.0.
+
+math  LBO1  phase       90.0
+
+After this instruction LBO1(t) == cos(t).
+
+
+The parameter "duty_cycle" has no representation in the above expression. It actually changes the character of "function".
+
+The value of duty_cycle must be between 0.0 and 1.0. A value of 0.5 is 50%. The sin function has 50% above and 50% below its zero value or half the time it's in the positive phase and half in the negative.
+
+In reality, duty_cycle is a pulse-width-modulation concept. But it is mathematically and graphically interesting to examine. The real sin function has no concept of duty_cycle.
+
+The sin function is the natural swing of a pendulum. Anything other than the default settings of function or duty_cycle are purely mathematically conceived.
+
+
+The "damping" parameter is a value the represents loss of momentum over time. A swinging pendulum loses an equal portion of momentum per equal time period. In other words, a pendulum might lose half of its peak-to-peak swing every 10 seconds. Half and half and half, etc... is an exponential change.
+
+
+The "offset" parameter is a value added to the rest of the expression that changes the position of the periodic function with respect to its own 0.0 value line.
+
+The sin(t) function is centered over the line 0.0. Half of it is positive and half negative.
+
+Setting offset to something other than 0.0 moves the whole function up or down along its own 0.0 value line. Think of this as a DC offset on an AC signal.
+
+
+
+
+
+Each LBO has a "function" parameter that can be set to one of the following:
+
+math  LBO1  function sin
+math  LBO1  function triangle
+math  LBO1  function ramp
+math  LBO1  function square
+math  LBO1  function pulse
+math  LBO1  function trapezoid
+math  LBO1  function circle
+
+Each of these is a replacement for the sin function. All of them have a duty_cycle that changes their characteristic shape.
+
+The "function" of an LBO can be set to just one of these named periodic waveforms or it can be a mix of any of them.
+
+
+
+
+
+Each LBO has a "function mixer" with seven values of 0.0 to 1.0 for the outputs of each function type. The default mixer values are shown.
+
+# function mixer
+math  LBO1  sin         1.0
+math  LBO1  triangle    0.0
+math  LBO1  ramp        0.0
+math  LBO1  square      0.0
+math  LBO1  pulse       0.0
+math  LBO1  trapezoid   0.0
+math  LBO1  circle      0.0
+
+
+
+
+
+Setting the "function" parameter of an LBO with a named waveform will set the corresponding mixer level to 1.0 and all others to 0.0.
+
+Setting multiple values of the mixer must be done after that to achieve a blend of function outputs.
+
+Function mixer values must be between 0.0 and 1.0.
+
+The blend is calculated to always normalize to 1.0 such that:
+
+total =    sin
+         + triangle
+         + ramp
+         + square
+         + pulse
+         + trapezoid
+         + circle
+
+LBO(t) =   (      sin / total) *       sin_output(t)
+         + ( triangle / total) *  triangle_output(t)
+         + (     ramp / total) *      ramp_output(t)
+         + (   square / total) *    square_output(t)
+         + (    pulse / total) *     pulse_output(t)
+         + (trapezoid / total) * trapezoid_output(t)
+         + (   circle / total) *    circle_output(t)
+
+
+where t is on the interval.
+
+The mixer is a balance between all the waveform outputs. It always normalizes to unity.
+
+It is not a means of controlling the amplitude of the output.
+
+A mixer state of all 0.0 values is not valid and will cause an error report.
+
+
+
+
+
+An LBO is a function expression that uses all of the numeric parameters of an LBO in the expression shown. It takes (t) as an argument and returns a value, LBO(t).
+
+The "state" of this function expression is the combination of all of its 13 real number parameters.
+
+All LBOs have these default values that make them behave like the standard sin(t) function.
+
+math  LBO1  function    sin
+
+The "function" parameter takes a text token (not a number) and is used to set the function mixer to any of the named (preset) functions.
+
+The real (double float) numbers used in the math are these:
+
+math  LBO1  amplitude   1.0
+math  LBO1  frequency   1.0
+math  LBO1  phase       0.0
+math  LBO1  duty_cycle  0.5
+math  LBO1  damping     0.0
+math  LBO1  offset      0.0
+
+# function mixer
+math  LBO1  sin         1.0
+math  LBO1  triangle    0.0
+math  LBO1  ramp        0.0
+math  LBO1  square      0.0
+math  LBO1  pulse       0.0
+math  LBO1  trapezoid   0.0
+math  LBO1  circle      0.0
+
+Any of these individual parameters may be set before calling a "generator" that uses them.
+
+
+
+
+
+This parametric expression:
+
+#   x = 5 * sin(t * 13 + pi) + 2
+#   y = 7 * sin(t * 9.7) + 1.5
+
+can be represented in the settings of LBO1 and LBO2.
+
+math  LBO1  amplitude   5.0
+math  LBO1  frequency   13.0
+math  LBO1  phase       180.0
+math  LBO1  offset      2.0
+
+math  LBO2  amplitude   7.0
+math  LBO2  frequency   9.7
+math  LBO2  offset      1.5
+
+Once set, LBO1 and LBO2 are the expressions shown and will evaluate within the calculation of any of the generators that use them, over the interval also specified by settings.
+
+
+
+
+
+A "generator" is a named parametric expression template that takes the current values of parameters and calculates the contents of a frame_set.
+
+In the case of the cycloid generators, the parameters are (single) "scalar" values used in a set of expressions that generate Spirograph type line images.
+
+
+math fixed_radius       3.0
+math roller_radius      13.0
+math duration           13.0
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epicycloid
+#
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * cos(t)
+#            - roller_radius * cos((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * sin(t)
+#            - roller_radius * sin((ratio + 1) * t)
+
+math  epicycloid
+math  render
+
+
+
+
+
+The generators that take LBOs put the expressions of each LBO in different arrangements that evaluate as the individual axis of the images they create. In other words LBO1 might generate all the x coordinate values, LBO2 all the y values.
+
+
+math  LBO1  phase       90.0
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+#
+#    x = LBO1(t)
+#    y = LBO2(t)
+
+math  lissajou
+math  render
+
+
+
+
+
+Or LBO1 + LBO2 is the x axis and LBO3 + LBO4 is the y axis. In any case the LBOs used are full function expressions (not simple scalar values).
+
+
+math  duration          20.0
+
+math  LBO1 frequency    7.0
+
+math  LBO2 amplitude    2.1
+math  LBO2 frequency    0.05
+math  LBO2 phase        90.0
+
+math  LBO3 frequency    7.2
+
+math  LBO4 amplitude    2.1
+math  LBO4 frequency    0.05
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Harmonograph
+#
+#     x = LBO1(t) + LBO2(t)
+#     y = LBO3(t) + LBO4(t)
+
+math  harmonograph
+math  render
+
+
+
+
+
+The parameters used by a still_frame generator always include:
+
+math  start             0.0
+math  duration          1.0
+math  iterations        100
+
+This defines the interval in iterations used to express a still_frame generator as a set of consecutive vectors (iterations + 1 vertices) in a frame.
+
+A still_frame generator may include up to 6 initial state LBOs and/or the initial state parameters used in the cycloid generators.
+
+
+
+
+
+The calculated output of just one LBO in its default state (oscillator) uses the default values shown above.
+
+# x = t
+# y = LBO1(t)
+
+Since the default values of these parameters do not need to be specified, all that is required in the text file is:
+
+math  oscillator
+math  render
+
+These two lines alone, in a text file, will create a frame_set of a still_frame as the sin function, from 0.0 to two_pi, plotted on the screen in 100 iterations or consecutive vectors.
+
+A vector is the line between two consecutive vertices. A frame of 100 vectors requires 101 vertices.
+
+
+
+
+
+Since the generator "oscillator" uses only one LBO, it is LBO1. The numbered LBOs are always used in the order they appear in the expression template of the generator. There are generators that use 1, 2, 3, 4 or 6 of them in various arrangements that may result in 2D or 3D vector line figures.
+
+LBO1 through LBO6 exist for a set of generators that use up to that number of LBOs.
+
+
+
+
+
+The line "math  render" is the directive that takes the most recent real number frame_set in the registers (result) and renders it into LaserBoy_space (the running application's frame_set) in scaled (normalized), 3D signed short integer.
+
+
+
+
+
+Since an LBO is a function "state", it is possible to calculate a transition from one function state to another using linear interpolation of each of the parameters from initial to final state. So any intermediate LBO can be found somewhere in between two defined LBOs.
+
+This is the foundation of animation in this math script. The animated generators take initial and final frame parameters and each frame in the resulting frame_set is a transition from one to the other.
+
+Since the LBOs have function mixers, even the function shape itself can transition from any of the named functions to any other. A sin wave function can gradually transition into a square wave, for example.
+
+Many of the other parameters used in Liquid Math have initial and final representation as well.
+
+
+
+
+
+The generator "math  oscillator" calculates one still_frame in a frame_set. Animation in Liquid Math notation is achieved by defining two sets of parameters; initial and final.
+
+When LaserBoy calculates a generator that produces an animated set of frames it uses linear interpolation to find all of the frames in between the initial and the final sets of parameters.
+
+The generators that begin with an underscore make animated frame_sets. They take the same parameters as the still_frame versions (for the first frame) and another matching set of parameters that begin with an underscore character (for the last frame).
+
+Animated generators also take a parameter for the number of frames to be generated in the frame_set.
+
+math  frames            3
+
+The default value of "frames" is 3. This results in three frames in the frame_set. The first is 100% initial values. The last is 100% final values and the middle is half way in between.
+
+# ratio   = frame_index / ("frames" - 1)  // frame position as a portion of 1.0
+# balance = 1.0 - ratio
+# parameter_of_frame = parameter * balance + _parameter * ratio
+
+
+
+
+
+There are six numbered LBOs and each one has four possible "positions" in the generators that use them.
+
+That's why there are 24 of them, 6 numbered sets of 4.
+
+There are also four "positions" of some of the parameters used by operators.
+
+
+
+
+
+There are two different ways to transition from an initial value to a final value.
+
+The first is through the frames in a frame_set to make an animation.
+
+   LBO1  (first frame function expression)
+    |
+    |    (intermediate function expressions per frame)
+    V
+  _LBO1  (last frame function expression)
+
+
+The second is within the calculation of the interval of each frame and is explained later in this text.
+
+
+
+
+
+A transition between parameter states for frames in a frame_set is depicted in the script with or without a leading underscore.
+
+math  LBO1  {parameter} {value}
+
+No leading underscore represents an LBO state to be used by the still_frame generators and as the initial state of the LBO (first frame) for the animated frame_set generators.
+
+math _LBO1  {parameter} {value}
+
+With a leading underscore represents the final state of an _LBO (last frame) used only by the animated frame_set generators.
+
+
+
+
+
+All of the still_frame generators (names) have no leading underscore and all of the animated frame_set generators have a leading underscore. Every still_frame generator has an animated generator counterpart.
+
+
+
+
+
+There are initial and final state parameters for start, duration and iterations as well.
+
+math  start             0.0
+math  duration          1.0
+math  iterations        100
+
+math _start             0.0
+math _duration          1.0
+math _iterations        100
+
+These parameters also transition from initial to final values between the first and last frame in a frame_set.
+
+The value of iterations is actually represented as a real number. There is no such thing as a portion of an iteration. The number of iterations corresponds to the number of vertices in a frame.
+
+However, a real number value of iterations that has a fractional part will effect the positions of all of the vertices in the calculation. This will happen when an animated generator is called with different values for "iterations" and "_iterations", unless the difference between these values is exactly the same as the number of frames to be generated.
+
+No partial vector is created to represent any fractional part of iterations.
+
+
+
+
+
+Every generator that makes animated frame_sets requires all of the parameters of its still_frame counterpart, plus the final state versions of those parameters, plus the desired number of frames in the resulting frame_set.
+
+Any or all of the values of the parameters that go into generating the contents of a still_frame can be changed between initial and final sets of values.
+
+The resulting frame_set will be an animation showing the progressive effect of the change in states from one to the other.
+
+So the simple "oscillator" generator from above can be animated.
+
+Generators that use initial and final state parameters to make animated frame_sets also begin with the underscore character.
+
+math _oscillator
+
+
+
+
+
+The instructions for creating an animated frame_set of an _oscillator starting with a frequency of 1.0 and transitioning into an _oscillator with a frequency of 10.0 would look like this:
+
+math  frames            100
+math _LBO1 frequency    10.0
+
+math _oscillator
+math  render
+
+The values of "frames" and "_LBO1 frequency" are the only values that are changed from their defaults before the _oscillator generator is called.
+
+This will generate a frame_set of 100 frames and put it into the registers. The "render" command scales the real_number coordinates to fit in LaserBoy_space (the running application) in signed short integers.
+
+Animation is visualized as the gradual change in increments of (1 / "frames") per frame in the parameters from initial to final.
+
+
+
+
+
+All of the animated frame_set generators use two "positions" of all of the parameters they take.
+
+
+# example
+math  LBO1 amplitude    pi
+math  LBO1 damping      1.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 amplitude    pi
+math _LBO1 frequency    30.0
+math _LBO1 damping      1.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = t
+#  y = LBO1(t)
+math _oscillator
+
+math render
+
+
+
+
+
+There is also a final state set of parameters for the animated cycloids.
+
+
+# example
+math  rhodonea_numerator    7.5
+math  rhodonea_denominator  8.0
+math  fixed_radius          1.0
+
+math  start             0.0
+math  duration          16.0
+
+math _rhodonea_numerator    8.5
+math _rhodonea_denominator  8.0
+math _fixed_radius          1.0
+
+math _start             0.0
+math _duration          16.0
+
+# https://en.wikipedia.org/wiki/Rhodonea
+#
+# ratio = rhodonea_numerator / rhodonea_denominator
+#
+#  x = fixed_radius * cos(ratio * t) * cos(t)
+#  y = fixed_radius * cos(ratio * t) * sin(t)
+math _rhodonea
+
+math render
+
+
+
+
+
+# example
+math  fixed_radius         5.0
+math  roller_radius        1.0
+math  roller_offset        -11.0
+
+math  start                0.1
+math  duration             1.0
+
+math _fixed_radius         5.0
+math _roller_radius        1.0
+math _roller_offset        11.0
+
+math _start                0.1
+math _duration             1.0
+
+# https://en.wikipedia.org/wiki/Epitrochoid
+#
+# ratio = fixed_radius / roller_radius;
+#
+#  x =   roller_radius * (ratio + 1) * cos(t)
+#         - roller_offset * cos((ratio + 1) * t)
+#
+#  y =   roller_radius * (ratio + 1) * sin(t)
+#         - roller_offset * sin((ratio + 1) * t)
+math _epitrochoid
+
+math render
+
+
+
+
+
+All of the math generators have both still_frame and animated frame_set versions. A still_frame is a frame_set with only one frame.
+
+#   still_frame frame_set generator
+math  oscillator
+
+# animated frame_set generator
+math _oscillator
+
+
+
+
+
+Once a frame_set is either generated or imported and loaded into the registers, an "operator" can be called to create a new frame_set based on one or both of the frame_sets in the registers.
+
+Unary operators work on one frame_set and only require one frame_set to be loaded in the registers. Binary operators require both registers A and B to be loaded.
+
+
+
+
+
+When calling a generator, the value of "iterations" and "still_frames" or "frames" determines the number of vertices in each frame and the number of frames in the frame_set it generates.
+
+The parameter:
+
+math  still_frames      1
+
+is used by the generators that only make a still_frame. Setting this to something more than the default value of 1 will create a frame_set of that many copies of the still_frame.
+
+
+
+
+
+The parameters:
+
+math  first_frames      1
+math  last_frames       1
+
+are used by the animated generators as to how many copies of the first frame and the last frame should be in the frame_set. With multiple copies of the first and last frame, the display of the animation has the effect of starting as a static image, then moving through the animation sequence, and ending on a static image.
+
+
+
+
+
+The operators work with whatever is in the registers. They work on the vertices that are already there in the number of frames already in the frame_set (unary) or frame_sets (binary).
+
+
+
+
+
+There are unary operators that move scale or rotate the last frame_set added to the registers, leaving the "result" of the operation as the new last frame_set.
+
+# These parameters:
+
+math  displacement 0.0  0.0  0.0
+math  factor       1.0  1.0  1.0
+math  fulcrum      0.0  0.0  0.0
+math  rotation     0.0  0.0  0.0
+
+# are used by these operators:
+
+math  move
+math  scale
+math  rotate
+
+
+
+
+
+These parameters are all 3D real numbers. All three xyz values are set in one line. Changes to their default values must be noted before an operator that uses them is called. All three values of xyz must be set even if a change is desired in just one of them.
+
+These operators and parameters do not have leading underscores.
+
+
+
+
+
+In these three forms, "move", "scale" and "rotate" transform every frame exactly the same way in a frame_set. The effect of the operator is constant through all of the frames.
+
+The operator "move" creates a new frame_set by adding every vertex in every frame to the xyz values of "displacement".
+
+The operator "scale" creates a new frame_set by multiplying every vertex in every frame by the xyz values of "factor".
+
+The "rotate" operator creates a new frame_set by rotating every vertex in every frame around "fulcrum" xyz position by "rotation" xyz units of rotation on each axis.
+
+math  rotation_cycle    1.0
+
+If rotation_cycle is 1.0 (default value) the rotation units are in whole rotations. It is worth noting that whole number values in any of the axis of rotation indicate full rotations. That leaves no change in the rotational positions of the vertices around that axis.
+
+
+
+
+
+The parameters "displacement" and "fulcrum" are actually point locations in 3D space.
+
+When "move" is called, displacement is added to every vertex. Another way to think of this is the location of the origin within the vector image is moved to the location of displacement.
+
+The "fulcrum" is a 3D point location in space that all of the vertices can rotate around.
+
+The parameters of "factor" and "rotation" are not at all 3D points in space.
+
+The xyz values of factor are used to scale (multiply) the xyz values of the vertices.
+
+The xyz values of rotation are units of angular rotation around the fulcrum for each axis xyz.
+
+
+
+
+
+Another set of unary operators "spread" their effect from the first vertex to the last vertex of every frame.
+
+The operator "move_" spreads the move to "displacement" from 0% to 100%. Every vertex in the frame gets a portion of the displacement coordinates xyz added to it, proportional to its position in the ordered list of vertices.
+
+This creates an effect like moving the paper along a straight path while an image is being drawn on it. The first vertex has no displacement and the last has 100% of displacement added to it.
+
+The operator "rotate_" spreads the rotation to "rotation" from 0% to 100%. Every vertex in the frame gets a portion of rotation around fulcrum, proportional to its position in the ordered list of vertices. Instead of moving the paper in a straight line it spins like a platter around fulcrum xyz (in 3D around each axle).
+
+
+
+
+
+# These parameters:
+
+math  displacement 0.0  0.0  0.0
+math  factor       1.0  1.0  1.0
+math  fulcrum      0.0  0.0  0.0
+math  rotation     0.0  0.0  0.0
+
+# are used by these operators:
+
+math  move_
+math  scale_
+math  rotate_
+
+These operators and parameters do not have leading underscores.
+
+
+
+
+
+Scaling a set of vertices is done by multiplication. The position of each vertex has a distance from the origin of space. Its actual coordinate values are displacement from the origin.
+
+Multiplying the xyz coordinates of a vertex with some scalar number changes its distance from the origin.
+
+With "move_" and "rotate_" the effect is spread from zero to the full value of displacement or rotation.
+
+It makes no sense to assume a starting value of 0.0 for "factor" in a "scale_". Multiplying a vertex location by zero will just yield a vertex of no magnitude, a coordinate value of all zeros.
+
+In the case of "scale_" there is another parameter to indicate a final scaling factor (xyz) for the set of vertices in each frame so a spread can be calculated between them.
+
+math  factor       1.0  1.0  1.0
+math  factor_      1.0  1.0  1.0
+
+The "scale_" operator scales vertices by ( factor --> factor_ ) from the first to the last vertex in each frame.
+
+This makes it possible to scale a set of vertices with a starting size and an ending size.
+
+The default values of all of the positions of factor are all 1.0 for xyz or unity scale (no effect).
+
+But if the initial "factor" is set to all 0.0 and the final "factor_" is set to all 1.0, the image will appear to be growing from the origin (zero dimensions) to "actual_size" as it is being drawn. This is a way to make spiral figures.
+
+
+
+
+
+The underscore character at the end of the parameter name "factor_" indicates a final state parameter used in an operation within the calculation over the vertices of each frame.
+
+These are the two types of transitional parameters:
+
+A changing value through the frames in a frame_set
+(with or without a leading underscore)
+
+A changing value through the vertices of each frame
+(with or without a trailing underscore)
+
+
+
+
+
+The animated versions of these operators take initial (first frame) and final (last frame) parameters and the change between them is distributed through the frame_set. These animated operators make vector frames move or change size over a series of frames.
+
+math  displacement 0.0  0.0  0.0
+math  factor       1.0  1.0  1.0
+math  fulcrum      0.0  0.0  0.0
+math  rotation     0.0  0.0  0.0
+
+math _displacement 0.0  0.0  0.0
+math _factor       1.0  1.0  1.0
+math _fulcrum      0.0  0.0  0.0
+math _rotation     0.0  0.0  0.0
+
+math _move
+math _scale
+math _rotate
+
+These animated operators and final state parameters have leading underscores.
+
+The animated operators "_move", "_scale" and "_rotate" transform each frame in a frame_set with an effect that starts with the initial parameter values for the first frame and transitions to the final parameter values of the last frame through however many frames there are in the last frame_set added to the registers.
+
+The operator "_move" creates a new frame_set by adding every vertex in every frame to the xyz values of the transitional parameter ( displacement --> _displacement ). This is an incrementally changing value for each frame calculation.
+
+The operator "_scale" creates a new frame_set by multiplying every vertex in every frame by the xyz values of the transitional ( factor --> _factor ).
+
+The "_rotate" operator creates a new frame_set by rotating every vertex in every frame around ( fulcrum --> _fulcrum ) xyz position by ( rotation --> _rotation ) xyz units of rotation on each axis.
+
+
+
+
+
+The animated forms of these unary operators also begin with an underscore to indicate a changing effect through the set of frames.
+
+math _move_
+math _scale_
+math _rotate_
+
+
+The "_move_" operator does a move_ on each frame with a transitioning parameter of ( displacement --> _displacement ).
+
+
+The "_rotate_" operator does a rotate_ on each frame with transitioning parameters of ( fulcrum --> _fulcrum) and ( rotation --> _rotation ).
+
+
+As shown above with the "_scale" operator:
+
+math  factor       1.0  1.0  1.0
+math _factor       1.0  1.0  1.0
+
+math _scale
+
+This notation (with and without a LEADING underscore character) indicates the change in scaling factors from the first to last frame in the frame_set.
+
+The animated operator "_scale_" uses all four "positions" of the parameter "factor".
+
+math  factor       1.0  1.0  1.0
+math  factor_      1.0  1.0  1.0
+math _factor       1.0  1.0  1.0
+math _factor_      1.0  1.0  1.0
+
+math _scale_
+
+That is a scale_ from ( factor  --> factor_ ) for the first frame in the frame_set to a scale_ of ( _factor  --> _factor_ ) for the last frame in a frame_set.
+
+
+
+
+
+The parameters that _scale_ uses for each intermediate frame in a frame_set are:
+
+  factor  -->  factor_    (first frame initial and final scale_ factors)
+    |            |
+    |            |        (intermediate values for both initial and final per frame)
+    V            V
+ _factor  --> _factor_    (last  frame initial and final scale_ factors)
+
+
+
+
+
+By default, all of these "spread" operators do their effect within a frame in a linear fashion.
+
+Each vertex gets the same (constant) incremental change of (1 / iterations).
+
+#   move, scale or rotate each vertex by:
+
+#     vertex_index      // changing number
+#   * (1 / iterations)  // times an equal portion
+#   * parameter         // of parameter
+
+But it is possible to accelerate or decelerate the effect of the change.
+
+math  move_acceleration    0.0
+math  scale_acceleration   0.0
+math  rotate_acceleration  0.0
+
+The default values of 0.0 indicate that there is no acceleration.
+
+A positive number will cause the change to increase with every vertex of each frame. This is exponential change. A good visual representation of exponential change in displacement is the fret-board of a guitar.
+
+In the case of "move_" each vertex will get a larger portion added to it moving toward "displacement".
+
+
+
+
+
+Acceleration factors are used in an exponential expression with the base e.
+
+The index of a vertex (starting at 0) divided by (iterations - 1.0) yields a real number from 0.0 to 1.0.
+
+The value of an accelerated parameter transitions through the vertices in a frame as:
+
+#     step = acceleration / iterations    // a step of (1 / iterations) of acceleration
+
+#     index / (iterations - 1)            // from 0.0 to 1.0 by index
+#   * parameter                           // times parameter
+#   * e^-(acceleration - (index * step))  // times index steps of acceleration
+
+A negative number for acceleration has exactly the opposite effect as a positive number. It decelerates toward its final value. Essentially, it is accelerating from the other end backwards to the initial value. That is actually how it is done in the math.
+
+
+
+
+
+There are binary operators that use both registers as operands, A ƒ B.
+
+math  add
+math  multiply
+math  warp
+
+In these still_frame versions, only one frame is used from the frame_set in the second register, B to affect all of the frames in the frame_set of the first register, A.
+
+C = A ƒ B[0]
+delete A
+A = B
+B = C
+
+where B[0] is the first or only frame in the frame_set B.
+
+Every frame in the frame_set in register A gets the xyz values added, multiplied or "warped" with the corresponding xyz values in (only) the first frame of the frame_set in register B.
+
+
+
+
+
+The "warp" operator rotates the vertices in every frame of A by the corresponding vertex values in the first frame of B around each axle of fulcrum.
+
+Values in the set of vertices used for rotation are scaled by a factor of pi.
+
+Since the default behavior of an LBO is the sin function and the sin function always returns a value from -1.0 to +1.0, rotational units for "warp" are in multiples of pi.
+
+The difference between (-1.0 * pi) and (+1.0 * pi) is two_pi, one whole rotation.
+
+
+
+
+
+In any case where one frame or every frame is paired with another frame or frames for a binary operation, the two frames being combined by the binary operator might not have the same number of vertices.
+
+LaserBoy employs a kind of vector set position interpolation to find an xyz value that exists between the actual vertices of the frame with fewer.
+
+If one frame has 1057 vertices and the other has only 100, the resulting frame after the binary operation will have 1057 vertices.
+
+The vertex locations from the frame with only 100 vertices are calculated by a portion of the frame with 1057 vertices, such that 1057 points are found along the lines indicated by the vectors in the frame that has only 100.
+
+It doesn't matter which register has the frame_set with more or less vertices per frame. It always calculates to the higher vertex count.
+
+
+
+
+
+There are also animated versions of these binary operators that begin with the underscore character.
+
+math _add
+math _multiply
+math _warp
+
+These versions of the operators work from frame-to-frame between the two frame_sets loaded in the registers. So the contents of each frame in A are added, multiplied or warped by the corresponding frame in the frame_set in B.
+
+Here again there may be a mismatch in the number of frames in each frame_set. So LaserBoy matches operator frame-to-frame using some frames multiple times to complete all of the operations required for the greater number of frames. The resulting frame_set will have the greater number of frames.
+
+
+
+
+
+Only the frame-to-frame operators "_add" and "_multiply" are commutative. The order of A and B in the operation is irrelevant.
+
+A ƒ B == B ƒ A
+
+The still_frame operators are not commutative because they only use the first frame of B in the operation of A ƒ B[0].
+
+For all of the binary operators that are not commutative there is the "math  swap" instruction that does exactly what it says. It swaps the frame_sets of A and B before a binary operator is called.
+
+
+
+
+
+The general concept of using this calculator is to:
+
+Set the values of the parameters about to be used in a generator.
+
+Call the generator to calculate itself using its parameters. This will load the calculated frame_set into the first location of the registers, A.
+
+At this point, parameters may be set for use by a unary operator and calling the operator would load the result into the second of the two registers, B.
+
+Or another generator may be called perhaps with different parameters set just before it is called.
+
+In either event the resulting frame_set will load into the second of the two registers, B.
+
+Once there are two frame_sets loaded into the registers, the binary operators can be called.
+
+Anytime there is at least one frame_set in the registers it (the last one added) can be stored in a list.
+
+The first frame_set stored to the list must have a name. Additional frame_sets added to the list may be named or not. They are listed in the order in which they are stored.
+
+A frame_set can be recalled from the list (by name) and copied into the registers (B).
+
+A list of frame_sets can be spliced end-to-end into one frame_set and loaded into the registers (B), starting with the frame_set of name and going to the end of the list.
+
+Similarly, a list of frame_sets can be composited into each other by splicing the sets of vertices in each frame. Each new frame is the composition of a frame from each of the frame_sets. The result of this is loaded into the registers (B).
+
+A list of frame_sets can be rendered into LaserBoy_space and normalized as one whole frame_set, sharing the same normalized dimensional space. This does not copy frame_sets from the list back to the registers.
+
+The list can also be saved directly as txt, dxf, or bitmaps.
+
+The list can be gleaned of all frame_sets with no name. A frame_set of name can be delisted by name.
+
+There are directives that import color vector frame_sets from LaserBoy_space, txt files or directories of dxf files. A call of one of these import directives makes a new frame_set and loads it into the registers.
+
+Instructions that create new frame_sets (beyond the first) will delete the first frame_set in the registers, A and push the second to the first, A = B.
+
+Every frame_set has an internal flag that indicates if it has been used in a calculation, copied to the list or rendered to LaserBoy_space, bmp, dxf or txt.
+
+Each frame_set in the first register, A is checked before it is deleted to make sure it was used in some way. If it was not, it is considered an error and reported.
+
+Likewise, the list keeps track of its frame_sets' use and reports if there are any left in the list unused at the end of the txt file.
+
+All of the parameters exist and have default values before the text file is even opened.
+
+Every LBO is by default the sin(t) function. Any of their attributes can be changed before calling a generator that uses them.
+
+math  LBO1  reset
+
+will set the named LBO back to its default values.
+
+math  LBO_reset_all
+
+will set them all back to default values.
+
+There are four possible "positions" that parameters may have in the calculation of generators or operators.
+
+
+
+
+
+math LBO1 {attribute} {value}
+
+No underscores indicates
+initial state to calculate vertices within a frame
+-OF-
+still or first frame in frame_set.
+
+
+
+
+
+math LBO1_ {attribute} {value}
+
+A trailing underscore indicates
+final state to calculate vertices within a frame
+-OF-
+still or first frame in frame_set.
+
+
+
+
+
+math _LBO1 {attribute} {value}
+
+A leading underscore indicates
+initial state to calculate vertices within a frame
+-OF-
+last frame in frame_set.
+
+
+
+
+
+math _LBO1_ {attribute} {value}
+
+Both leading and trailing underscores indicates
+final state to calculate vertices within a frame
+-OF-
+the last frame in frame_set.
+
+
+
+
+
+Parameters can change from initial to final over the interval of each frame.
+
+   LBO1  -->  LBO1_
+
+
+Parameters can change from initial to final over the frames of a frame_set (animation).
+
+   LBO1
+     |
+     |
+     V
+  _LBO1
+
+
+These two concepts work together.
+
+   LBO1  -->  LBO1_   (first frame)
+     |          |
+     |          |     (intermediate frames)
+     V          V
+  _LBO1  --> _LBO1_   (last frame)
+
+
+
+
+
+There is a parameter "intra_interval_interpolation" that acts as a master switch for all LBOs in the script that follows.
+
+#math  intra_interval_interpolation  no
+
+Since all of the LBOs have positions for initial and final values over the interval of a frame, every generator that uses them actually takes both.
+
+The concept of changing parameters over the calculated interval (iii) might not be wanted.
+
+So to avoid requiring the definition of both the initial and the final intra-interval versions of LBO parameters, the script interpreter assumes that "intra_interval_interpolation" is "no", unless any one of the LBO?_ values is explicitly set (final LBO state within the interval).
+
+math  LBO1_ frequency   2.0
+
+The statement above would turn on iii for all LBOs.
+
+Any desired value changed from the defaults would have to be expressed for both positions of all LBOs in use.
+
+Setting "intra_interval_interpolation" overrides the implicit status.
+
+#math  intra_interval_interpolation  no
+
+#  if intra_interval_interpolation is no:
+#  LBO1_  =  LBO1
+#  LBO2_  =  LBO2
+#  LBO3_  =  LBO3
+#  LBO4_  =  LBO4
+#  LBO5_  =  LBO5
+#  LBO6_  =  LBO6
+# _LBO1_  = _LBO1
+# _LBO2_  = _LBO2
+# _LBO3_  = _LBO3
+# _LBO4_  = _LBO4
+# _LBO5_  = _LBO5
+# _LBO6_  = _LBO6
+
+
+
+
+
+Another parameter that can change through the calculation of the vertices in a frame is the position of the fulcrum used by the rotation operators.
+
+math  fulcrum      0.0  0.0  0.0
+math  fulcrum_     0.0  0.0  0.0
+math  fulcrum_acceleration   0.0
+
+math  rotation     0.0  0.0  0.0
+math  rotate_acceleration    0.0
+
+math  rotate
+math  rotate_
+math  warp
+
+The still_frame operators "rotate", "rotate_" and "warp" have a "fulcrum" that can move to "fulcrum_" through the progression of vertices in each frame of a frame_set and its change in position is calculated with "fulcrum_acceleration".
+
+
+
+
+
+The animated rotation operators can use all four positions of "fulcrum". The acceleration of the moving fulcrum can also transition through the frames in a frame_set. In the case of "_rotate_", the acceleration of the rotation can also change through the frames in a frame_set.
+
+math  fulcrum      0.0  0.0  0.0
+math  fulcrum_     0.0  0.0  0.0
+math _fulcrum      0.0  0.0  0.0
+math _fulcrum_     0.0  0.0  0.0
+
+math  fulcrum_acceleration   0.0
+math _fulcrum_acceleration   0.0
+
+math  rotation     0.0  0.0  0.0
+math _rotation     0.0  0.0  0.0
+
+math  rotate_acceleration    0.0
+math _rotate_acceleration    0.0
+
+math _rotate
+math _rotate_
+math _warp
+
+
+
+The operator "_warp" uses these transitional parameters:
+
+( fulcrum -->  fulcrum_) with  fulcrum_acceleration   (first frame)
+     |            |                    |
+     |            |                    |              (intermediate frames)
+     V            V                    V
+(_fulcrum --> _fulcrum_) with _fulcrum_acceleration   (last frame)
+
+
+
+The operator "_rotate" uses these transitional parameters:
+
+ rotation on ( fulcrum -->  fulcrum_) with  fulcrum_acceleration
+     |            |            |                    |
+     |            |            |                    |
+     V            V            V                    V
+_rotation on (_fulcrum --> _fulcrum_) with _fulcrum_acceleration
+
+
+
+The operator "_rotate_" uses these transitional parameters:
+
+ rotation with  rotate_acceleration on ( fulcrum -->  fulcrum_) with  fulcrum_acceleration
+     |                    |                 |            |                     |
+     |                    |                 |            |                     |
+     V                    V                 V            V                     V
+_rotation with _rotate_acceleration on (_fulcrum --> _fulcrum_) with _fulcrum_acceleration
+
+
+
+Similar to the "intra_interval_interpolation" switch for the LBO parameters, there is a switch for "moving_fulcrum" that is assumed to be false, no or off, so it is not necessary to define the final states of "fulcrum_" or "_fulcrum_" if there is no change between the initial and final values for the calculation over the vertices in each frame. However, if either of these values are explicitly set in the script, "moving_fulcrum" becomes true and any operator that uses "fulcrum" and/or "_fulcrum" will use the discrete values of "fulcrum_" and/or "_fulcrum_".
+
+Setting "moving_fulcrum" overrides the implicit setting.
+
+#math  moving_fulcrum  no
+
+# if moving_fulcrum is off
+#  fulcrum_  =  fulcrum
+# _fulcrum_  = _fulcrum
+
+
+
+
+
+Another pair of operators are a bit different than all of those described thus far. There are four parameters that define initial and final point locations of "P0", "_P0", "P1" and "_P1" that define a 3D rectangular (solid) clipping region.
+
+The default values are shown.
+
+math  P0          -1.0 -1.0 -1.0
+math  P1           1.0  1.0  1.0
+
+math _P0          -1.0 -1.0 -1.0
+math _P1           1.0  1.0  1.0
+
+math  clip
+math _clip
+
+The still_frame version, "clip" only uses the initial values of "P0" and "P1". Each of these is a 3D point in space. P0 defines the minimum values of xyz and P1 defines the maximum values of xyz. This defines a rectangular solid region of space with P0 as the bottom, left, rear corner and P1 as the top, right front corner.
+
+Calling the "clip" operator on the last frame_set added to the registers will eliminate all vectors outside of the clipping region. It will properly terminate any vector that pierces through the walls of the rectangular region and add appropriate blanking to connect the fractured pieces of the vector image that is left inside of the clipping region.
+
+The animated version of "_clip" does the same thing but the positions of P0 and P1 can change through the frames in the frame_set to _P0 and _P1. So the clipping region can move, change size and proportions through the frames.
+

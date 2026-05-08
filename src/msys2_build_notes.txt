@@ -1,0 +1,37 @@
+# https://github.com/orlp/dev-on-windows/wiki/Installing-GCC--&-MSYS2
+
+pacman -Syuu
+
+pacman -Sy --needed  base-devel \
+                     mingw-w64-i686-toolchain \
+                     mingw-w64-x86_64-toolchain \
+                     git subversion mercurial \
+                     mingw-w64-i686-cmake \
+                     mingw-w64-x86_64-cmake \
+                     mingw-w64-i686-boost \
+                     mingw-w64-x86_64-boost \
+                     mingw32/mingw-w64-i686-SDL2 \
+                     mingw64/mingw-w64-x86_64-SDL2 \
+                     mingw32/mingw-w64-i686-SDL \
+                     mingw64/mingw-w64-x86_64-SDL
+
+# MINGW32 in ./LaserBoy/src
+# only works on Vista to Win10
+make -f Makefile.w32
+# for SDL2
+
+make -f Makefile_sdl1.w32
+# for SDL
+
+# MINGW64 in ./LaserBoy/src
+
+make -f Makefile.w64
+# for SDL2
+# LaserBoy.exe in this zip is made from Makefile.w64.
+
+make -f Makefile_sdl1.w64
+# for SDL
+
+# Makefile.win and Makefile_sdl1.win are for building on WinXP 32-bit with mingw-w64 installed.
+
+

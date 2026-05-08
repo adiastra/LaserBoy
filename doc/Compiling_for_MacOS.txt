@@ -1,0 +1,115 @@
+#    Open a terminal.
+#    Enter the following command to install homebrew:
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+#    Enter password for the user of this terminal session.
+#    Let it get through the whole install.
+#    Then execute the following two commaneds:
+
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+#    When you get your prompt back, enter the following
+#    command to install SDL2:
+
+brew install SDL2
+
+#    Then install boost:
+
+brew install boost
+
+#    If you downloaded from
+
+https://laserboy.org/code/LaserBoy_Current.zip
+
+#    the zip file is in your Downloads directory
+#    and if you unzip it there, you might want to
+#    move it to your Desktop so that it's easier to find.
+
+mv /Users/[your_id]/Downloads/LaserBoy/  /Users/[your_id]/Desktop/
+
+#    Now you are ready to navigate, in your terminal, to the
+#    LaserBoy folder where this text file should be.
+
+cd /Users/[your_id]/Desktop/LaserBoy/
+
+#    Enter the ls (list directory) command to verify
+#    you can see the files and folders inside of your
+#    LaserBoy folder.
+
+ls
+
+#    Now change directory into the src folder:
+
+cd src
+
+#    Hit ls again to verify you can see all the
+#    cpp, hpp and Makefiles.
+
+ls
+
+#    For intel x86 cpu issue the command:
+
+time make -f Makefile.osx
+
+#    for M1 cpu issue the command:
+
+time make -f Makefile.mm1
+
+#    and wait for it to build.
+#    If you want to build the source code again from
+#    scratch you can do this:
+
+make -f Makefile.osx clean
+
+#    or
+
+make -f Makefile.mm1 clean
+
+#    Then do:
+
+time make -f Makefile.osx
+
+#    or
+
+time make -f Makefile.mm1
+
+#    again.
+
+#    When it's done it will probably run the executable.
+#    If it opens up just hit [Esc] until the screen turns
+#    solid red and then hit y to say yes to terminate LaserBoy.
+#    Now cd back to the parent directory.
+
+cd ../
+
+#    When you want to run the LaserBoy application you
+#    have to open a terminal, cd in the terminal to the
+#    LaserBoy directory and issue this command:
+
+./LaserBoy 1600 980
+
+#    or whatever size in pixels you want LaserBoy to be
+#    when it opens a window. You should adjust these
+#    numbers to fit your screen resolution. You don't want
+#    any part of the LB window to be off the screen.
+#    Allow for the window title bar and borders to fit
+#    within your screen resolution. The area in pixels you
+#    give to the LaserBoy executable are the size of the
+#    graphics context inside of the window it opens.
+
+#    You will notice that LB does not respond to any
+#    mouse clicks! It is keyboard driven.
+#    It is essentially a console application that controls
+#    the contents of a high resolution color raster display
+#    (the contents of the window).
+
+#    references:
+
+https://www.maketecheasier.com/enable-root-user-mac/
+https://brew.sh/
+
+#    Enjoy!
+

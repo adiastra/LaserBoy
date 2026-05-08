@@ -1,0 +1,155 @@
+########################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display application
+#   that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+########################################################
+
+#math phase_cycle        360.0
+#math rotation_cycle     1.0
+#math interval_cycle     1.0
+
+math frames             400
+math still_frames       1
+math first_frames       1
+math last_frames        1
+
+#math normalize_frames_individually 0
+#math normalize_frames_with_origin  0
+#math include_unit_reference        0
+
+math  disable_bmp       yes
+
+math  start             0.0
+math  duration          40.0
+math  iterations        1500
+
+math _start             0.0
+math _duration          40.0
+math _iterations        1500
+
+math  LBO2 phase        90.0
+math _LBO2 phase        90.0
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+math _lissajou
+
+#----------------------------------------------
+math  displacement 10.0  0.0  0.0
+math _displacement 10.0  0.0  0.0
+math  move_acceleration     -10.0
+math _move_acceleration      10.0
+math _move_
+
+math color_rgb          63 63 255
+math render
+math save_as_bmp aaa 1920 1080
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+math _lissajou
+
+#----------------------------------------------
+math  factor   0.0   0.0   0.0
+math  factor_  1.0   1.0   1.0
+math _factor   0.0   0.0   0.0
+math _factor_  1.0   1.0   1.0
+math  scale_acceleration  -10.0
+math _scale_acceleration   10.0
+math _scale_
+
+math color_hex 0xffff00
+math render
+math save_as_bmp aaa 1920 1080
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+math _lissajou
+
+#----------------------------------------------
+math  fulcrum    -1.10  0.0  0.0
+math  fulcrum_   -1.10  0.0  0.0
+math _fulcrum    -1.10  0.0  0.0
+math _fulcrum_   -1.10  0.0  0.0
+math  rotation    0.0   0.0  0.5
+math _rotation    0.0   0.0  0.5
+math  fulcrum_acceleration   0.0
+math _fulcrum_acceleration   0.0
+math  rotate_acceleration  -10.0
+math _rotate_acceleration   10.0
+math _rotate_
+
+math color_rgb         63 255 63
+math render
+math save_as_bmp aaa 1920 1080
+
+math  duration          0.0
+math _duration          600.0
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+math _lissajou
+
+#----------------------------------------------
+math  fulcrum  -1.0    0.0   0.0
+math  fulcrum_ -1.0    0.0   0.0
+math _fulcrum   0.0   -1.0   0.0
+math _fulcrum_  0.0   -1.0   0.0
+math  rotation  0.0    0.0   0.0
+math _rotation  0.0    0.0   6.0
+math  fulcrum_acceleration   0.0
+math _fulcrum_acceleration   0.0
+math  rotate_acceleration    0.0
+math _rotate_acceleration    0.0
+math _rotate_
+
+#----------------------------------------------
+math  displacement 0.0  0.0  0.0
+math _displacement 0.0 -2.44 0.0
+math  move_acceleration      0.0
+math _move_acceleration     -4.0
+math _move_
+
+#----------------------------------------------
+math  factor   0.0   0.0   0.0
+math  factor_  1.0   1.0   1.0
+math _factor   0.0   0.0   0.0
+math _factor_  1.0   1.0   1.0
+math  scale_acceleration   4.0
+math _scale_acceleration   4.0
+math _scale_
+
+math hues_span_factor   1.0
+math hues_shift         3
+math color_span_hues
+
+math render
+math save_as_bmp aaa 1920 1080
+
+###############################################
+###############################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,519 @@
+###############################################
+#
+#   ASCII format version: LaserBoy-txt-08-30-2022
+#
+###############################################
+
+
+
+#----------------------------------------------
+# Generators calculate line functions based on
+# parameters and push the resulting frame_set
+# into the registers.
+# There are two types of every generator.
+# The still version that only calculates a
+# single frame (no leading underscore) and the
+# animated version (with a leading underscore)
+# that takes initial and final frame parameters
+# to make a set of transitional frames.
+#----------------------------------------------
+
+
+
+#----------------------------------------------
+# All of these generators use the values of:
+math  start         0.0
+math  duration      1.0
+math  iterations    100
+#----------------------------------------------
+# All of the animated generators use the values of:
+math _start         0.0
+math _duration      1.0
+math _iterations    100
+math  frames        3
+#----------------------------------------------
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Rhodonea
+#
+#    ratio = rhodonea_numerator / rhodonea_denominator
+#
+#        x = radius * cos(ratio * t) * cos(t)
+#        y = radius * cos(ratio * t) * sin(t)
+math  rhodonea
+math _rhodonea
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epicycloid
+#
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * cos(t)
+#            - roller_radius * cos((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * sin(t)
+#            - roller_radius * sin((ratio + 1) * t)
+math  epicycloid
+math _epicycloid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epitrochoid
+#
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * cos(t)
+#            - roller_offset * cos((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * sin(t)
+#            - roller_offset * sin((ratio + 1) * t)
+math  epitrochoid
+math _epitrochoid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypocycloid
+#
+#    ratio = fixed_radius / roller_radius
+#
+#        x =    (fixed_radius - roller_radius) * cos(t)
+#             + roller_radius * cos((ratio - 1) * t)
+#
+#        y =    (fixed_radius - roller_radius) * sin(t)
+#             - roller_radius * sin((ratio - 1) * t)
+math  hypocycloid
+math _hypocycloid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypotrochoid
+#
+#    ratio = fixed_radius / roller_radius
+#
+#        x =    (fixed_radius - roller_radius) * cos(t)
+#             + roller_offset * cos((ratio - 1) * t)
+#
+#        y =    (fixed_radius - roller_radius) * sin(t)
+#             - roller_offset * sin((ratio - 1) * t)
+math  hypotrochoid
+math _hypotrochoid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Rhodonea
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    LBO3 phase += (phase_cycle / 4)
+#    ratio = rhodonea_numerator / rhodonea_denominator
+#
+#        x = radius * LBO1(ratio * t) * LBO2(t)
+#        y = radius * LBO3(ratio * t) * LBO4(t)
+math  oscillator_rhodonea
+math _oscillator_rhodonea
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epicycloid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * LBO1(t)
+#            - roller_radius * LBO2((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * LBO3(t)
+#            - roller_radius * LBO4((ratio + 1) * t)
+math  oscillator_epicycloid
+math _oscillator_epicycloid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Epitrochoid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius;
+#
+#        x =   roller_radius * (ratio + 1) * LBO1(t)
+#            - roller_offset * LBO2((ratio + 1) * t)
+#
+#        y =   roller_radius * (ratio + 1) * LBO3(t)
+#            - roller_offset * LBO4((ratio + 1) * t)
+math  oscillator_epitrochoid
+math _oscillator_epitrochoid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypocycloid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = fixed_radius / roller_radius
+#
+#        x =    (fixed_radius - roller_radius) * LBO1(t)
+#             + roller_radius * LBO2((ratio - 1) * t)
+#
+#        y =    (fixed_radius - roller_radius) * LBO3(t)
+#             - roller_radius * LBO4((ratio - 1) * t)
+math  oscillator_hypocycloid
+math _oscillator_hypocycloid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Hypotrochoid
+#
+#    LBO1 phase += (phase_cycle / 4) // convert to cosine-like function
+#    LBO2 phase += (phase_cycle / 4)
+#    ratio = center_radius / roller_radius
+#
+#        x =    (center_radius - roller_radius) * LBO1(t)
+#             + roller_offset * LBO2((ratio - 1) * t)
+#
+#        y =    (center_radius - roller_radius) * LBO3(t)
+#             - roller_offset * LBO4((ratio - 1) * t)
+math  oscillator_hypotrochoid
+math _oscillator_hypotrochoid
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+#
+#    x = LBO1(t)
+#    y = LBO2(t)
+# also named oscillator_xy or _oscillator_xy
+math  lissajou
+math _lissajou
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Lissajous_curve
+#
+#    x = LBO1(t)
+#    y = LBO2(t)
+#    z = LBO3(t)
+# also named oscillator_xyz or _oscillator_xyz
+math  lissajou_xyz
+math _lissajou_xyz
+
+
+
+#----------------------------------------------
+#     x = t
+#     y = LBO1(t)
+math  oscillator
+math _oscillator
+
+#----------------------------------------------
+#     x = t
+#     y = LBO1(t) + LBO2(t)
+math  oscillator_sum
+math _oscillator_sum
+
+
+
+#----------------------------------------------
+#     x = LBO1(t)
+#     y = LBO2(t)
+math  oscillator_xy
+math _oscillator_xy
+
+
+
+#----------------------------------------------
+#     x = LBO1(t)
+#     y = LBO2(t)
+#     z = LBO3(t)
+math  oscillator_xyz
+math _oscillator_xyz
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Harmonograph
+#
+#     x = LBO1(t) + LBO2(t)
+#     y = LBO3(t) + LBO4(t)
+math  harmonograph
+math _harmonograph
+
+
+
+#----------------------------------------------
+# https://en.wikipedia.org/wiki/Harmonograph
+#
+#     x = LBO1(t) + LBO2(t)
+#     y = LBO3(t) + LBO4(t)
+#     z = LBO5(t) + LBO6(t)
+math  harmonograph_xyz
+math _harmonograph_xyz
+
+
+
+#----------------------------------------------
+#     x = t
+#     y = LBO1(t) * LBO2(t)
+math  amplitude_mod
+math _amplitude_mod
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) * LBO2(t)
+#     y = LBO3(t) * LBO4(t)
+math  amplitude_mod_xy
+math _amplitude_mod_xy
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) * LBO2(t)
+#     y = LBO3(t) * LBO4(t)
+#     z = LBO5(t) * LBO6(t)
+math  amplitude_mod_xyz
+math _amplitude_mod_xyz
+
+
+
+# ~*~ indicates that the frequency
+# of LBO1 is multiplied by the value of LBO2
+
+#----------------------------------------------
+#     x = t
+#     y = LBO1(t) ~*~ LBO2(t)
+math  frequency_mod
+math _frequency_mod
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) ~*~ LBO2(t)
+#     y = LBO3(t) ~*~ LBO4(t)
+math  frequency_mod_xy
+math _frequency_mod_xy
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) ~*~ LBO2(t)
+#     y = LBO3(t) ~*~ LBO4(t)
+#     z = LBO5(t) ~*~ LBO6(t)
+math  frequency_mod_xyz
+math _frequency_mod_xyz
+
+
+
+# ~+~ indicates that the value of LBO2
+# is added to the phase of LBO1
+
+#----------------------------------------------
+#     x = t
+#     y = LBO1(t) ~+~ LBO2(t)
+math  phase_mod
+math _phase_mod
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) ~+~ LBO2(t)
+#     y = LBO3(t) ~+~ LBO4(t)
+math  phase_mod_xy
+math _phase_mod_xy
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) ~+~ LBO2(t)
+#     y = LBO3(t) ~+~ LBO4(t)
+#     z = LBO5(t) ~+~ LBO6(t)
+math  phase_mod_xyz
+math _phase_mod_xyz
+
+
+
+#----------------------------------------------
+#     x = LBO1(t) * cos(t)
+#     y = LBO1(t) * sin(t)
+math  polar
+math _polar
+
+
+
+#----------------------------------------------
+#     x = (LBO1(t) + LBO2(t)) * cos(t)
+#     y = (LBO1(t) + LBO2(t)) * sin(t)
+math  polar_sum
+math _polar_sum
+
+
+
+#----------------------------------------------
+#     x = (LBO1(t) * LBO2(t)) * cos(t)
+#     y = (LBO1(t) * LBO2(t)) * sin(t)
+math  polar_amplitude_mod
+math _polar_amplitude_mod
+
+
+
+#----------------------------------------------
+#     x = (LBO1(t) ~*~ LBO2(t)) * cos(t)
+#     y = (LBO1(t) ~*~ LBO2(t)) * sin(t)
+math  polar_frequency_mod
+math _polar_frequency_mod
+
+
+
+#----------------------------------------------
+#     x = (LBO1(t) ~+~ LBO2(t)) * cos(t)
+#     y = (LBO1(t) ~+~ LBO2(t)) * sin(t)
+math  polar_phase_mod
+math _polar_phase_mod
+
+#------------------------------------------------
+
+
+
+
+#------------------------------------------------
+# There is a set of special generators that put
+# measuring grids into a frame and push it
+# to the registers. For these to be relevant to
+# another frame_set space to be measured,
+# they must be included with that frame_set
+# either with a splice or a composite operation.
+#------------------------------------------------
+
+
+
+
+#------------------------------------------------
+# The rectangular_grid_xy generator uses P0 and P1
+# to define the bottom left and top right corners
+# and P0.z to define the placement of the grid
+# in z on the xy plane.
+#
+# rectangular_grid_x_units
+# rectangular_grid_y_units
+# rectangular_grid_z_units
+# define the lines of division in the grid.
+#
+# If the parameter x_of_pi is set true,
+# the P0.x and P1.x ordinates and
+# rectangular_grid_x_units will be in units
+# of pi, similarly for y_of_pi and z_of_pi.
+#
+# There are xz and yz version that create grids in
+# the other cardinal planes with similar use of
+# P0 and P1.
+#
+# rectangular_grid_xyz creates a 3D rectangular
+# solid with grids at the back, left side and bottom.
+#------------------------------------------------
+
+math  P0                   0.0  0.0  0.0
+math  P1                   0.0  0.0  0.0
+math  rectangular_grid_x_units  1.0
+math  rectangular_grid_y_units  1.0
+math  rectangular_grid_z_units  1.0
+
+math  rectangular_grid_xy
+math  rectangular_grid_xz
+math  rectangular_grid_yz
+math  rectangular_grid_xyz
+
+#------------------------------------------------
+
+
+
+
+#------------------------------------------------
+# The polar_grid_xy generator uses P0
+# to define the center of the polar grid
+# at P0.z on the xy plane.
+#
+# polar_grid_raduis_max
+# polar_grid_radii_units
+# polar_grid_angle_units
+# define the radius of the outer most circle,
+# lines of division in the grid as distance
+# from the center and spacing of angular
+# lines around it in units of phase_cycle.
+#
+# If the parameter x_of_pi is set true,
+# the P0.x ordinate will be in units
+# of pi, similarly for y_of_pi and z_of_pi.
+#
+# If the parameter radii_of_pi is set true,
+# the polar_grid_radius_max and
+# polar_grid_radii_units will be in units of pi.
+#
+# There are xz and yz version that create polar
+# grids in the other cardinal planes with
+# similar use of P0.
+#
+# polar_grid_xyz creates the same polar grid in
+# all three axis with P0 in the center.
+#------------------------------------------------
+
+math  P0                0.0  0.0  0.0
+math  polar_grid_radius_max  1.0
+math  polar_grid_radii_units 1.0
+math  polar_grid_angle_units 1.0
+
+math  polar_grid_xy
+math  polar_grid_xz
+math  polar_grid_yz
+math  polar_grid_xyz
+
+#------------------------------------------------
+
+
+
+
+#------------------------------------------------
+# The line generator uses P0 and P1
+# and creates a line between them in 3D space
+#
+# If the parameter x_of_pi is set true,
+# the P0.x and P1.x ordinates will be in units
+# of pi, similarly for y_of_pi and z_of_pi.
+#------------------------------------------------
+
+math  P0       0.0  0.0  0.0
+math  P1       0.0  0.0  0.0
+math  line
+
+###############################################
+###############################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

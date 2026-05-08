@@ -1,0 +1,334 @@
+LaserBoy Basics:
+
+
+
+The only part of the file system LaserBoy can see is inside of its own directory. Within there is a set of named folders where the appropriate file types must go.
+
+Folders may be created inside of the ild directory to organize ild files by project.
+
+Folders may be created inside of the dxf directory and filled with multiple dxf files. LaserBoy will open a folder inside of dxf by loading all of the dxf files inside of it in alpha-numeric order as a frame_set.
+
+LaserBoy opens and checks to see if it is the current version. If it is not, a message will appear.
+
+Please always get the current version!!!
+
+http://laserboy.org/code/LaserBoy_Current.zip
+
+Note: Running a development version that is newer than the current public release, will also show this notification, simply because the version strings do not match.
+
+
+
+The LaserBoy keyboard menu system was designed using a US English qwerty keyboard.
+
+In the context of this document, the phrase "lower case" refers to the character of the key hit alone. The phrase "upper case" implies holding the [Shift] key before a character key hit.
+
+
+
+LaserBoy opens showing the stats of the frame_set it always opens on start; in.ild.
+
+From the opening report, [Esc] leads to the main menu.
+
+In general, the [Enter] key hides and shows all of the menus. When entering any information at a prompt that requires more than one keystroke to complete, the [Enter] key must terminate the entry.
+
+The [Esc] key backs out of any message, menu or input prompt to wherever it was before, all the way back to the main menu.
+
+From the main menu, [Esc] leads to terminating the application. It shows a bright red screen and asks for confirmation before terminating. Hit the y key to terminate. Hit [Esc] again to return to main menu.
+
+Clicking on the X in the upper right corner of the window title bar has no effect.
+
+Left and right arrow keys move through the frame_set forward and backward.
+
+
+
+The [Tab] key shows a sub menu of system settings (menus).
+
+Many of the settings take values that must be typed (possibly multiple characters) and set with the [Enter] key. Some of the settings are either on or off and can be switched with a single key stroke.
+
+The [Tab] menu is available from most other menus. [Esc] from it will return to whatever menu it came from.
+
+[Tab], "1 user interface visuals", shows a menu of visual attributes of the display of the vector art. These are enabled or disabled with a single key stroke.
+
+
+
+From the main menu, the ` and ~ (to the left of the digit 1, top row) show the frame_set animation forward or backward.
+
+Look in the [Tab] menu, sub-menu "6 timing and wave settings" then option "2 frames per second" and look in the [Tab] menu, sub-menu "1 user interface visuals", option "m animate at approximate frame rate". If this is not set, the frames will advance as fast as your computer can render them.
+
+The - and _ key (right of the digit 0 top row) will start an animated 3D rotation of the current frame, forward or backward, in steps of one degree around all 3 axis. The settings for frames per second and animate at approximate frame rate apply.
+
+The = and + keys also orbit the view as above plus advance the frame, forward or backward.
+
+
+
+The top row of digits 1 through 0 on the keyboard have the same effect in these menus:
+
+main
+k draw, color, blank  vertices
+l move, scale, rotate segments
+m render segments by  coordinates
+h transform frame
+j transform frame_set
+c transform frame colors
+p transform colors and palette set
+
+The digits 1 2 3 4 5 6 7 all orbit the view around the art. For each key hit of 1 2 3 or 4 the camera orbits in some number of degrees around each axis or all three axes.
+
+The number of degrees of rotation is set in the [Tab] menu, option "4 vector editor parameters", option "3 rotate degrees per key hit". The shift key plus 1 2 3 or 4 rotates in the opposite direction.
+
+The keys 5 6 7 snap to the cardinal views of front, side and top of the 3D cube of space. Shift plus 5 6 7 snap to the logical opposites of back, other side and bottom views.
+
+The 8 key is like the 4 key but it also advances the frame. Press and hold 8 to see an animation in full rotation. [Shift] 8 does this in reverse.
+
+The 9 key shows the first frame in the set and the 0 key shows the last.
+
+The ( key (shift 9) sets the current frame as the first in series select and the ) key, (shift 0) sets the current frame as the last in series select, selecting all frames between the two.
+
+In the key sequence:
+
+9  (  0  )
+
+9 sets the current frame to the first.
+( sets the beginning of the series selection.
+0 sets the current frame to the last.
+) sets the end of the series selection.
+
+This selects all of the frames currently loaded in the viewer / editor (LaserBoy_space).
+
+The [Space] bar selects or deselects the current frame.
+
+Frame select status is shown in the stats on the right side of the screen. The number of vertices is in cyan. The number of individual lit segments is in magenta and the frame type 2D or 3D and its index in the frame_set is in yellow. The first index of a frame_set is 0 (zero). If a frame is selected the background field of the frame type and index will be dark red.
+
+
+
+The view menu:
+
+[Tab], sub-menu "2 change and apply view", shows tables of keys that affect the view of the art.
+
+All of the listed keys in the view menu work in the main menu.
+
+The top row of digits 1 through 0 on the keyboard are described above.
+
+
+
+Right below 1 2 3 4, the q w e r keys, pan the camera left-right, up-down, both-at-the-same-time and return to center. [Shift] Q W E pan in the opposite direction.
+
+The amount of pan motion per key hit is in some number of points, set in [Tab] sub-menu "4 vector editor parameters", option 1 or 2. In different ways they set the same value which will always be an integer number of points.
+
+Points are relative to the signed 16-bit integer space in which this vector art exists. So from one side of the 3D cube of space to the other, along any of the cardinal axis, there are 65535 (integer) points from -32767 to +32767.
+
+Just below q w e r, the keys a s d f zoom the camera in and out, just X, just Y, both X Y, and return to no zoom, a factor of 1.0.
+
+[Tab] menu, option "2 vector editor values", option "4 scale % by key hit" determines the percentage of zoom per key tap.
+
+
+
+One thing to notice is that pan and zoom have nothing to do with the Z axis. That is because these parameters effect the way the art is displayed on the 2D raster screen. The screen simply has no Z axis.
+
+It is important to understand that none of the keys described above have any effect on the numerical values that define the vector art. They only effect the way the art is displayed on the (2D) screen.
+
+It is possible to impose the current view on the art itself so that what appears in the view is actually what is stored in the frame data as it would appear with no rotation, pan or zoom.
+
+A big issue here is that the view of the art must all fit inside of the "fixed" 3D cube of numerically defined space. Note that it is very easy to set the view so that this is not the case.
+
+In [Tab] sub-menu "1 user interface visuals" there is a list of visual elements that enhance the display on the screen that can be individually enabled or disabled.
+
+The fixed bounds and origin in conjunction with the floating bounds and axis makes all of this much easier to see.
+
+The fixed bounds and origin markers do not move with the camera view. This is the finite cube of -32767 to +32767 in all three axis in its fixed location in LaserBoy_space.
+
+The floating bounds and axis are relative to the vector art and move scale and rotate with the camera view of the vector art.
+
+If any of the art, with view rotated, panned or zoomed is outside of the fixed 3D space, trying to apply the view simply will not work. LaserBoy will not remove or change the coordinate values of any vertices in the frame. It will report it is out of bounds.
+
+However, [Tab] sub-menu "4 vector editor parameters", option "9 destructive clipping in move scale rotate" will do exactly that. It will remove all vector data that is outside of the fixed cube of short integer space, after a pan, zoom or rotate is applied to the data. Once done, those removed vectors are forever gone from the currently loaded frame_set.
+
+The ability to impose the view of the art into the art itself is available in the main menu and the [Tab] sub-menu "2 change and apply view". All of the rotate, pan and zoom keys work the same in both of these menus.
+
+[Tab] sub-menu "2 change and apply view" shows a key menu for all of the rotate, pan and zoom keys plus the rotational angle on each axis, the offset and the scale that the display math is using to make the 2D raster picture on the screen from the 3D vector art in the RAM.
+
+The letter v (lower case) applies the view to the current frame and V (upper case) applies the view to all of the frames in the frame_set. Once the display factors are applied to the art, they are set back to normal so that the art is shown as it really is; from the front of LaserBoy_space with no pan or zoom (in its fixed position).
+
+
+
+
+
+
+
+To make a new empty frame, from main menu:
+
+j to enter the frame_set transforms menu.
+9 to go to the first frame in the set.
+i to add a blank frame to the beginning of the frame_set.
+
+If only one blank frame is desired (without the rest of the currently loaded frame_set),
+
+[space] to select the new blank frame.
+c       to trim the set to only selected frames.
+
+[Esc] to return to the main menu to enter either menu k to draw individual vectors or menu m to render segments by coordinates to create content in the new frame.
+
+Apart from nothing, the least number of vectors in a frame is one and made of two vertices; an anchor and a destination of a single vector. A single vertex in a frame makes no sense and is not possible.
+
+
+
+The number keys 1 2 3 4 5 6 7 8 9 0 work the same way in menus k and l (L) to enhance the ability to draw and manipulate vector art in 3D space; again, only effecting the way the art is displayed on the 2D computer screen.
+
+When using either menu k or l it is necessary to [Esc] back to main menu to pan or zoom, then return to either k or l.
+
+
+
+In both menus k and l there are two cursors that move along the vertices.
+
+The open square is called the egg and the other 8 legged thing is called the spider.
+
+These mark the beginning and the end of a selected segment of the art (in consecutive vertices). Each frame in the set of currently loaded frames has its own locations for its own egg and spider.
+
+The vertex cursors move back and forth through the vertices with the [ { and ] } keys.
+
+The \ and the | keys place the spider at the end and the egg at the beginning of the set of vertices, selecting the whole thing.
+
+The keys u i o select lit segments within the drawing. A lit segment is a consecutive series of vertices that are all lit. Lit segments are separated from each other by blank vectors.
+
+u U key selects a single lit segment, forward or backward in the segment order of the frame.
+
+o O key extends or retracts selected segments after the current selection.
+
+i I key retracts or extends selected segments before the current selection.
+
+The spider cannot be set to a vertex that is before the egg and the egg cannot be set to a vertex that is beyond the spider.
+
+
+
+Information about the locations of both the egg and spider is below the palettes. The vertex index is in cyan. The segment index is in magenta and the palette color index is in white.
+
+The spider can be placed on the same vertex as the egg with the (upper case) K key. The egg can be placed on the same vertex as the spider with the (upper case) L key.
+
+If both cursors are on the same vertex, that single vector is selected. The vector is the line from that vertex (destination end) back to its anchor, (the previous vertex).
+
+Something that might be confusing is selecting a single vector. A vector is the line that exists between two consecutive vertices. In order to select a single vector, BOTH the egg and the spider must be on the destination end of the same vector! The color and blanking status of a vector is stored in the destination end of a vector.
+
+
+
+Drawing in LaserBoy in "k draw, color, blank vectors" menu:
+
+In menu k a lot of the functionality only effects the vertex under the spider.
+
+It can be moved in X Y Z by hitting the keys x y z. Upper case moves it in the opposite directions.
+
+A new empty frame actually has 2 vertices at the origin (no magnitude) and the single vector they make is blank!
+
+The first thing to do is move the spider to the last vertex (index 1) with the ] key and unblank the vector with upper case B. Then pick a color with the p key. Upper case P moves the color cursor backwards. Once a color is selected, color the vector with the c key. Now it is visible!
+
+Both the anchor and the destination of this first vector can be moved anywhere by placing the spider on each vertex with either ] or } and using the x y z keys to move it.
+
+The vector can also be rotated around its own anchor in the X Y or Z plane (d f g keys).
+
+The vector length or magnitude can be changed with the m key. Lower case m makes it longer and upper case M makes it shorter by some percentage of its current magnitude.
+
+Look in the [Tab] sub-menu "2 vector editor parameters" for:
+
+1 move points per key hit
+2 move as 1 / [n] of space
+
+3 rotate degrees per key hit
+
+4 scale percent per key hit
+
+Points are relative to signed short integer LaserBoy_space (-32767 to +32767). The value of the displacement_step is always an integer.
+
+
+
+Place the spider on the last vertex with the \ key and "pop and place" vectors by hitting the . (dot) key and moving the new vertex to a desired location.
+
+The . key will add a new vertex based on the one that is immediately before it in the drawing.
+
+If the spider is on the last vertex, it will make a new vector on the end of the drawing that is identical to the previous one unless that runs beyond the edge of fixed LaserBoy_space. In that case it ends up on the other side of the cube.
+
+If the spider is somewhere inside the drawing (not on the last vertex), it will split the vector ahead of it in half with a new vertex midway from the spider's current vertex to the next one. The position of the spider after this will be on the newly placed vertex.
+
+If the spider is on a vertex within the drawing and the next vertex location is exactly the same X Y Z position, hitting the . key will just add another vertex at that same location with the same color and blanking status and set the position of the spider onto that new vertex.
+
+When editing an existing drawing, move the spider to a vertex of a desired color and hit the upper case C key to set the palette color index to that color. Any vectors colored with lower case c will match that color.
+
+An effective drawing scheme is to "pop and rotate" vectors.
+
+Add a new vector with the . key and rotate it into place with the g or G key around the Z axis (the X Y plane). That way every vector in the drawing will be the same magnitude regardless of its direction! That makes for an image that scans nicely and has even intensity (especially useful around curves).
+
+Some of these functions don't make any sense on the zeroth vertex. That is the only vertex in the whole drawing that can only be an anchor. It can never have a color or be blank or not blank. It has no magnitude and cannot be rotated around anything.
+
+
+
+Lit segments are separated by blank vectors. It is possible that a series of multiple lit segments may be bonded together with lit black. The fonts included with LaserBoy have glyphs that are multiple lit segments bonded with lit black. LaserBoy sees this as one lit segment, to differentiate it from others in the same frame separated by blank vectors.
+
+
+
+Once a frame has something in it, a set of selected vectors in menu l (L) can be copied, moved scaled and rotated. The egg and spider work exactly the same as they do in menu k, including the [ { ] } u U i I o O \ | keys for vector segment selection.
+
+When rotating or scaling a selection of vectors, there are two different ways to do it.
+
+One is relative to the calculated center of the selection referred to as "itself" in the menu.
+
+The other is relative to the "fulcrum". The fulcrum is the 3D red, green and blue cross hairs sitting at the origin, by default.
+
+The l menu has a mode switch (upper case) T to toggle between relative to fulcrum or relative to center of itself.
+
+The fulcrum can be moved in X Y Z with the a s d keys. Upper case A S D move it in the opposite directions.
+
+The fulcrum X Y Z coordinate positions can be set with the j k l keys. It is not bound to the limits of short int LaserBoy_space. It can be placed outside of that.
+
+It can also be placed at the same location as the egg or spider with the , or . key.
+
+A selected set of vectors can be copied to the end of the vectors in the frame with the c key. This will also change the positions of the egg and spider to the copy of the set of vertices, at the end of the vectors in the frame. This allows for copy move, copy move or copy rotate copy rotate, etc..
+
+In both menus k and l, the current frame can be copied with the ` key (top row left of the digit 1). This also copies the locations of the egg and spider. This allows for copy frame, move, scale or rotate something in it, copy frame, move, etc... to make an animated set of frames.
+
+
+
+A bitmap file can be opened into the display background and vectors traced over it. From the main menu, choose i to input a file. Choose 6 for bmp. Choose 8 to load it into the display background. Choose y or any other key to answer if the bitmap should be scaled to fit the screen.
+
+Hitting the ; (semicolon) key will cause the bitmap to disappear and reappear. Hitting the : (colon key) will make the bitmap display as a negative.
+
+The bitmap is bound to the XY plane at Z = 0. It pans, scales and rotates with the camera view. Every time the view changes, the bitmap must be re-rendered into this 3D space. That takes some time. So, it's best to hit the ; key to make it disappear, then pan, scale or rotate, then hit the ; key again to render the bitmap. Otherwise, every key tap that changes the display in incremental steps will also render the bitmap. That can be slow and key taps can build up in the keyboard buffer.
+
+It is also possible to have a directory inside of the bmp directory with a set of bitmap files in it; such as frames from an animation.
+
+Option 9 in the bmp input menu, opens that directory and loads the first bitmap as the background image. If the bitmap is scaled to fit the display, all of them in the directory are scaled with the same factor.
+
+Only in menus k and l (L), (upper case) Q loads the next and (upper case) W loads the previous bitmap in the directory in alpha-numeric order.
+
+In the [Tab] menu, option "4 display options", option "3 bitmap background size factor" can be manually set to any value.
+
+
+
+When asked to type the name of a file or effect that is listed and already exists, LaserBoy will auto-complete the typed entry and narrow the possibilities until enough characters have been typed to eliminate all but one possibility. All other keys are ignored. The [Backspace] key works as expected when entering and string of characters.
+
+If there are multiple files that begin with the same few characters, the . (dot) character that designates the file name extension separator may need to be typed.
+
+
+
+LaserBoy Effects:
+
+Perhaps one of the most powerful things LaserBoy can do is call a function on the current frame, a group of selected frames or a whole frame_set to do math on that and create a new frame_set as a result. The very first version of LaserBoy, written in 2003, was designed to do just that.
+
+There are two ways to call an effect function by name. From main, in the o output file menu, choose 1 ild. Choose a directory. Choose from options 4 5 or 6 to select what type of effect and which one by name.
+
+Or from main choose option n.
+
+Effects that work on selected frames require that some frames are selected. Some of them take a specific number of frames. Some don't.
+
+Some effects prompt for parameters.
+
+Once a frame effect type is selected, a list of available effects appear by name. Type the name and [Enter]. A prompt will appear to enter a file name for the new ild frame_set that will be the result of the effect.
+
+If [Enter] is hit with no name typed, no file will be saved and the resulting frame_set will be loaded into memory in place of the current frame_set.
+
+If an ild file name is typed and [Enter], a new ild file will be saved in the directory chosen to get here. A prompt will appear offering to replace the current frame_set with the resuts of the effect.
+
+All of the effects work in 3D and with no loss of color information. Some effects require a view of the Z axis, so some rotation of the view away from the front of space is necessary to see them.
+
+For those curious as to how these effects actually work, look in the src directory for these files:
+
+LaserBoy_frame_effects.cpp
+LaserBoy_frame_set_effects.cpp
+LaserBoy_selected_frames_effects.cpp
+

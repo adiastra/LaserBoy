@@ -1,0 +1,674 @@
+#################################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display
+#   application that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+#################################################
+
+#math phase_cycle        360.0
+#math rotation_cycle     1.0
+#math interval_cycle     1.0
+
+math frames                        100
+math still_frames                  1
+math normalize_frames_individually 0
+math normalize_frames_with_origin  0
+math include_unit_reference        0
+
+math save_true_color_dxf           0
+
+math save_txt_with_color  yes
+math save_txt_color_hex   yes
+math overwrite_txt_files  yes
+
+math bmp_line_width       4
+math bmp_render_vectors   no
+math bmp_render_vertices  yes
+math disable_bmp          yes
+
+math x_of_pi            yes
+math y_of_pi            no
+math z_of_pi            no
+math radii_of_pi        no
+
+math hues_span_factor   1.0
+math hues_shift         5
+
+math  start             0.0
+math _start             0.0
+
+math  duration          40.0
+math _duration          40.0
+
+math  iterations        10000
+math _iterations        10000
+
+math  LBO1 phase        90.0
+math _LBO1 phase        90.0
+
+math  LBO1 damping      0.01
+math _LBO1 damping      0.01
+
+math  LBO2 damping      0.01
+math _LBO2 damping      0.01
+
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     ramp
+math _LBO2 function     ramp
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+
+math  LBO1 function     ramp
+math  LBO2 function     ramp
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     square
+math _LBO2 function     square
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 function     square
+math  LBO2 function     square
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     triangle
+math _LBO2 function     triangle
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+
+math  LBO1 function     triangle
+math  LBO2 function     triangle
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     pulse
+math _LBO2 function     pulse
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+
+math  LBO1 function     pulse
+math  LBO2 function     pulse
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     trapezoid
+math _LBO2 function     trapezoid
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 function     trapezoid
+math  LBO2 function     trapezoid
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     circle
+math _LBO2 function     circle
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 function     circle
+math  LBO2 function     circle
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 sin          1.0
+math _LBO1 triangle     1.0
+math _LBO1 ramp         1.0
+math _LBO1 square       1.0
+math _LBO1 pulse        1.0
+math _LBO1 trapezoid    1.0
+math _LBO1 circle       1.0
+
+#math _LBO2 sin          1.0
+#math _LBO2 triangle     1.0
+#math _LBO2 ramp         1.0
+#math _LBO2 square       1.0
+#math _LBO2 pulse        1.0
+#math _LBO2 trapezoid    1.0
+#math _LBO2 circle       1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 sin          1.0
+math  LBO1 triangle     1.0
+math  LBO1 ramp         1.0
+math  LBO1 square       1.0
+math  LBO1 pulse        1.0
+math  LBO1 trapezoid    1.0
+math  LBO1 circle       1.0
+
+math  LBO2 sin          1.0
+math  LBO2 triangle     1.0
+math  LBO2 ramp         1.0
+math  LBO2 square       1.0
+math  LBO2 pulse        1.0
+math  LBO2 trapezoid    1.0
+math  LBO2 circle       1.0
+
+math _LBO1 duty_cycle   1.0
+#math _LBO2 duty_cycle   1.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   1.0
+#math  LBO2 duty_cycle   1.0
+
+math _LBO1 duty_cycle   0.0
+#math _LBO2 duty_cycle   0.0
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.0
+#math  LBO2 duty_cycle   0.0
+
+math _LBO1 duty_cycle   0.5
+#math _LBO2 duty_cycle   0.5
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+
+
+
+#----------------------------------------------
+#     x(t) = LBO1(t)
+#     y(t) = LBO2(t)
+
+math  LBO1 duty_cycle   0.5
+#math  LBO2 duty_cycle   0.5
+
+math _LBO1 function     sin
+math _LBO2 function     sin
+
+math _oscillator_xy
+
+math  color_span_hues
+math  store
+
+math  render_list_from_name one
+
+#################################################
+#################################################
+

@@ -1,0 +1,81 @@
+Install Msys2 from here:
+
+http://msys2.org
+
+Once it is installed open the MSYS2 command shell.
+
+Copy this:
+
+pacman -Syuu
+
+Paste this into the MSYS2 command shell (shift insert or right click paste).
+
+This will examine your Msys2 installation and update all of the packages that are already installed.
+
+Answer yes to all the prompts.
+
+You may need to issue this command several times. Use the up arrow for command history.
+
+Eventually it will tell you there is nothing left to do.
+
+Then copy this (the whole thing):
+
+pacman -Sy --needed  base-devel \
+                     mingw-w64-x86_64-toolchain \
+                     git subversion mercurial \
+                     mingw-w64-x86_64-cmake \
+                     mingw-w64-x86_64-boost \
+                     mingw64/mingw-w64-x86_64-SDL2
+
+Paste this into the MSYS2 command shell and hit Enter. Again, answer yes to all the prompts. This can take a while to finish.
+
+Once this is done, use the MINGW64 shell to navigate to your LaserBoy installation folder. The Msys2 shell system uses UNIX like file system notation. So directories are separated by a forward slash. There are no separate drive letters like there is in Windows (DOS). Your hard drive(s) are mounted at the root of the Msys view of your whole file system as lower case letters. So your C:\ drive is actually /c/ in Msys2. Assuming your LaserBoy folder is at the root of your C:\ drive you would navigate to it with this command:
+
+cd /c/LaserBoy
+
+Make sure you are in the right place by listing the contents of the directory where you are.
+
+ls
+
+You should see all of the stuff that is inside of your LaserBoy installation folder.
+
+Now change directory to the source code directory you want to compile.
+
+cd src
+
+Or this might be a new source code directory you got from a development version of the code.
+
+cd src_06_16_2021
+
+Do a listing to make sure you see all of the source code files in there.
+
+ls
+
+Now you can make the executable with this command:
+
+time make -f Makefile.w64
+
+This can take a while.
+
+If you need to start over with a clean build, you can wipe out anything a previous make did like this:
+
+make -f Makefile.w64 clean
+
+Then issue the make command again to build from scratch.
+
+time make -f Makefile.w64
+
+Once this is done, you can cd back to the parent directory (your LaserBoy installation folder).
+
+cd ../
+
+You should have a new executable called LaserBoy.exe inside of your LaserBoy installation folder.
+
+Run it from the command prompt like this:
+
+./LaserBoy.exe 1024 700
+
+Use whatever numbers you need (width and height in pixels) to fit the resolution of your display.
+
+Enjoy!
+

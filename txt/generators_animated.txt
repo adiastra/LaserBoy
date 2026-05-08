@@ -1,0 +1,1081 @@
+###############################################
+#
+#   This file was written by James Lehman.
+#   creator of LaserBoy,
+#
+#   the free, multiplatform laser display application
+#   that reads this format.
+#
+#   <james@akrobiz.com>
+#   Extra Stimulus Inc., Akron, Ohio USA
+#   http://laserboy.org/
+#
+#   ASCII format version: LaserBoy-txt-09-07-2022
+#
+###############################################
+
+###############################################
+
+#math phase_cycle        360.0
+#math rotation_cycle     1.0
+#math interval_cycle     1.0
+
+math frames            80
+math still_frames      1
+math first_frames      10
+math last_frames       10
+
+math hues_span_factor  1.0
+math hues_shift        5
+
+math normalize_frames_individually 0
+math normalize_frames_with_origin  0
+math include_unit_reference        0
+
+math  iterations       6000
+math _iterations       6000
+
+
+#----------------------------------------------
+#            animated frames forms
+#
+#     Animated math forms are like the still
+#     image forms except they define an initial
+#     and a final set of parameters.
+#     Frames are made by linear interpolation
+#     from the initial to the final math form
+#     parameter values.
+#----------------------------------------------
+
+
+
+
+# 0
+#----------------------------------------------
+math  rhodonea_numerator    7.5
+math  rhodonea_denominator  8.0
+math  fixed_radius          1.0
+
+math  start             0.0
+math  duration          16.0
+
+math _rhodonea_numerator    8.5
+math _rhodonea_denominator  8.0
+math _fixed_radius          1.0
+
+math _start             0.0
+math _duration          16.0
+
+# https://en.wikipedia.org/wiki/Rhodonea
+#
+# ratio = rhodonea_numerator / rhodonea_denominator
+#
+#  x = fixed_radius * cos(ratio * t) * cos(t)
+#  y = fixed_radius * cos(ratio * t) * sin(t)
+math _rhodonea
+
+math color_span_hues
+math render
+
+
+
+# 1
+#----------------------------------------------
+math  fixed_radius         6.95
+math  roller_radius        12.0
+
+math  start                0.0
+math  duration             36.0
+
+math _fixed_radius         7.0
+math _roller_radius        12.0
+
+math _start                0.0
+math _duration             36.0
+
+# https://en.wikipedia.org/wiki/Epicycloid
+#
+# ratio = fixed_radius / roller_radius;
+#
+#  x =   roller_radius * (ratio + 1) * cos(t)
+#         - roller_radius * cos((ratio + 1) * t)
+#
+#  y =   roller_radius * (ratio + 1) * sin(t)
+#         - roller_radius * sin((ratio + 1) * t)
+math _epicycloid
+
+math color_span_hues
+math render
+
+
+
+# 2
+#----------------------------------------------
+math  fixed_radius         5.0
+math  roller_radius        1.0
+math  roller_offset        -11.0
+
+math  start                0.1
+math  duration             1.0
+
+math _fixed_radius         5.0
+math _roller_radius        1.0
+math _roller_offset        11.0
+
+math _start                0.1
+math _duration             1.0
+
+# https://en.wikipedia.org/wiki/Epitrochoid
+#
+# ratio = fixed_radius / roller_radius;
+#
+#  x =   roller_radius * (ratio + 1) * cos(t)
+#         - roller_offset * cos((ratio + 1) * t)
+#
+#  y =   roller_radius * (ratio + 1) * sin(t)
+#         - roller_offset * sin((ratio + 1) * t)
+math _epitrochoid
+
+math color_span_hues
+math render
+
+
+
+# 3
+#----------------------------------------------
+math  fixed_radius         30.0
+math  roller_radius        20.0
+
+math  start                0.25
+math  duration             22.0
+
+math _fixed_radius         30
+math _roller_radius        19.7
+
+math _start                0.25
+math _duration             22.0
+
+# https://en.wikipedia.org/wiki/Hypocycloid
+#
+# ratio = fixed_radius / roller_radius
+#
+#  x =    (fixed_radius - roller_radius) * cos(t)
+#          + roller_radius * cos((ratio - 1) * t)
+#
+#  y =    (fixed_radius - roller_radius) * sin(t)
+#          - roller_radius * sin((ratio - 1) * t)
+math _hypocycloid
+
+math color_span_hues
+math render
+
+
+
+# 4
+#----------------------------------------------
+math  fixed_radius         6.4
+math  roller_radius        13.0
+math  roller_offset        11.0
+
+math  start                0.25
+math  duration             26.0
+
+math _fixed_radius         6.6
+math _roller_radius        13.0
+math _roller_offset        11.0
+
+math _start                0.25
+math _duration             26.0
+
+# https://en.wikipedia.org/wiki/Hypotrochoid
+#
+# ratio = fixed_radius / roller_radius
+#
+#  x =    (fixed_radius - roller_radius) * cos(t)
+#          + roller_offset * cos((ratio - 1) * t)
+#
+#  y =    (fixed_radius - roller_radius) * sin(t)
+#          - roller_offset * sin((ratio - 1) * t)
+math _hypotrochoid
+
+math color_span_hues
+math render
+
+
+
+# 5
+#----------------------------------------------
+math  LBO1 frequency    5.0
+
+math  LBO2 frequency    7.0
+
+math  start             0.0
+math  duration          6.0
+
+math _LBO1 frequency    5.0
+
+math _LBO2 frequency    7.03
+math _LBO2 phase        180.0
+
+math _start             0.0
+math _duration          6.0
+
+# https://en.wikipedia.org/wiki/Lissajous_curve
+# also named _oscillator_xy
+#
+#  x = LBO1(t)
+#  y = LBO2(t)
+math _lissajou
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 6
+#----------------------------------------------
+math  LBO1 frequency    11.0
+
+math  LBO2 frequency    7.0
+
+math  LBO3 frequency    5.0
+
+math  start             0.0
+math  duration          6.0
+
+math _LBO1 frequency    5.0
+
+math _LBO2 frequency    7.03
+math _LBO2 phase        180.0
+
+math _LBO3 frequency    11.05
+math _LBO3 phase        270.0
+
+math _start             0.0
+math _duration          6.0
+
+# https://en.wikipedia.org/wiki/Lissajous_curve
+# also named _oscillator_xyz
+#
+#  x = LBO1(t)
+#  y = LBO2(t)
+#  z = LBO3(t)
+math _lissajou_xyz
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 7
+#----------------------------------------------
+math  LBO1 amplitude    pi
+math  LBO1 damping      1.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 amplitude    pi
+math _LBO1 frequency    30.0
+math _LBO1 damping      1.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = t
+#  y = LBO1(t)
+math _oscillator
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 8
+#----------------------------------------------
+math  LBO1 amplitude    1.5
+
+math  LBO2 amplitude    0.0
+math  LBO2 frequency    33.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 amplitude    1.5
+math _LBO1 frequency    3.3
+
+math _LBO2 amplitude    1.5
+math _LBO2 frequency    33.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = t
+#  y = LBO1(t) + LBO2(t)
+math _oscillator_sum
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 9
+#----------------------------------------------
+math  LBO1 frequency    3.0
+math  LBO1 damping      0.0007
+
+math  LBO2 frequency    5.011
+math  LBO2 phase        180.0
+math  LBO2 damping      0.0007
+
+math  start             0.0
+math  duration          15.0
+
+math _LBO1 frequency    3.0
+math _LBO1 damping      0.06
+
+math _LBO2 frequency    5.0
+math _LBO2 damping      0.06
+
+math _start             0.0
+math _duration          15.0
+
+#  x = LBO1(t)
+#  y = LBO2(t)
+math _oscillator_xy
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 10
+#----------------------------------------------
+math  LBO1 frequency    3.0
+math  LBO1 damping      0.005
+
+math  LBO2 frequency    4.0
+math  LBO2 phase        90.0
+math  LBO2 damping      0.005
+
+math  LBO3 frequency    10.0
+math  LBO3 damping      0.005
+
+math  start             0.0
+math  duration          12.0
+
+math _LBO1 frequency    3.0
+math _LBO1 damping      0.01
+
+math _LBO2 frequency    4.02
+math _LBO2 phase        180.0
+math _LBO2 damping      0.015
+
+math _LBO3 frequency    10.0
+math _LBO3 damping      0.01
+
+math _start             0.0
+math _duration          12.0
+
+#  x = LBO1(t)
+#  y = LBO2(t)
+#  z = LBO3(t)
+math _oscillator_xyz
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 11
+#----------------------------------------------
+math  LBO1 frequency    1.5
+
+math  LBO2 amplitude    1.13
+math  LBO2 frequency    0.05
+math  LBO2 phase        90.0
+
+math  LBO3 frequency    1.5
+math  LBO3 phase        90.0
+
+math  LBO4 amplitude    1.13
+math  LBO4 frequency    0.05
+
+math  start             0.0
+math  duration          40.0
+
+math _LBO1 frequency    1.5
+math _LBO1 damping      0.024
+
+math _LBO2 amplitude    1.13
+math _LBO2 frequency    0.05
+math _LBO2 phase        90.0
+math _LBO2 damping      0.02
+
+math _LBO3 frequency    1.5
+math _LBO3 phase        90.0
+math _LBO3 damping      0.024
+
+math _LBO4 amplitude    1.13
+math _LBO4 frequency    0.05
+math _LBO4 damping      0.02
+
+math _start             0.0
+math _duration          40.0
+
+# https://en.wikipedia.org/wiki/Harmonograph
+#
+#  x = LBO1(t) + LBO2(t)
+#  y = LBO3(t) + LBO4(t)
+math _harmonograph
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 12
+#----------------------------------------------
+math  LBO1 frequency    6.0
+
+math  LBO2 amplitude    2.1
+math  LBO2 frequency    0.05
+math  LBO2 phase        90.0
+
+math  LBO3 frequency    6.5
+
+math  LBO4 amplitude    2.1
+math  LBO4 frequency    0.05
+
+math  LBO5 frequency    6.0
+
+math  LBO6 amplitude    2.1
+math  LBO6 frequency    0.1
+
+math  start             0.0
+math  duration          20.0
+
+math _LBO1 frequency    6.0
+
+math _LBO2 amplitude    2.1
+math _LBO2 frequency    0.05
+math _LBO2 phase        90.0
+
+math _LBO3 frequency    6.25
+
+math _LBO4 amplitude    2.1
+math _LBO4 frequency    0.05
+
+math _LBO5 frequency    6.0
+
+math _LBO6 amplitude    2.1
+math _LBO6 frequency    0.1
+
+math _start             0.0
+math _duration          20.0
+
+# https://en.wikipedia.org/wiki/Harmonograph
+#
+#  x = LBO1(t) + LBO2(t)
+#  y = LBO3(t) + LBO4(t)
+#  z = LBO5(t) + LBO6(t)
+math _harmonograph_xyz
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 13
+#----------------------------------------------
+math  LBO1 frequency    20.0
+
+math  LBO2 offset       1.0
+
+math  start             0.0
+math  duration          2.0
+
+math _LBO1 frequency    20.0
+
+math _LBO2 phase        180.0
+math _LBO2 offset       1.0
+
+math _start             0.0
+math _duration          2.0
+
+#  x = t
+#  y = LBO1(t) * LBO2(t)
+math _amplitude_mod
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 14
+#----------------------------------------------
+math  LBO1 frequency    60.0
+
+math  LBO2 phase        90.0
+math  LBO2 offset       1.0
+
+math  LBO3 frequency    60.0
+math  LBO3 phase        90.0
+
+math  LBO4 phase        90.0
+math  LBO4 offset       1.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 frequency    60.0
+
+math _LBO2 offset       1.0
+
+math _LBO3 frequency    60.0
+math _LBO3 phase        270.0
+
+math _LBO4 phase        90.0
+math _LBO4 offset       1.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = LBO1(t) * LBO2(t)
+#  y = LBO3(t) * LBO4(t)
+math _amplitude_mod_xy
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 15
+#----------------------------------------------
+math  LBO1 frequency    70.0
+
+math  LBO2 frequency    70.4
+math  LBO2 phase        70.0
+math  LBO2 offset       0.35
+
+math  LBO3 frequency    70.0
+math  LBO3 phase        60.0
+
+math  LBO4 frequency    70.6
+math  LBO4 phase        90.0
+math  LBO4 offset       0.35
+
+math  LBO5 frequency    70.0
+math  LBO5 phase        90.0
+
+math  LBO6 frequency    70.8
+math  LBO6 offset       0.35
+
+math  start             0.0
+math  duration          0.15
+
+math _LBO1 frequency    70.0
+math _LBO1 phase        90.0
+
+math _LBO2 frequency    71.2
+math _LBO2 phase        20.0
+math _LBO2 offset       0.65
+
+math _LBO3 frequency    70.0
+math _LBO3 phase        100.0
+
+math _LBO4 frequency    72.6
+math _LBO4 phase        90.0
+math _LBO4 offset       0.65
+
+math _LBO5 frequency    70.0
+math _LBO5 phase        200.0
+
+math _LBO6 frequency    73.3
+math _LBO6 offset       0.65
+
+math _start             0.0
+math _duration          0.15
+
+#  x = LBO1(t) * LBO2(t)
+#  y = LBO3(t) * LBO4(t)
+#  z = LBO5(t) * LBO6(t)
+math _amplitude_mod_xyz
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 16
+#----------------------------------------------
+math  LBO1 amplitude    3.0
+math  LBO1 frequency    0.3
+
+math  LBO2 amplitude    0.35
+math  LBO2 frequency    3.0
+math  LBO2 offset       2.0
+
+math  start             0.0
+math  duration          2.0
+
+math _LBO1 amplitude    3.0
+math _LBO1 frequency    0.3
+math _LBO1 phase        180.0
+
+math _LBO2 amplitude    0.35
+math _LBO2 frequency    3.3
+math _LBO2 offset       2.0
+
+math _start             0.0
+math _duration          2.0
+
+# ~*~ indicates that the frequency
+# of LBO1 is multiplied by the value of LBO2
+
+#  x = t
+#  y = LBO1(t) ~*~ LBO2(t)
+math _frequency_mod
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 17
+#----------------------------------------------
+math  LBO1 offset       3.1
+
+math  LBO2 amplitude    0.2
+math  LBO2 frequency    7.0
+
+math  LBO3 offset       3.1
+
+math  LBO4 amplitude    0.2
+math  LBO4 frequency    7.0
+math  LBO4 phase        90.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 phase        360.0
+math _LBO1 offset       3.1
+
+math _LBO2 amplitude    0.2
+math _LBO2 frequency    7.0
+
+math _LBO3 phase        360.0
+math _LBO3 offset       3.1
+
+math _LBO4 amplitude    0.2
+math _LBO4 frequency    7.0
+math _LBO4 phase        90.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = LBO1(t) ~*~ LBO2(t)
+#  y = LBO3(t) ~*~ LBO4(t)
+math _frequency_mod_xy
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 18
+#----------------------------------------------
+math  LBO1 frequency    0.1
+math  LBO1 offset       3.0
+
+math  LBO2 amplitude    0.2
+math  LBO2 frequency    20.0
+
+math  LBO3 frequency    0.1
+math  LBO3 phase        180.0
+math  LBO3 offset       3.0
+
+math  LBO4 amplitude    0.2
+math  LBO4 frequency    20.7
+
+math  LBO5 frequency    0.1
+math  LBO5 phase        180.0
+math  LBO5 offset       3.0
+
+math  LBO6 amplitude    0.2
+math  LBO6 frequency    21.4
+
+math  start             0.0
+math  duration          2.0
+
+math _LBO1 frequency    0.1
+math _LBO1 offset       3.0
+
+math _LBO2 amplitude    0.2
+math _LBO2 frequency    20.0
+
+math _LBO3 frequency    0.1
+math _LBO3 phase        180.0
+math _LBO3 offset       3.0
+
+math _LBO4 amplitude    0.2
+math _LBO4 frequency    20.7
+math _LBO4 phase        360.0
+
+math _LBO5 frequency    0.1
+math _LBO5 phase        180.0
+math _LBO5 offset       3.0
+
+math _LBO6 amplitude    0.2
+math _LBO6 frequency    21.4
+math _LBO6 phase        360.0
+
+math _start             0.0
+math _duration          2.0
+
+#  x = LBO1(t) ~*~ LBO2(t)
+#  y = LBO3(t) ~*~ LBO4(t)
+#  z = LBO5(t) ~*~ LBO6(t)
+math _frequency_mod_xyz
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 19
+#----------------------------------------------
+math  LBO2 offset       2.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO2 frequency    30.0
+math _LBO2 offset       2.0
+
+math _start             0.0
+math _duration          1.0
+
+# ~+~ indicates that the value of LBO2
+# is added to the phase of LBO1
+
+#  x = t
+#  y = LBO1(t) ~+~ LBO2(t)
+math _phase_mod
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 20
+#----------------------------------------------
+math  LBO1 frequency    3.0
+
+math  LBO2 amplitude    0.04
+math  LBO2 frequency    15.0
+math  LBO2 offset       1.0
+
+math  LBO3 frequency    5.0
+math  LBO3 phase        90.0
+
+math  LBO4 amplitude    0.04
+math  LBO4 frequency    15.0
+math  LBO4 phase        90.0
+math  LBO4 offset       1.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 frequency    3.0
+
+math _LBO2 amplitude    0.04
+math _LBO2 frequency    150.0
+math _LBO2 offset       1.0
+
+math _LBO3 frequency    5.0
+math _LBO3 phase        90.0
+
+math _LBO4 amplitude    0.04
+math _LBO4 frequency    150.0
+math _LBO4 phase        90.0
+math _LBO4 offset       1.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = LBO1(t) ~+~ LBO2(t)
+#  y = LBO3(t) ~+~ LBO4(t)
+math _phase_mod_xy
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 21
+#----------------------------------------------
+math  LBO2 amplitude    0.15
+math  LBO2 frequency    9.0
+math  LBO2 offset       1.0
+
+math  LBO4 amplitude    0.15
+math  LBO4 frequency    9.01
+math  LBO4 offset       1.0
+
+math  LBO6 amplitude    0.15
+math  LBO6 frequency    9.02
+math  LBO6 offset       1.0
+
+math  start             0.0
+math  duration          40.0
+
+math _LBO1 phase        270.0
+
+math _LBO2 amplitude    0.15
+math _LBO2 frequency    9.0
+math _LBO2 phase        360.0
+math _LBO2 offset       2.0
+
+math _LBO3 phase        360.0
+
+math _LBO4 amplitude    0.15
+math _LBO4 frequency    9.01
+math _LBO4 phase        360.0
+math _LBO4 offset       2.0
+
+math _LBO5 phase        360.0
+
+math _LBO6 amplitude    0.15
+math _LBO6 frequency    9.02
+math _LBO6 phase        360.0
+math _LBO6 offset       2.0
+
+math _start             0.0
+math _duration          40.0
+
+#  x = LBO1(t) ~+~ LBO2(t)
+#  y = LBO3(t) ~+~ LBO4(t)
+#  z = LBO5(t) ~+~ LBO6(t)
+math _phase_mod_xyz
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 22
+#----------------------------------------------
+math  LBO1 offset       1.25
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 frequency    10.25
+math _LBO1 offset       1.25
+
+math _start             0.0
+math _duration          4.0
+
+#  x = LBO1(t) * cos(t)
+#  y = LBO1(t) * sin(t)
+math _polar
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 23
+#----------------------------------------------
+math  LBO1 frequency    7.0
+math  LBO1 offset       1.5
+
+
+math  LBO2 amplitude    0.0
+math  LBO2 frequency    140.0
+math  LBO2 offset       1.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 frequency    7.0
+math _LBO1 phase        360.0
+math _LBO1 offset       1.5
+
+math _LBO2 amplitude    1.0
+math _LBO2 frequency    140.0
+math _LBO2 phase        360.0
+math _LBO2 offset       1.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = (LBO1(t) + LBO2(t)) * cos(t)
+#  y = (LBO1(t) + LBO2(t)) * sin(t)
+math _polar_sum
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 24
+#----------------------------------------------
+math  LBO1 frequency    6.0
+math  LBO1 offset       1.25
+
+math  LBO2 amplitude    0.5
+math  LBO2 frequency    30.0
+math  LBO2 offset       1.25
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 frequency    6.1
+math _LBO1 offset       1.25
+
+math _LBO2 amplitude    0.5
+math _LBO2 frequency    30.5
+math _LBO2 offset       1.25
+
+math _start             0.0
+math _duration          10.0
+
+#  x = (LBO1(t) * LBO2(t)) * cos(t)
+#  y = (LBO1(t) * LBO2(t)) * sin(t)
+math _polar_amplitude_mod
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 25
+#----------------------------------------------
+math  LBO1 frequency    2.0
+math  LBO1 offset       1.1
+
+math  LBO2 amplitude    0.0
+math  LBO2 offset       1.0
+
+math  start             0.0
+math  duration          1.0
+
+math _LBO1 frequency    2.0
+math _LBO1 offset       1.1
+
+math _LBO2 amplitude    0.5
+math _LBO2 frequency    10.0
+math _LBO2 offset       1.0
+
+math _start             0.0
+math _duration          1.0
+
+#  x = (LBO1(t) ~*~ LBO2(t)) * cos(t)
+#  y = (LBO1(t) ~*~ LBO2(t)) * sin(t)
+math _polar_frequency_mod
+
+math color_span_hues
+math render
+
+math LBO_reset_all
+
+
+
+
+# 27
+#----------------------------------------------
+math  LBO1 frequency    1.25
+math  LBO1 offset       1.0
+
+math  LBO2 amplitude    0.25
+math  LBO2 frequency    50.0
+math  LBO2 offset       -2.0
+
+math  start             0.0
+math  duration          4.0
+
+math _LBO1 frequency    1.25
+math _LBO1 offset       1.0
+
+math _LBO2 amplitude    0.25
+math _LBO2 frequency    50.0
+math _LBO2 offset       2.0
+
+math _start             0.0
+math _duration          4.0
+
+#  x = (LBO1(t) ~+~ LBO2(t)) * cos(t)
+#  y = (LBO1(t) ~+~ LBO2(t)) * sin(t)
+math _polar_phase_mod
+
+math color_span_hues
+math render
+
+
+
+
+
+###############################################
+###############################################
