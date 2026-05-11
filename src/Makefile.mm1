@@ -13,7 +13,7 @@ FLTK_CONFIG ?= fltk-config
 BREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /opt/homebrew)
 INC      = -I$(BREW_PREFIX)/include
 LIB      = -L$(BREW_PREFIX)/lib
-LIBS     = $(shell $(FLTK_CONFIG) --ldflags) -lboost_filesystem
+LIBS     = $(shell $(FLTK_CONFIG) --ldflags) -lfltk_images -lboost_filesystem
 
 CPPFLAGS = -D__WITH_FLTK__ \
            -std=c++17 \

@@ -32,6 +32,23 @@
 //############################################################################
 LaserBoy_palette& LaserBoy_palette_set::palette_picker(int index)
 {
+    if(!number_of_palettes())
+    {
+        static LaserBoy_palette empty_guard_palette;
+        static bool empty_guard_ready = false;
+        if(!empty_guard_ready)
+        {
+            empty_guard_palette.push_back(LaserBoy_color(0, 0, 0));
+            empty_guard_palette.push_back(LaserBoy_color(255, 255, 255));
+            empty_guard_palette.black = 0;
+            empty_guard_palette.white = 1;
+            empty_guard_palette.first = 0;
+            empty_guard_palette.last  = 1;
+            empty_guard_palette.name  = "________";
+            empty_guard_ready         = true;
+        }
+        return empty_guard_palette;
+    }
     if(index == LASERBOY_TRUE_COLOR)
         return at(target_palette_index);
     if(index < 0)

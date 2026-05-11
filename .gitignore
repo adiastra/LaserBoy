@@ -1,7 +1,14 @@
 .DS_Store
+.cursor/
 build/
+/LaserBoy
+*.bat
+*.exe
 *.o
 *.obj
 *.ilk
 *.pdb
 *.user
+
+# Reference icons pulled from FreeCAD for browsing; not part of the build.
+/icons_preview/

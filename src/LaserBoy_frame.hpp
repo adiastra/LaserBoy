@@ -465,6 +465,7 @@ public:
     LaserBoy_frame&      selected_to_dots ();
     LaserBoy_frame&      remove_at_spider ();
     LaserBoy_frame&      remove_vertex    (u_int vertex_index);
+    LaserBoy_frame&      delete_selection ();
     //------------------------------------------------------------------------
     bool  save_as_ild              (const string& file, LaserBoy_ild_header_count& count);
     bool  save_as_ctn              (const string& file);

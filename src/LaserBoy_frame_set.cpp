@@ -322,6 +322,8 @@ LaserBoy_Error_Code LaserBoy_frame_set::order_frames_by_name(string& report, boo
 //############################################################################
 void LaserBoy_frame_set::render_frame(const int& index, struct LaserBoy_bmp *bmp) const
 {
+    if(!size() || index < 0 || index >= (int)size())
+        return;
     bool     rotate_view   = (p_space->view_angle  != 0.0),
              offset_view   = (p_space->view_offset != 0  ),
              scale_view    = (p_space->view_scale  != 1.0);

@@ -35,12 +35,16 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Group.H>
+#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_SVG_Image.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Widget.H>
 
 #include <chrono>
 #include <deque>
+#include <string>
 
 #define LASERBOY_GUI_KEYDOWN 1
 #define LASERBOY_GUI_MOUSEMOTION 2
@@ -127,6 +131,23 @@ struct LaserBoy_GUI_Event
     } key;
 };
 
+enum LaserBoy_FLTK_Viewport_Tool
+{
+    LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT,
+    LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX,
+    LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT
+};
+
+enum LaserBoy_FLTK_Viewport_Drag_Action
+{
+    LASERBOY_FLTK_VIEWPORT_DRAG_NONE,
+    LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_SELECTION,
+    LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_VERTEX,
+    LASERBOY_FLTK_VIEWPORT_DRAG_PAN,
+    LASERBOY_FLTK_VIEWPORT_DRAG_ORBIT,
+    LASERBOY_FLTK_VIEWPORT_DRAG_RUBBER_BAND
+};
+
 struct LaserBoy_GUI_Rect
 {
     int x;
@@ -176,6 +197,32 @@ inline unsigned int LaserBoy_GetTicks()
 }
 
 #include "LaserBoy_TUI.hpp"
+
+//############################################################################
+// One entry on the undo / redo stacks.
+//
+// The viewport view (pan / zoom / orbit) is part of the document in LaserBoy:
+// it is literally the camera the laser show is rendered through, and it can
+// change between frames to drive animation. So view ops are first-class
+// authoring operations and live on the same history as vertex edits.
+//
+//   FRAME_EDIT  - snapshot of one frame in `space[frame_index]`.
+//   VIEW_EDIT   - snapshot of `space.view_offset / view_scale / view_angle`.
+struct LaserBoy_FLTK_Edit_Snapshot
+{
+    enum Kind { FRAME_EDIT = 0, VIEW_EDIT = 1 };
+    Kind               kind;
+    // FRAME_EDIT:
+    u_int              frame_index;
+    LaserBoy_frame     frame;
+    // VIEW_EDIT:
+    LaserBoy_3D_double view_offset;
+    LaserBoy_3D_double view_scale;
+    LaserBoy_3D_double view_angle;
+    std::string        label;
+};
+
+#define LASERBOY_FLTK_EDIT_HISTORY_LIMIT 64
 
 //############################################################################
 class LaserBoy_FLTK_GUI;
@@ -272,6 +319,10 @@ public:
         unlock_screen_buffer(screen);
         present_screen_region(screen, 0, 0, 0, 0);
         lock_screen_buffer(screen);
+        // Keep the menu toggle button's icon in sync with the legacy menu's
+        // actual visibility (space.show_menu) on every paint. Cheap; only swaps
+        // the SVG image when the tracked state actually changes.
+        refresh_menu_toggle_button();
         return;
     }
     //------------------------------------------------------------------------
@@ -494,6 +545,7 @@ public:
     bool    bmp_file_open_menu                   ();
     void    open_import_wizard                   ();
     bool    show_import_task_modal               ();
+    bool    show_import_task_modal               (int initial_file_type, const string& initial_source);
     bool    import_file_with_wizard              (const string& file);
     int     show_import_mode_dialog              (const string& file, const string& extension);
     bool    import_ild_file                      (const string& file, int mode);
@@ -510,9 +562,9 @@ public:
     void    open_export_wizard                   ();
     bool    show_export_task_modal               ();
     bool    execute_export_task                  (int file_type, int action, const string& destination, bool option_a, bool option_b, bool option_c, bool option_d);
-    bool    export_ild_file                      (const string& destination, int action, bool use_format_45, bool save_2D_as_3D, bool auto_minimize);
+    bool    export_ild_file                      (const string& destination, int action, bool use_format_45, bool save_2D_as_3D, bool auto_minimize, bool save_1_frame_bridge);
     bool    export_dxf_file                      (const string& destination, int action, bool true_color_dxf);
-    bool    export_wav_file                      (const string& destination, int action);
+    bool    export_wav_file                      (const string& destination, int action, bool invert_output, bool apply_offsets, bool use_8_channels, bool auto_flatten_z);
     bool    export_txt_file                      (const string& destination, int action, bool unit_coordinates, bool integrated_color, bool color_hex, bool named_palettes);
     bool    export_ctn_file                      (const string& destination, int action);
     bool    export_bmp_file                      (const string& destination, int action);
@@ -601,6 +653,50 @@ public:
     void           present_screen();
     void           present_screen_region(LaserBoy_Screen_Buffer* surface, int x, int y, int w, int h);
     void           focus_display();
+    void           update_viewport_mouse_status(int mouse_x, int mouse_y, const char* action);
+    LaserBoy_3D_double project_viewport_point(const LaserBoy_vertex& vertex, u_int vertex_index);
+    bool           viewport_point_to_model_delta(int dx, int dy, LaserBoy_3D_double& delta) const;
+    double         viewport_distance_to_segment(double mouse_x, double mouse_y, double x0, double y0, double x1, double y1) const;
+    bool           select_viewport_vertex(int mouse_x, int mouse_y, bool extend_selection);
+    bool           select_viewport_segment(int mouse_x, int mouse_y, bool extend_selection);
+    bool           select_viewport_rect(int canvas_x1, int canvas_y1, int canvas_x2, int canvas_y2, bool extend_selection);
+    bool           delete_selection_in_frame();
+    bool           copy_selection_to_new_frame();
+    bool           begin_viewport_selection_drag(int mouse_x, int mouse_y, bool extend_selection);
+    bool           drag_viewport_selection_by_pixels(int dx, int dy);
+    bool           begin_viewport_vertex_drag(int mouse_x, int mouse_y, bool extend_selection);
+    bool           drag_viewport_vertex_by_pixels(int dx, int dy);
+    void           pan_viewport_by_pixels(int dx, int dy);
+    void           orbit_viewport_by_pixels(int dx, int dy);
+    void           refresh_viewport_after_mouse_change();
+    void           apply_view_control(char command);
+    void           toggle_menu_overlay();
+    void           refresh_menu_toggle_button();
+    void           sync_ui_visual_menu_checks();
+    void           set_viewport_tool(LaserBoy_FLTK_Viewport_Tool tool);
+    LaserBoy_FLTK_Viewport_Tool active_viewport_tool() const { return viewport_tool; }
+    //------------------------------------------------------------------------
+    // Square viewport layout: largest square inside the display widget; world renders to screen buffer of side viewport_square_n.
+    void           schedule_debounced_viewport_resize();
+    void           commit_debounced_viewport_resize();
+    void           layout_gui_regions(int window_w, int window_h);
+    void           recompute_viewport_square_geometry();
+    double         viewport_model_to_canvas_scale(int art_px) const;
+    bool           viewport_widget_local_to_canvas(int widget_lx, int widget_ly, int& canvas_x, int& canvas_y) const;
+    int            viewport_canvas_side() const { return viewport_square_n; }
+    int            viewport_square_offset_x() const { return viewport_square_x; }
+    int            viewport_square_offset_y() const { return viewport_square_y; }
+    bool           viewport_buffers_ready() const { return screen != NULL && screen->pixels != NULL; }
+    const char*    viewport_tool_label(LaserBoy_FLTK_Viewport_Tool tool) const;
+    void           refresh_tool_buttons();
+    bool           begin_viewport_edit_transaction(const std::string& label);
+    bool           begin_viewport_view_transaction(const std::string& label);
+    void           commit_viewport_edit_transaction(bool changed);
+    bool           undo_frame_edit();
+    bool           redo_frame_edit();
+    bool           can_undo_frame_edit() const { return !undo_history.empty(); }
+    bool           can_redo_frame_edit() const { return !redo_history.empty(); }
+    void           clear_edit_history();
     void           push_command_key(int key, int state = 0);
     void           push_key_event(int key, int state);
     void           fltk_request_close();
@@ -620,12 +716,79 @@ public:
     Fl_Button*     first_frame_button;
     Fl_Button*     last_frame_button;
     Fl_Button*     menu_toggle_button;
+    Fl_Button*     segment_tool_button;
+    Fl_Button*     vertex_tool_button;
+    Fl_Button*     pan_orbit_tool_button;
+    Fl_Button*     undo_button;
+    Fl_Button*     redo_button;
+    // "Include Camera" toggle next to undo/redo. When checked, pan / zoom /
+    // orbit are pushed onto the undo stack just like vertex edits. When
+    // unchecked (the default), they are treated as pure navigation.
+    Fl_Check_Button* include_camera_check;
+    bool             include_camera_in_history;
+    Fl_Button*     delete_selection_button;
+    Fl_Button*     copy_selection_button;
+    Fl_Button*     zoom_in_button;
+    Fl_Button*     zoom_out_button;
+    Fl_Button*     zoom_reset_button;
+    Fl_Button*     center_view_button;
+    Fl_Button*     view_reset_button;
     Fl_Box*        frame_number_label;
     Fl_Box*        stats_text;
     Fl_Box*        palette_text;
     LaserBoy_FLTK_Palette_Display* palette_display;
     Fl_Box*        status_text;
     LaserBoy_FLTK_Display* display;
+    // Tracks the most recently rendered legacy-menu state so we can skip redundant
+    // image swaps. The authoritative source is space.show_menu.
+    bool           menu_toggle_icon_shown;
+    // FreeCAD SVG icons (owned, freed in destructor)
+    Fl_SVG_Image*  icon_menu;
+    Fl_SVG_Image*  icon_menu_off;
+    Fl_SVG_Image*  icon_seg_tool;
+    Fl_SVG_Image*  icon_vtx_tool;
+    Fl_SVG_Image*  icon_pan_tool;
+    Fl_SVG_Image*  icon_undo;
+    Fl_SVG_Image*  icon_redo;
+    Fl_SVG_Image*  icon_zoom_in;
+    Fl_SVG_Image*  icon_zoom_out;
+    Fl_SVG_Image*  icon_zoom_reset;
+    Fl_SVG_Image*  icon_center_view;
+    Fl_SVG_Image*  icon_view_reset;
+    Fl_SVG_Image*  icon_first_frame;
+    Fl_SVG_Image*  icon_prev_frame;
+    Fl_SVG_Image*  icon_next_frame;
+    Fl_SVG_Image*  icon_last_frame;
+    LaserBoy_FLTK_Viewport_Tool viewport_tool;
+    LaserBoy_FLTK_Viewport_Drag_Action viewport_drag_action;
+    bool           viewport_mouse_dragging;
+    bool           viewport_mouse_moved;
+    int            viewport_mouse_button;
+    int            viewport_mouse_down_x;
+    int            viewport_mouse_down_y;
+    int            viewport_mouse_last_x;
+    int            viewport_mouse_last_y;
+    size_t         viewport_drag_egg;
+    size_t         viewport_drag_spider;
+    size_t         viewport_drag_vertex;
+    int            viewport_drag_start_canvas_x;
+    int            viewport_drag_start_canvas_y;
+    // Rubber-band selection state (coords are in canvas/square space, same as hit-tests).
+    bool           rubber_band_active;
+    int            rubber_band_x1;
+    int            rubber_band_y1;
+    int            rubber_band_x2;
+    int            rubber_band_y2;
+    bool           rubber_band_extend;
+    LaserBoy_frame viewport_drag_start_frame;
+    LaserBoy_3D_double viewport_drag_start_view_offset;
+    bool           viewport_edit_transaction_active;
+    bool           viewport_edit_transaction_committed;
+    int            viewport_square_n;
+    int            viewport_square_x;
+    int            viewport_square_y;
+    std::deque<LaserBoy_FLTK_Edit_Snapshot> undo_history;
+    std::deque<LaserBoy_FLTK_Edit_Snapshot> redo_history;
     LaserBoy_GUI_PixelFormat screen_format;
     std::deque<LaserBoy_GUI_Event> event_queue;
     LaserBoy_Screen_Buffer   *screen; // FLTK-backed software screen buffer

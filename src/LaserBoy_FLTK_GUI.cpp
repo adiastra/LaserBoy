@@ -28,6 +28,9 @@
 //
 //############################################################################
 #include "LaserBoy_FLTK_GUI.hpp"
+#include "LaserBoy_icons.hpp"
+
+#include "LaserBoy_bmp.hpp"
 
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Choice.H>
@@ -41,13 +44,28 @@
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
 #include <sstream>
 #include <vector>
 #include <sys/stat.h>
 
+// Map Fl::event_x/y (window client coords) to this widget's local coords.
+static void lb_fltk_event_to_widget_local(const Fl_Widget* w, int& lx, int& ly)
+{
+    lx = Fl::event_x() - (w ? w->x() : 0);
+    ly = Fl::event_y() - (w ? w->y() : 0);
+}
+
 namespace
 {
 LaserBoy_FLTK_GUI* active_fltk_gui = NULL;
+
+void viewport_resize_timeout_cb(void* data)
+{
+    LaserBoy_FLTK_GUI* gui = static_cast<LaserBoy_FLTK_GUI*>(data);
+    if(gui)
+        gui->commit_debounced_viewport_resize();
+}
 
 enum LaserBoy_Import_Mode
 {
@@ -401,6 +419,15 @@ int import_source_kind(const LaserBoy_Import_Task_State* state)
 }
 
 //----------------------------------------------------------------------------
+int import_source_kind_for_action(const LaserBoy_Import_Task_State* state, int action)
+{
+    for(size_t i = 0; i < state->actions.size(); i++)
+        if(state->actions[i].action == action)
+            return state->actions[i].source_kind;
+    return LASERBOY_IMPORT_SOURCE_FILE;
+}
+
+//----------------------------------------------------------------------------
 void export_actions_for_type(int file_type, vector<LaserBoy_Export_Action_Option>& actions)
 {
     actions.clear();
@@ -410,9 +437,6 @@ void export_actions_for_type(int file_type, vector<LaserBoy_Export_Action_Option
             actions.push_back({"ild save current frame", LASERBOY_EXPORT_ACTION_ILD_CURRENT, LASERBOY_EXPORT_DEST_FILE});
             actions.push_back({"ild save selected frames", LASERBOY_EXPORT_ACTION_ILD_SELECTED, LASERBOY_EXPORT_DEST_FILE});
             actions.push_back({"ild save all frames", LASERBOY_EXPORT_ACTION_ILD_ALL, LASERBOY_EXPORT_DEST_FILE});
-            actions.push_back({"ild effect current frame", LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT, LASERBOY_EXPORT_DEST_FILE});
-            actions.push_back({"ild effect selected frames", LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED, LASERBOY_EXPORT_DEST_FILE});
-            actions.push_back({"ild effect frame_set", LASERBOY_EXPORT_ACTION_ILD_EFFECT_ALL, LASERBOY_EXPORT_DEST_FILE});
             actions.push_back({"ild save font and utf8 index file", LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8, LASERBOY_EXPORT_DEST_FILE});
             actions.push_back({"split frame_set into new directory", LASERBOY_EXPORT_ACTION_ILD_SPLIT_DIRECTORY, LASERBOY_EXPORT_DEST_DIRECTORY});
             break;
@@ -439,7 +463,6 @@ void export_actions_for_type(int file_type, vector<LaserBoy_Export_Action_Option
             actions.push_back({"save current frame palette", LASERBOY_EXPORT_ACTION_TXT_CURRENT_PALETTE, LASERBOY_EXPORT_DEST_FILE});
             actions.push_back({"save target palette", LASERBOY_EXPORT_ACTION_TXT_TARGET_PALETTE, LASERBOY_EXPORT_DEST_FILE});
             actions.push_back({"save LaserBoy wave color rescales", LASERBOY_EXPORT_ACTION_TXT_WAVE_RESCLES, LASERBOY_EXPORT_DEST_FILE});
-            actions.push_back({"save system settings (wtf)", LASERBOY_EXPORT_ACTION_TXT_WTF, LASERBOY_EXPORT_DEST_FILE});
             break;
         case LASERBOY_EXPORT_TYPE_CTN:
             actions.push_back({"ctn save current frame", LASERBOY_EXPORT_ACTION_CTN_CURRENT, LASERBOY_EXPORT_DEST_FILE});
@@ -472,6 +495,95 @@ int export_destination_kind(const LaserBoy_Export_Task_State* state)
 }
 
 //----------------------------------------------------------------------------
+int export_destination_kind_for_action(const LaserBoy_Export_Task_State* state, int action)
+{
+    for(size_t i = 0; i < state->actions.size(); i++)
+        if(state->actions[i].action == action)
+            return state->actions[i].destination_kind;
+    return LASERBOY_EXPORT_DEST_FILE;
+}
+
+//----------------------------------------------------------------------------
+int import_type_for_extension(const string& extension)
+{
+    if(extension == "ild")
+        return LASERBOY_IMPORT_TYPE_ILD;
+    if(extension == "dxf")
+        return LASERBOY_IMPORT_TYPE_DXF;
+    if(extension == "wav")
+        return LASERBOY_IMPORT_TYPE_WAV;
+    if(extension == "txt")
+        return LASERBOY_IMPORT_TYPE_TXT;
+    if(extension == "ctn")
+        return LASERBOY_IMPORT_TYPE_CTN;
+    if(extension == "bmp")
+        return LASERBOY_IMPORT_TYPE_BMP;
+    if(extension == "wtf")
+        return LASERBOY_IMPORT_TYPE_WTF;
+    if(extension == "utf8")
+        return LASERBOY_IMPORT_TYPE_UTF8;
+    return -1;
+}
+
+//----------------------------------------------------------------------------
+bool wav_import_action_uses_header(int action)
+{
+    return    action == LASERBOY_IMPORT_ACTION_WAV_LB_REPLACE
+           || action == LASERBOY_IMPORT_ACTION_WAV_LB_APPEND
+           || action == LASERBOY_IMPORT_ACTION_WAV_CLIP_REPLACE
+           || action == LASERBOY_IMPORT_ACTION_WAV_CLIP_APPEND;
+}
+
+//----------------------------------------------------------------------------
+bool wav_import_action_uses_global_polarity(int action)
+{
+    return    action == LASERBOY_IMPORT_ACTION_WAV_LB_AS_UNFORMATTED
+           || action == LASERBOY_IMPORT_ACTION_WAV_CLIP_AS_UNFORMATTED
+           || action == LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_REPLACE
+           || action == LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_APPEND
+           || action == LASERBOY_IMPORT_ACTION_WAV_QM_REFRAME;
+}
+
+//----------------------------------------------------------------------------
+bool read_wave_channel_map(const string& file, string& channel_map)
+{
+    std::fstream in(file.c_str(), ios::in | ios::binary);
+    if(!in.is_open())
+        return false;
+    LaserBoy_wave_header header(in);
+    if(header.channel_map.size() == 0)
+        return false;
+    channel_map = header.channel_map;
+    return true;
+}
+
+//----------------------------------------------------------------------------
+bool save_ild_or_wave_fallback(LaserBoy_frame_set& out, const string& file, LaserBoy_ild_header_count& counter)
+{
+    if(out.is_ild_busted())
+    {
+        const int answer = fl_choice(  "This output is too large for standard ILD.\nSave it as unoptimized WAV instead?"
+                                     , "Cancel"
+                                     , "Save WAV"
+                                     , NULL
+                                    );
+        if(answer != 1)
+            return false;
+        string wave_file = file;
+        const size_t dot = wave_file.find_last_of('.');
+        if(dot != string::npos)
+            wave_file = wave_file.substr(0, dot);
+        wave_file += ".wav";
+        if(!confirm_file_overwrite(wave_file))
+            return false;
+        return out.save_as_wave(wave_file, false, false);
+    }
+    if(!confirm_file_overwrite(file))
+        return false;
+    return out.save_as_ild(file, counter);
+}
+
+//----------------------------------------------------------------------------
 int fltk_global_event_handler(int fltk_event)
 {
     if(    active_fltk_gui
@@ -490,6 +602,19 @@ int fltk_global_event_handler(int fltk_event)
                 active_fltk_gui->open_export_wizard();
                 return 1;
             }
+            if(Fl::event_key() == 'z' || Fl::event_key() == 'Z')
+            {
+                if(Fl::event_state(FL_SHIFT))
+                    active_fltk_gui->redo_frame_edit();
+                else
+                    active_fltk_gui->undo_frame_edit();
+                return 1;
+            }
+            if(Fl::event_key() == 'y' || Fl::event_key() == 'Y')
+            {
+                active_fltk_gui->redo_frame_edit();
+                return 1;
+            }
         }
         active_fltk_gui->push_key_event(Fl::event_key(), Fl::event_state());
         return 1;
@@ -505,6 +630,15 @@ public:
             : Fl_Window(w, h, label)
             , gui(gui_ptr)
     {
+    }
+    //------------------------------------------------------------------------
+    void resize(int X, int Y, int W, int H) override
+    {
+        Fl_Window::resize(X, Y, W, H);
+        if(gui)
+            gui->layout_gui_regions(W, H);
+        if(gui && gui->viewport_buffers_ready())
+            gui->schedule_debounced_viewport_resize();
     }
     //------------------------------------------------------------------------
     int handle(int fltk_event) override
@@ -559,6 +693,241 @@ void gui_export_callback(Fl_Widget*, void*)
 {
     if(active_fltk_gui)
         active_fltk_gui->open_export_wizard();
+}
+
+//----------------------------------------------------------------------------
+void gui_tool_select_callback(Fl_Widget*, void* data)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->set_viewport_tool((LaserBoy_FLTK_Viewport_Tool)(intptr_t)data);
+}
+
+//----------------------------------------------------------------------------
+void gui_undo_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->undo_frame_edit();
+}
+
+//----------------------------------------------------------------------------
+void gui_redo_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->redo_frame_edit();
+}
+
+//----------------------------------------------------------------------------
+void gui_include_camera_callback(Fl_Widget* w, void*)
+{
+    if(!active_fltk_gui || !w)
+        return;
+    Fl_Check_Button* cb = (Fl_Check_Button*)w;
+    active_fltk_gui->include_camera_in_history = (cb->value() != 0);
+}
+
+//----------------------------------------------------------------------------
+void gui_view_control_callback(Fl_Widget*, void* data)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->apply_view_control((char)(intptr_t)data);
+}
+
+//----------------------------------------------------------------------------
+void gui_menu_toggle_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->toggle_menu_overlay();
+}
+
+//----------------------------------------------------------------------------
+void gui_delete_selection_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->delete_selection_in_frame();
+}
+
+//----------------------------------------------------------------------------
+void gui_copy_selection_callback(Fl_Widget*, void*)
+{
+    if(active_fltk_gui)
+        active_fltk_gui->copy_selection_to_new_frame();
+}
+
+//----------------------------------------------------------------------------
+namespace {
+
+static void lb_apply_rainbow_menu_toggle(LaserBoy_TUI& tui, bool rainbow)
+{
+    tui.rainbow_menus = rainbow;
+    if(tui.rainbow_menus)
+    {
+        if(tui.bg_color.sum() >= 384)
+            tui.white_text = LaserBoy_color(0, 0, 0);
+        else
+            tui.white_text = LaserBoy_color(255, 255, 255);
+    }
+    else
+        tui.white_text = tui.mono_text;
+}
+
+static void lb_set_ui_visual_menu_toggle(Fl_Menu_Bar* mb, const char* path, bool on)
+{
+    if(!mb || !path)
+        return;
+    Fl_Menu_Item* mi = const_cast<Fl_Menu_Item*>(mb->find_item(path));
+    if(!mi)
+        return;
+    if(on)
+        mi->set();
+    else
+        mi->clear();
+}
+
+//----------------------------------------------------------------------------
+// UI visual toggle registry.
+//
+// One row per user-facing toggle under the "Options" menu. Each row encodes:
+//   - The label shown under "Options/<label>".
+//   - How to read and write the underlying flag in LaserBoy_TUI (i.e.
+//     LaserBoy_space, the in-memory settings object).
+//   - Whether toggling it requires marking the viewport dirty.
+//
+// Adding a new "Options" toggle is one line in LB_UI_VISUAL_TOGGLES; menu
+// construction, the FLTK callback, and check-state sync all iterate this
+// table — no parallel switches/strings to keep in sync.
+//----------------------------------------------------------------------------
+struct LB_UI_Visual_Toggle
+{
+    enum Kind { BOOL_FLAG, CUSTOM };
+    const char*                                 label;
+    Kind                                        kind;
+    bool LaserBoy_TUI::*                        bool_member;   // BOOL_FLAG
+    void (*custom_write)(LaserBoy_TUI&, bool);                 // CUSTOM
+    bool (*custom_read )(const LaserBoy_TUI&);                 // CUSTOM
+    bool                                        triggers_view_change;
+};
+
+static bool lb_read_visual_toggle(const LB_UI_Visual_Toggle& t,
+                                  const LaserBoy_TUI&        s)
+{
+    switch(t.kind)
+    {
+        case LB_UI_Visual_Toggle::BOOL_FLAG:
+            return s.*(t.bool_member);
+        case LB_UI_Visual_Toggle::CUSTOM:
+            return t.custom_read(s);
+    }
+    return false;
+}
+
+static void lb_write_visual_toggle(const LB_UI_Visual_Toggle& t,
+                                   LaserBoy_TUI&              s,
+                                   bool                       on)
+{
+    switch(t.kind)
+    {
+        case LB_UI_Visual_Toggle::BOOL_FLAG:
+            s.*(t.bool_member) = on;
+            break;
+        case LB_UI_Visual_Toggle::CUSTOM:
+            t.custom_write(s, on);
+            break;
+    }
+    if(t.triggers_view_change)
+        s.view_has_changed = true;
+}
+
+static bool lb_read_rainbow_menus(const LaserBoy_TUI& s)
+{
+    return s.rainbow_menus;
+}
+
+// transparent_menu_font is u_int and uses 0/4 instead of 0/1, so it is
+// modeled as a CUSTOM entry (the only non-bool toggle in the table).
+static void lb_apply_transparent_menu_font(LaserBoy_TUI& s, bool on)
+{
+    s.transparent_menu_font = on ? 4 : 0;
+}
+static bool lb_read_transparent_menu_font(const LaserBoy_TUI& s)
+{
+    return s.transparent_menu_font != 0;
+}
+
+#define LB_TOGGLE_BOOL(LABEL, MEMBER)                                      \
+    { LABEL, LB_UI_Visual_Toggle::BOOL_FLAG,                               \
+      &LaserBoy_TUI::MEMBER, nullptr, nullptr, false }
+#define LB_TOGGLE_BOOL_VIEW(LABEL, MEMBER)                                 \
+    { LABEL, LB_UI_Visual_Toggle::BOOL_FLAG,                               \
+      &LaserBoy_TUI::MEMBER, nullptr, nullptr, true  }
+#define LB_TOGGLE_CUSTOM(LABEL, WRITE_FN, READ_FN)                         \
+    { LABEL, LB_UI_Visual_Toggle::CUSTOM,                                  \
+      nullptr, (WRITE_FN), (READ_FN), false }
+
+static const LB_UI_Visual_Toggle LB_UI_VISUAL_TOGGLES[] = {
+    LB_TOGGLE_BOOL  ("Vectors",                      show_vectors),
+    LB_TOGGLE_BOOL  ("Vertices",                     show_vertices),
+    LB_TOGGLE_BOOL  ("Direction",                    show_direction),
+    LB_TOGGLE_BOOL  ("Blanking",                     show_blanking),
+    LB_TOGGLE_BOOL  ("Intro",                        show_intro),
+    LB_TOGGLE_BOOL  ("Bridge",                       show_bridge),
+    LB_TOGGLE_BOOL  ("Coda",                         show_coda),
+    LB_TOGGLE_BOOL  ("Vertex indices",               show_indices),
+    LB_TOGGLE_BOOL  ("Palette",                      show_palette),
+    LB_TOGGLE_BOOL  ("Target palette",               show_target_palette),
+    LB_TOGGLE_BOOL  ("Stats text",                   show_stats),
+    LB_TOGGLE_CUSTOM("Transparent menu font",
+                     lb_apply_transparent_menu_font,
+                     lb_read_transparent_menu_font),
+    LB_TOGGLE_CUSTOM("Rainbow menu colors",
+                     lb_apply_rainbow_menu_toggle,
+                     lb_read_rainbow_menus),
+    LB_TOGGLE_BOOL  ("Fixed bounds",                 show_fixed_bounds),
+    LB_TOGGLE_BOOL  ("Fixed origin",                 show_fixed_origin),
+    LB_TOGGLE_BOOL  ("Floating axis",                show_floating_axis),
+    LB_TOGGLE_BOOL  ("Floating bounds",              show_floating_bounds),
+    LB_TOGGLE_BOOL  ("Onion skin",                   show_onion_skin),
+    LB_TOGGLE_BOOL  ("Onion visuals",                show_onion_visuals),
+    LB_TOGGLE_BOOL  ("Z as vector order",            show_Z_as_order),
+    LB_TOGGLE_BOOL_VIEW("Quad orthographic view",    show_quad_view),
+    LB_TOGGLE_BOOL  ("Loop animation",               loop_animation),
+    LB_TOGGLE_BOOL  ("Approximate frame rate",       approximate_frame_rate),
+    LB_TOGGLE_BOOL  ("Live effect rendering (slow)", show_effects_generation),
+    LB_TOGGLE_BOOL  ("Cursor limit messages",        show_cursor_limits_msg),
+    LB_TOGGLE_BOOL  ("Infinite spider vector",       infinite_vector),
+    LB_TOGGLE_BOOL  ("TUI clue line",                show_TUI_clue),
+    LB_TOGGLE_BOOL  ("Track BMP with view",          track_bmp_view),
+};
+
+#undef LB_TOGGLE_BOOL
+#undef LB_TOGGLE_BOOL_VIEW
+#undef LB_TOGGLE_CUSTOM
+
+static const size_t LB_UI_VISUAL_TOGGLES_COUNT =
+    sizeof(LB_UI_VISUAL_TOGGLES) / sizeof(LB_UI_VISUAL_TOGGLES[0]);
+
+static std::string lb_visual_toggle_menu_path(const LB_UI_Visual_Toggle& t)
+{
+    return std::string("Options/") + t.label;
+}
+
+} // namespace
+
+//----------------------------------------------------------------------------
+void gui_ui_visual_toggle_callback(Fl_Widget* w, void* data)
+{
+    LaserBoy_FLTK_GUI* gui = active_fltk_gui;
+    if(!gui || !w)
+        return;
+    Fl_Menu_* m = (Fl_Menu_*)w;
+    const Fl_Menu_Item* item = m->mvalue();
+    if(!item)
+        return;
+    const size_t idx = (size_t)(intptr_t)data;
+    if(idx >= LB_UI_VISUAL_TOGGLES_COUNT)
+        return;
+    const bool on = item->value() != 0;
+    lb_write_visual_toggle(LB_UI_VISUAL_TOGGLES[idx], gui->space, on);
+    gui->refresh_viewport_after_mouse_change();
 }
 
 //----------------------------------------------------------------------------
@@ -621,9 +990,21 @@ void update_import_task_dialog(LaserBoy_Import_Task_State* state)
     state->note->copy_label("");
     if(state->file_type == LASERBOY_IMPORT_TYPE_WAV)
     {
-        state->option_a->label("Wave is inverted");
-        state->option_a->show();
-        state->note->copy_label("LaserBoy WAV headers may include 2026 channel-map metadata; headerless WAV uses current settings.");
+        if(wav_import_action_uses_header(state->action))
+        {
+            state->option_a->label("Use file channel map for future WAV export");
+            state->option_a->show();
+            state->note->copy_label("LaserBoy WAV headers may include channel-map metadata; enable this to sync it into settings.");
+        }
+        else if(wav_import_action_uses_global_polarity(state->action))
+        {
+            state->option_a->label("Wave is inverted");
+            state->option_a->show();
+            string note = "Headerless/unformatted import uses current channel map: " + p_space->wav_channel_map;
+            state->note->copy_label(note.c_str());
+        }
+        else
+            state->note->copy_label("Choose a WAV import action.");
     }
     else if(state->file_type == LASERBOY_IMPORT_TYPE_BMP)
     {
@@ -665,8 +1046,11 @@ void import_task_type_callback(Fl_Widget*, void* data)
 void import_task_action_callback(Fl_Widget*, void* data)
 {
     LaserBoy_Import_Task_State* state = (LaserBoy_Import_Task_State*)data;
+    const int previous_source_kind = import_source_kind_for_action(state, state->action);
     if(state->action_choice->value() >= 0 && state->action_choice->value() < (int)state->actions.size())
         state->action = state->actions[state->action_choice->value()].action;
+    if(import_source_kind_for_action(state, state->action) != previous_source_kind)
+        state->source.clear();
     update_import_task_dialog(state);
 }
 
@@ -736,17 +1120,12 @@ void update_export_task_dialog(LaserBoy_Export_Task_State* state)
         state->option_a->label("Use ILD format 4/5");
         state->option_b->label("Save 2D frames as 3D");
         state->option_c->label("Auto minimize before save");
-        state->option_d->label("Clean up invalid UTF8 names if needed");
+        state->option_d->label("Save 1-frame bridge");
         state->option_a->show();
         state->option_b->show();
         state->option_c->show();
-        if(state->action == LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8)
-            state->option_d->show();
-        if(   state->action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT
-           || state->action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED
-           || state->action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_ALL
-          )
-            state->note->copy_label("Effect export needs effect selection; use legacy output menu for now.");
+        state->option_d->show();
+        state->note->copy_label("Native effect export is intentionally hidden until effect selection has a native control.");
     }
     else if(state->file_type == LASERBOY_EXPORT_TYPE_DXF)
     {
@@ -755,7 +1134,19 @@ void update_export_task_dialog(LaserBoy_Export_Task_State* state)
     }
     else if(state->file_type == LASERBOY_EXPORT_TYPE_WAV)
     {
-        string note = "Wave timing uses current duration/FPS. Channel map metadata: " + p_space->wav_channel_map;
+        state->option_a->label("Invert wave output");
+        state->option_b->label("Apply wave offsets after save");
+        state->option_c->label("Write 8-channel WAV");
+        state->option_d->label("Auto flatten Z");
+        state->option_a->value(p_space->invert_wave_output ? 1 : 0);
+        state->option_b->value(p_space->auto_apply_offsets ? 1 : 0);
+        state->option_c->value(p_space->channels_of_wav_out == 8 ? 1 : 0);
+        state->option_d->value(p_space->auto_flatten_z ? 1 : 0);
+        state->option_a->show();
+        state->option_b->show();
+        state->option_c->show();
+        state->option_d->show();
+        string note = "Uses current FPS/duration, sample rate " + std::to_string(p_space->sample_rate) + ", channel map " + p_space->wav_channel_map + ".";
         state->note->copy_label(note.c_str());
     }
     else if(state->file_type == LASERBOY_EXPORT_TYPE_TXT)
@@ -793,8 +1184,11 @@ void export_task_type_callback(Fl_Widget*, void* data)
 void export_task_action_callback(Fl_Widget*, void* data)
 {
     LaserBoy_Export_Task_State* state = (LaserBoy_Export_Task_State*)data;
+    const int previous_destination_kind = export_destination_kind_for_action(state, state->action);
     if(state->action_choice->value() >= 0 && state->action_choice->value() < (int)state->actions.size())
         state->action = state->actions[state->action_choice->value()].action;
+    if(export_destination_kind_for_action(state, state->action) != previous_destination_kind)
+        state->destination.clear();
     update_export_task_dialog(state);
 }
 
@@ -859,13 +1253,262 @@ int LaserBoy_FLTK_Display::handle(int fltk_event)
 {
     if(fltk_event == FL_FOCUS || fltk_event == FL_UNFOCUS)
         return 1;
+    if(fltk_event == FL_ENTER || fltk_event == FL_MOVE)
+    {
+        if(gui)
+        {
+            int lx = 0;
+            int ly = 0;
+            lb_fltk_event_to_widget_local(this, lx, ly);
+            gui->update_viewport_mouse_status(lx, ly, "viewport");
+        }
+        return 1;
+    }
     if(fltk_event == FL_PUSH)
     {
         take_focus();
+        if(gui)
+        {
+            gui->focus_display();
+            gui->viewport_mouse_dragging = true;
+            gui->viewport_mouse_moved = false;
+            gui->viewport_mouse_button = Fl::event_button();
+            gui->viewport_mouse_down_x = gui->viewport_mouse_last_x = Fl::event_x();
+            gui->viewport_mouse_down_y = gui->viewport_mouse_last_y = Fl::event_y();
+            gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_NONE;
+            int local_x = 0;
+            int local_y = 0;
+            lb_fltk_event_to_widget_local(this, local_x, local_y);
+            int canvas_x = 0;
+            int canvas_y = 0;
+            const bool inside_canvas = gui->viewport_widget_local_to_canvas(local_x, local_y, canvas_x, canvas_y);
+            const bool extend = Fl::event_state(FL_SHIFT) != 0;
+            if(   gui->viewport_mouse_button == FL_RIGHT_MOUSE
+               || Fl::event_state(FL_ALT)
+               || Fl::event_state(FL_COMMAND)
+              )
+                gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_ORBIT;
+            else if(gui->viewport_mouse_button == FL_LEFT_MOUSE)
+            {
+                switch(gui->active_viewport_tool())
+                {
+                    case LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT:
+                        if(   !inside_canvas
+                           || !gui->begin_viewport_selection_drag(canvas_x, canvas_y, extend)
+                          )
+                        {
+                            // No segment under cursor: start a rubber-band selection.
+                            // Snapshot now so a successful rubber-band at mouse-up
+                            // can be undone.
+                            gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_RUBBER_BAND;
+                            gui->rubber_band_active   = inside_canvas;
+                            gui->rubber_band_x1 = gui->rubber_band_x2 = canvas_x;
+                            gui->rubber_band_y1 = gui->rubber_band_y2 = canvas_y;
+                            gui->rubber_band_extend   = extend;
+                            gui->begin_viewport_edit_transaction("select rect");
+                        }
+                        break;
+                    case LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX:
+                        if(   !inside_canvas
+                           || !gui->begin_viewport_vertex_drag(canvas_x, canvas_y, extend)
+                          )
+                        {
+                            // No vertex under cursor: start a rubber-band selection.
+                            gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_RUBBER_BAND;
+                            gui->rubber_band_active   = inside_canvas;
+                            gui->rubber_band_x1 = gui->rubber_band_x2 = canvas_x;
+                            gui->rubber_band_y1 = gui->rubber_band_y2 = canvas_y;
+                            gui->rubber_band_extend   = extend;
+                            gui->begin_viewport_edit_transaction("select rect");
+                        }
+                        break;
+                    case LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT:
+                        gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_PAN;
+                        break;
+                }
+            }
+            else
+                gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_PAN;
+            if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_PAN)
+            {
+                gui->viewport_drag_start_view_offset = gui->space.view_offset;
+                // Snapshot view for undo. The drag handlers flip `committed`
+                // to true on first real motion; FL_RELEASE commits or drops
+                // the snapshot accordingly.
+                gui->begin_viewport_view_transaction("pan");
+            }
+            else if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_ORBIT)
+            {
+                gui->begin_viewport_view_transaction("orbit");
+            }
+            if(   gui->viewport_drag_action != LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_SELECTION
+               && gui->viewport_drag_action != LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_VERTEX
+              )
+                gui->update_viewport_mouse_status(local_x, local_y, "click");
+        }
+        return 1;
+    }
+    if(fltk_event == FL_DRAG)
+    {
+        if(gui && gui->viewport_mouse_dragging)
+        {
+            const int event_x = Fl::event_x();
+            const int event_y = Fl::event_y();
+            const int dx = event_x - gui->viewport_mouse_last_x;
+            const int dy = event_y - gui->viewport_mouse_last_y;
+            if(dx || dy)
+            {
+                gui->viewport_mouse_moved = true;
+                if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_SELECTION)
+                {
+                    int local_x = 0;
+                    int local_y = 0;
+                    lb_fltk_event_to_widget_local(this, local_x, local_y);
+                    const int canvas_x = local_x - gui->viewport_square_offset_x();
+                    const int canvas_y = local_y - gui->viewport_square_offset_y();
+                    gui->drag_viewport_selection_by_pixels(canvas_x - gui->viewport_drag_start_canvas_x,
+                                                           canvas_y - gui->viewport_drag_start_canvas_y);
+                }
+                else if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_VERTEX)
+                {
+                    int local_x = 0;
+                    int local_y = 0;
+                    lb_fltk_event_to_widget_local(this, local_x, local_y);
+                    const int canvas_x = local_x - gui->viewport_square_offset_x();
+                    const int canvas_y = local_y - gui->viewport_square_offset_y();
+                    gui->drag_viewport_vertex_by_pixels(canvas_x - gui->viewport_drag_start_canvas_x,
+                                                        canvas_y - gui->viewport_drag_start_canvas_y);
+                }
+                else if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_ORBIT)
+                    gui->orbit_viewport_by_pixels(dx, dy);
+                else if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_PAN)
+                    gui->pan_viewport_by_pixels(event_x - gui->viewport_mouse_down_x,
+                                                event_y - gui->viewport_mouse_down_y);
+                else if(gui->viewport_drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_RUBBER_BAND)
+                {
+                    int local_x = 0;
+                    int local_y = 0;
+                    lb_fltk_event_to_widget_local(this, local_x, local_y);
+                    int canvas_x = 0;
+                    int canvas_y = 0;
+                    if(gui->viewport_widget_local_to_canvas(local_x, local_y, canvas_x, canvas_y))
+                    {
+                        gui->rubber_band_x2 = canvas_x;
+                        gui->rubber_band_y2 = canvas_y;
+                        gui->rubber_band_active = true;
+                        redraw();
+                    }
+                }
+                gui->viewport_mouse_last_x = event_x;
+                gui->viewport_mouse_last_y = event_y;
+            }
+        }
+        return 1;
+    }
+    if(fltk_event == FL_RELEASE)
+    {
+        if(gui)
+        {
+            const int total_dx = Fl::event_x() - gui->viewport_mouse_down_x;
+            const int total_dy = Fl::event_y() - gui->viewport_mouse_down_y;
+            const bool click = (total_dx * total_dx + total_dy * total_dy) <= 16;
+            const LaserBoy_FLTK_Viewport_Drag_Action drag_action = gui->viewport_drag_action;
+            int local_x = 0;
+            int local_y = 0;
+            lb_fltk_event_to_widget_local(this, local_x, local_y);
+            int canvas_x = 0;
+            int canvas_y = 0;
+            const bool inside_canvas = gui->viewport_widget_local_to_canvas(local_x, local_y, canvas_x, canvas_y);
+            const bool extend = Fl::event_state(FL_SHIFT) != 0;
+            gui->viewport_mouse_dragging = false;
+            gui->viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_NONE;
+            // Note: commit is deferred until AFTER selection logic below, so a
+            // rubber-band release or a click-select that changes egg / spider
+            // can flip viewport_edit_transaction_committed = true and have its
+            // snapshot kept by commit_viewport_edit_transaction.
+            //
+            // Capture pre-selection cursors for click-select change detection.
+            const bool have_frame = gui->space.number_of_frames() > 0;
+            const u_int pre_egg    = have_frame ? gui->space.current_frame().egg    : 0;
+            const u_int pre_spider = have_frame ? gui->space.current_frame().spider : 0;
+            // Commit / cancel a rubber-band drag. A near-zero distance is treated as a
+            // "click on empty space" which clears selection unless Shift is held.
+            if(drag_action == LASERBOY_FLTK_VIEWPORT_DRAG_RUBBER_BAND)
+            {
+                if(!click && gui->rubber_band_active)
+                {
+                    const u_int rb_pre_egg    = pre_egg;
+                    const u_int rb_pre_spider = pre_spider;
+                    gui->select_viewport_rect(gui->rubber_band_x1, gui->rubber_band_y1,
+                                              gui->rubber_band_x2, gui->rubber_band_y2,
+                                              gui->rubber_band_extend);
+                    if(have_frame
+                       && (   gui->space.current_frame().egg    != rb_pre_egg
+                           || gui->space.current_frame().spider != rb_pre_spider))
+                        gui->viewport_edit_transaction_committed = true;
+                }
+                gui->rubber_band_active = false;
+                redraw();
+            }
+            if(click && Fl::event_button() == FL_LEFT_MOUSE)
+            {
+                if(   drag_action != LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_SELECTION
+                   && drag_action != LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_VERTEX
+                  )
+                {
+                    switch(gui->active_viewport_tool())
+                    {
+                        case LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT:
+                            if(inside_canvas)
+                            {
+                                if(!gui->select_viewport_segment(canvas_x, canvas_y, extend))
+                                    gui->select_viewport_vertex(canvas_x, canvas_y, extend);
+                                if(have_frame
+                                   && (   gui->space.current_frame().egg    != pre_egg
+                                       || gui->space.current_frame().spider != pre_spider))
+                                    gui->viewport_edit_transaction_committed = true;
+                            }
+                            else
+                                gui->update_viewport_mouse_status(local_x, local_y, "viewport");
+                            break;
+                        case LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX:
+                            if(inside_canvas)
+                            {
+                                gui->select_viewport_vertex(canvas_x, canvas_y, extend);
+                                if(have_frame
+                                   && (   gui->space.current_frame().egg    != pre_egg
+                                       || gui->space.current_frame().spider != pre_spider))
+                                    gui->viewport_edit_transaction_committed = true;
+                            }
+                            else
+                                gui->update_viewport_mouse_status(local_x, local_y, "viewport");
+                            break;
+                        case LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT:
+                            gui->update_viewport_mouse_status(local_x, local_y, "viewport");
+                            break;
+                    }
+                }
+            }
+            else
+                gui->update_viewport_mouse_status(local_x, local_y, "viewport");
+            gui->commit_viewport_edit_transaction(gui->viewport_edit_transaction_committed);
+        }
         return 1;
     }
     if(fltk_event == FL_KEYDOWN || fltk_event == FL_SHORTCUT)
     {
+        // Delete / Backspace on a multi-vertex range: handle in the GUI directly so
+        // the legacy "delete vertex at spider" path doesn't only remove one vertex.
+        const int fl_key = Fl::event_key();
+        if(   gui
+           && (fl_key == FL_Delete || fl_key == FL_BackSpace)
+           && gui->space.number_of_frames()
+           && gui->space.current_frame().size_of_selection() > 1
+          )
+        {
+            gui->delete_selection_in_frame();
+            return 1;
+        }
         gui->push_key_event(Fl::event_key(), Fl::event_state());
         return 1;
     }
@@ -875,21 +1518,47 @@ int LaserBoy_FLTK_Display::handle(int fltk_event)
 //############################################################################
 void LaserBoy_FLTK_Display::draw()
 {
-    if(gui && gui->screen && gui->screen->pixels)
+    fl_push_clip(x(), y(), w(), h());
+    fl_color(FL_BACKGROUND_COLOR);
+    fl_rectf(x(), y(), w(), h());
+    if(gui && gui->screen && gui->screen->pixels && gui->viewport_canvas_side() > 0)
     {
-        const int art_w = gui->screen->h;
-        fl_push_clip(x(), y(), w(), h());
-        fl_rectf(x(), y(), w(), h(), FL_BLACK);
+        const int n = gui->viewport_canvas_side();
+        const int ox = gui->viewport_square_offset_x();
+        const int oy = gui->viewport_square_offset_y();
+        fl_color(FL_BLACK);
+        fl_rectf(x() + ox, y() + oy, n, n);
         fl_draw_image((const unsigned char*)gui->screen->pixels,
-                      x(),
-                      y(),
-                      art_w,
-                      gui->screen->h,
+                      x() + ox,
+                      y() + oy,
+                      n,
+                      n,
                       4,
                       gui->screen->w * 4
                      );
-        fl_pop_clip();
+        if(gui->rubber_band_active)
+        {
+            // Rubber-band coords are stored in canvas (square) space, with origin at the
+            // top-left of the square viewport. Translate by widget origin + square offset.
+            const int rx1 = std::min(gui->rubber_band_x1, gui->rubber_band_x2);
+            const int ry1 = std::min(gui->rubber_band_y1, gui->rubber_band_y2);
+            const int rx2 = std::max(gui->rubber_band_x1, gui->rubber_band_x2);
+            const int ry2 = std::max(gui->rubber_band_y1, gui->rubber_band_y2);
+            const int rw = rx2 - rx1;
+            const int rh = ry2 - ry1;
+            if(rw > 0 && rh > 0)
+            {
+                const int draw_x = x() + ox + rx1;
+                const int draw_y = y() + oy + ry1;
+                // Faint translucent fill via FLTK's dim blue color + dashed outline.
+                fl_color(fl_rgb_color(90, 160, 255));
+                fl_line_style(FL_DASH, 1);
+                fl_rect(draw_x, draw_y, rw, rh);
+                fl_line_style(0);
+            }
+        }
     }
+    fl_pop_clip();
 }
 
 //############################################################################
@@ -961,12 +1630,123 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
           xres           (x    ),
           yres           (y    ),
           space          (this ),
-          screen         (NULL )
+          window(NULL),
+          menu_bar(NULL),
+          toolbar(NULL),
+          main_viewport(NULL),
+          frame_controls(NULL),
+          stats_panel(NULL),
+          palette_panel(NULL),
+          status_bar(NULL),
+          toolbar_label(NULL),
+          previous_frame_button(NULL),
+          next_frame_button(NULL),
+          first_frame_button(NULL),
+          last_frame_button(NULL),
+          menu_toggle_button(NULL),
+          segment_tool_button(NULL),
+          vertex_tool_button(NULL),
+          pan_orbit_tool_button(NULL),
+          undo_button(NULL),
+          redo_button(NULL),
+          include_camera_check(NULL),
+          include_camera_in_history(false),
+          delete_selection_button(NULL),
+          copy_selection_button(NULL),
+          zoom_in_button(NULL),
+          zoom_out_button(NULL),
+          zoom_reset_button(NULL),
+          center_view_button(NULL),
+          view_reset_button(NULL),
+          frame_number_label(NULL),
+          stats_text(NULL),
+          palette_text(NULL),
+          palette_display(NULL),
+          status_text(NULL),
+          display(NULL),
+          viewport_tool(LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT),
+          viewport_drag_action(LASERBOY_FLTK_VIEWPORT_DRAG_NONE),
+          viewport_mouse_dragging(false),
+          viewport_mouse_moved(false),
+          viewport_mouse_button(0),
+          viewport_mouse_down_x(0),
+          viewport_mouse_down_y(0),
+          viewport_mouse_last_x(0),
+          viewport_mouse_last_y(0),
+          viewport_drag_egg(0),
+          viewport_drag_spider(0),
+          viewport_drag_vertex(0),
+          viewport_drag_start_canvas_x(0),
+          viewport_drag_start_canvas_y(0),
+          rubber_band_active(false),
+          rubber_band_x1(0),
+          rubber_band_y1(0),
+          rubber_band_x2(0),
+          rubber_band_y2(0),
+          rubber_band_extend(false),
+          viewport_drag_start_frame(),
+          viewport_drag_start_view_offset(0.0),
+          viewport_edit_transaction_active(false),
+          viewport_edit_transaction_committed(false),
+          viewport_square_n(0),
+          viewport_square_x(0),
+          viewport_square_y(0),
+          screen         (NULL ),
+          menu_toggle_icon_shown(false),
+          icon_menu      (NULL),
+          icon_menu_off  (NULL),
+          icon_seg_tool  (NULL),
+          icon_vtx_tool  (NULL),
+          icon_pan_tool  (NULL),
+          icon_undo      (NULL),
+          icon_redo      (NULL),
+          icon_zoom_in   (NULL),
+          icon_zoom_out  (NULL),
+          icon_zoom_reset(NULL),
+          icon_center_view(NULL),
+          icon_view_reset(NULL),
+          icon_first_frame(NULL),
+          icon_prev_frame(NULL),
+          icon_next_frame(NULL),
+          icon_last_frame(NULL)
 {
+    // Dark theme
+    Fl::scheme("gtk+");
+    Fl::background(24, 24, 24);       // #181818 main background
+    Fl::background2(16, 16, 16);      // #101010 input / text-field background
+    Fl::foreground(210, 210, 210);    // light grey text
+
+    // Always draw egg/spider selection markers in the native viewport (same as TUI).
+    space.show_cursors = true;
+
+    // Load Breeze SVG icons at 16x16; null on parse failure (graceful degradation).
+    auto load_icon = [](const char* svg_data) -> Fl_SVG_Image* {
+        Fl_SVG_Image* img = new Fl_SVG_Image(nullptr, svg_data);
+        if(img->fail()) { delete img; return nullptr; }
+        img->resize(16, 16);
+        return img;
+    };
+    icon_menu        = load_icon(icon_menu_svg);
+    icon_menu_off    = load_icon(icon_menu_off_svg);
+    icon_seg_tool    = load_icon(icon_seg_tool_svg);
+    icon_vtx_tool    = load_icon(icon_vtx_tool_svg);
+    icon_pan_tool    = load_icon(icon_pan_tool_svg);
+    icon_undo        = load_icon(icon_undo_svg);
+    icon_redo        = load_icon(icon_redo_svg);
+    icon_zoom_in     = load_icon(icon_zoom_in_svg);
+    icon_zoom_out    = load_icon(icon_zoom_out_svg);
+    icon_zoom_reset  = load_icon(icon_zoom_reset_svg);
+    icon_center_view = load_icon(icon_center_view_svg);
+    icon_view_reset  = load_icon(icon_view_reset_svg);
+    icon_first_frame = load_icon(icon_first_frame_svg);
+    icon_prev_frame  = load_icon(icon_prev_frame_svg);
+    icon_next_frame  = load_icon(icon_next_frame_svg);
+    icon_last_frame  = load_icon(icon_last_frame_svg);
+
     const int menu_h    = 24;
     const int toolbar_h = 34;
-    const int frame_controls_h = 30;
-    const int status_h  = 24;
+    const int frame_controls_h = 28;
+    const int status_h  = 22;
     const int panel_w   = 220;
     const int stats_h   = yres / 2;
     const int gap       = 4;
@@ -983,21 +1763,148 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
     menu_bar = new Fl_Menu_Bar(0, 0, window_w, menu_h);
     menu_bar->add("File/Open...", FL_COMMAND + 'o', gui_open_callback, NULL);
     menu_bar->add("File/Export...", FL_COMMAND + 'e', gui_export_callback, NULL);
+    menu_bar->add("Edit/Undo", FL_COMMAND + 'z', gui_undo_callback, NULL);
+    menu_bar->add("Edit/Redo", FL_COMMAND + FL_SHIFT + 'z', gui_redo_callback, NULL, FL_MENU_DIVIDER);
+    menu_bar->add("Edit/Delete Selection", FL_Delete, gui_delete_selection_callback, NULL);
+    menu_bar->add("Edit/Copy Selection to New Frame", FL_COMMAND + 'd', gui_copy_selection_callback, NULL, FL_MENU_DIVIDER);
+    menu_bar->add("Edit/Tool/Segment", 0, gui_tool_select_callback, (void*)(intptr_t)LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT);
+    menu_bar->add("Edit/Tool/Vertex", 0, gui_tool_select_callback, (void*)(intptr_t)LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX);
+    menu_bar->add("Edit/Tool/Pan or Orbit", 0, gui_tool_select_callback, (void*)(intptr_t)LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT);
     menu_bar->add("Frame/Previous", 0, gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_LEFT);
     menu_bar->add("Frame/Next", 0, gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RIGHT);
     menu_bar->add("Frame/First", 0, gui_command_callback, (void*)(intptr_t)'9');
     menu_bar->add("Frame/Last", 0, gui_command_callback, (void*)(intptr_t)'0');
+    menu_bar->add("View/Zoom In", FL_COMMAND + '=', gui_view_control_callback, (void*)(intptr_t)'d');
+    menu_bar->add("View/Zoom Out", FL_COMMAND + '-', gui_view_control_callback, (void*)(intptr_t)'D');
+    menu_bar->add("View/Reset Zoom", FL_COMMAND + '0', gui_view_control_callback, (void*)(intptr_t)'f');
+    menu_bar->add("View/Center View", 0, gui_view_control_callback, (void*)(intptr_t)'r');
+    menu_bar->add("View/Reset View", FL_COMMAND + FL_SHIFT + '0', gui_view_control_callback, (void*)(intptr_t)'F', FL_MENU_DIVIDER);
     menu_bar->add("View/Show or Hide Legacy Menu", 0, gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RETURN);
     menu_bar->add("View/Toggle Frame Stats", 0, gui_command_callback, (void*)(intptr_t)'?');
     menu_bar->add("View/Toggle Frame Set Stats", 0, gui_command_callback, (void*)(intptr_t)'/');
     menu_bar->add("View/Toggle Background Bitmap", 0, gui_command_callback, (void*)(intptr_t)';');
 
+    // Each row in LB_UI_VISUAL_TOGGLES becomes one "Options/<label>" toggle.
+    // The void* payload is the table index; the callback uses it to look up
+    // the read/write strategy. No parallel switch/strings to maintain.
+    for(size_t i = 0; i < LB_UI_VISUAL_TOGGLES_COUNT; ++i)
+    {
+        const std::string path = lb_visual_toggle_menu_path(LB_UI_VISUAL_TOGGLES[i]);
+        menu_bar->add(path.c_str(),
+                      0,
+                      gui_ui_visual_toggle_callback,
+                      (void*)(intptr_t)i,
+                      FL_MENU_TOGGLE);
+    }
+
     toolbar = new Fl_Group(0, toolbar_y, window_w, toolbar_h);
-    toolbar->box(FL_UP_BOX);
-    toolbar_label = new Fl_Box(8, toolbar_y + 6, 72, 22, "LaserBoy");
-    toolbar_label->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-    menu_toggle_button = new Fl_Button(86, toolbar_y + 5, 64, 24, "Menu");
-    menu_toggle_button->callback(gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RETURN);
+    toolbar->box(FL_FLAT_BOX);
+
+    // All toolbar icon buttons are square at tb_sz x tb_sz.
+    const int tb_sz = 26;
+    const int tb_y  = toolbar_y + (toolbar_h - tb_sz) / 2;
+    int tb_x = 4;
+
+    // Helper: create a square icon button and advance tb_x.
+    auto make_tb_btn = [&](Fl_SVG_Image* icon, const char* fallback_label,
+                           const char* tip) -> Fl_Button* {
+        Fl_Button* b = new Fl_Button(tb_x, tb_y, tb_sz, tb_sz, "");
+        b->box(FL_FLAT_BOX);
+        if(icon)
+        {
+            // FL_ALIGN_IMAGE_BACKDROP centers the image at
+            // (X + (W - img->w())/2, Y + (H - img->h())/2) then skips text.
+            b->image(icon);
+            b->align(FL_ALIGN_IMAGE_BACKDROP | FL_ALIGN_INSIDE);
+        }
+        else
+        {
+            b->label(fallback_label);
+            b->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+            b->labelsize(12);
+        }
+        b->tooltip(tip);
+        return b;
+    };
+
+    // ── Menu toggle ──────────────────────────────────────────────────────────
+    // Menu starts hidden so show the "invisible/off" icon initially
+    // Initial icon is overwritten by refresh_menu_toggle_button() below, which
+    // reads from space.show_menu — the authoritative menu state.
+    menu_toggle_button = make_tb_btn(icon_menu_off, "\xe2\x98\xb0",
+        "Show / hide the legacy overlay menu (Enter).");
+    menu_toggle_button->callback(gui_menu_toggle_callback, NULL);
+    refresh_menu_toggle_button();
+    tb_x += tb_sz + 8;
+
+    // ── Tool group ───────────────────────────────────────────────────────────
+    segment_tool_button = make_tb_btn(icon_seg_tool, "Seg",
+        "Segment tool  \xe2\x80\x94  click a lit segment to select; drag to move.");
+    segment_tool_button->callback(gui_tool_select_callback,
+                                  (void*)(intptr_t)LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT);
+    tb_x += tb_sz + 2;
+    vertex_tool_button = make_tb_btn(icon_vtx_tool, "Vtx",
+        "Vertex tool  \xe2\x80\x94  click a vertex to select; drag to move.");
+    vertex_tool_button->callback(gui_tool_select_callback,
+                                 (void*)(intptr_t)LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX);
+    tb_x += tb_sz + 2;
+    pan_orbit_tool_button = make_tb_btn(icon_pan_tool, "Pan",
+        "Pan/Orbit tool  \xe2\x80\x94  left-drag to pan; right-drag or alt-drag to orbit.");
+    pan_orbit_tool_button->callback(gui_tool_select_callback,
+                                    (void*)(intptr_t)LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT);
+    tb_x += tb_sz + 8;
+
+    // ── Edit group ───────────────────────────────────────────────────────────
+    undo_button = make_tb_btn(icon_undo, "@<-",
+        "Undo last edit  \xe2\x80\x94  vertex / segment moves, deletes, and selection changes "
+        "(plus pan / zoom / orbit when 'Include Camera' is on). Cmd+Z.");
+    undo_button->callback(gui_undo_callback, NULL);
+    tb_x += tb_sz + 2;
+    redo_button = make_tb_btn(icon_redo, "@->",
+        "Redo last undone edit (Cmd+Shift+Z).");
+    redo_button->callback(gui_redo_callback, NULL);
+    tb_x += tb_sz + 4;
+    // "Include Camera" — adjacent to undo/redo so its scope is obvious.
+    // When checked, pan / zoom / orbit are pushed onto the undo stack.
+    // Default off: most of the time the viewport is for navigation, not authoring.
+    {
+        const int chk_w = 110;
+        include_camera_check = new Fl_Check_Button(tb_x, tb_y, chk_w, tb_sz,
+                                                   "Include Camera");
+        include_camera_check->labelsize(11);
+        include_camera_check->value(include_camera_in_history ? 1 : 0);
+        include_camera_check->tooltip(
+            "When checked, pan / zoom / orbit changes are recorded on the\n"
+            "undo stack. Off by default: view changes are pure navigation.");
+        include_camera_check->callback(gui_include_camera_callback, NULL);
+        tb_x += chk_w + 4;
+    }
+    delete_selection_button = make_tb_btn(NULL, "Del",
+        "Delete the current selection (Del / Backspace when a range is selected).");
+    delete_selection_button->callback(gui_delete_selection_callback, NULL);
+    tb_x += tb_sz + 2;
+    copy_selection_button = make_tb_btn(NULL, "Cpy",
+        "Copy the current selection to a new frame inserted after the current one.");
+    copy_selection_button->callback(gui_copy_selection_callback, NULL);
+    tb_x += tb_sz + 8;
+
+    // ── View group ───────────────────────────────────────────────────────────
+    zoom_in_button = make_tb_btn(icon_zoom_in, "+", "Zoom in (Cmd+=).");
+    zoom_in_button->callback(gui_view_control_callback, (void*)(intptr_t)'d');
+    tb_x += tb_sz + 2;
+    zoom_out_button = make_tb_btn(icon_zoom_out, "\xe2\x88\x92", "Zoom out (Cmd+-).");
+    zoom_out_button->callback(gui_view_control_callback, (void*)(intptr_t)'D');
+    tb_x += tb_sz + 2;
+    zoom_reset_button = make_tb_btn(icon_zoom_reset, "1:1", "Reset zoom to 1:1 (Cmd+0).");
+    zoom_reset_button->callback(gui_view_control_callback, (void*)(intptr_t)'f');
+    tb_x += tb_sz + 2;
+    center_view_button = make_tb_btn(icon_center_view, "@+",
+        "Center view  \xe2\x80\x94  reset pan offset.");
+    center_view_button->callback(gui_view_control_callback, (void*)(intptr_t)'r');
+    tb_x += tb_sz + 2;
+    view_reset_button = make_tb_btn(icon_view_reset, "\xe2\x86\xba",
+        "Reset view  \xe2\x80\x94  restores zoom, pan, and orbit to defaults.");
+    view_reset_button->callback(gui_view_control_callback, (void*)(intptr_t)'F');
     toolbar->end();
 
     main_viewport = new Fl_Group(0, viewport_y, art_w, yres);
@@ -1007,47 +1914,58 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
     main_viewport->end();
 
     frame_controls = new Fl_Group(0, frame_controls_y, art_w, frame_controls_h);
-    frame_controls->box(FL_UP_BOX);
-    const int button_w = 30;
-    const int button_h = 22;
-    const int button_gap = 4;
-    const int label_w = 96;
+    frame_controls->box(FL_FLAT_BOX);
+    const int button_w = 28;
+    const int button_h = 20;
+    const int button_gap = 2;
+    const int label_w = 88;
     const int controls_w = (4 * button_w) + label_w + (4 * button_gap);
     int controls_x = (art_w - controls_w) / 2;
     if(controls_x < 8)
         controls_x = 8;
-    const int controls_y = frame_controls_y + 4;
-    first_frame_button = new Fl_Button(controls_x, controls_y, button_w, button_h, "|<");
-    previous_frame_button = new Fl_Button(controls_x + button_w + button_gap, controls_y, button_w, button_h, "<");
-    frame_number_label = new Fl_Box(controls_x + (2 * (button_w + button_gap)), controls_y, label_w, button_h, "0 / 0");
-    next_frame_button = new Fl_Button(controls_x + (2 * (button_w + button_gap)) + label_w + button_gap,
-                                      controls_y,
-                                      button_w,
-                                      button_h,
-                                      ">");
-    last_frame_button = new Fl_Button(controls_x + (3 * (button_w + button_gap)) + label_w + button_gap,
-                                      controls_y,
-                                      button_w,
-                                      button_h,
-                                      ">|");
-    frame_number_label->box(FL_DOWN_BOX);
+    const int controls_y = frame_controls_y + (frame_controls_h - button_h) / 2;
+    auto make_nav_btn = [](int x, int y, int w, int h,
+                           Fl_SVG_Image* icon, const char* fallback) -> Fl_Button* {
+        Fl_Button* b = new Fl_Button(x, y, w, h, "");
+        b->box(FL_FLAT_BOX);
+        if(icon) { b->image(icon); b->align(FL_ALIGN_IMAGE_BACKDROP | FL_ALIGN_INSIDE); }
+        else { b->label(fallback); b->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE); b->labelsize(10); }
+        return b;
+    };
+    first_frame_button    = make_nav_btn(controls_x, controls_y, button_w, button_h, icon_first_frame, "|<");
+    previous_frame_button = make_nav_btn(controls_x + button_w + button_gap, controls_y, button_w, button_h, icon_prev_frame, "<");
+    frame_number_label    = new Fl_Box(controls_x + (2 * (button_w + button_gap)), controls_y, label_w, button_h, "0 / 0");
+    next_frame_button     = make_nav_btn(controls_x + (2 * (button_w + button_gap)) + label_w + button_gap,
+                                         controls_y, button_w, button_h, icon_next_frame, ">");
+    last_frame_button = make_nav_btn(controls_x + (3 * (button_w + button_gap)) + label_w + button_gap,
+                                     controls_y, button_w, button_h, icon_last_frame, ">|");
+    frame_number_label->box(FL_FLAT_BOX);
     frame_number_label->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+    frame_number_label->labelsize(11);
     first_frame_button->callback(gui_command_callback, (void*)(intptr_t)'9');
+    first_frame_button->tooltip("First frame.");
     previous_frame_button->callback(gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_LEFT);
+    previous_frame_button->tooltip("Previous frame (Left arrow).");
     next_frame_button->callback(gui_command_callback, (void*)(intptr_t)LASERBOY_KEY_RIGHT);
+    next_frame_button->tooltip("Next frame (Right arrow).");
     last_frame_button->callback(gui_command_callback, (void*)(intptr_t)'0');
+    last_frame_button->tooltip("Last frame.");
     frame_controls->end();
 
     stats_panel = new Fl_Group(panel_x, viewport_y, panel_w, stats_h);
-    stats_panel->box(FL_DOWN_BOX);
+    stats_panel->box(FL_FLAT_BOX);
     stats_text = new Fl_Box(panel_x + 8, viewport_y + 8, panel_w - 16, stats_h - 16, "Stats");
     stats_text->align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+    stats_text->labelsize(11);
+    stats_text->labelfont(FL_COURIER);
     stats_panel->end();
 
     palette_panel = new Fl_Group(panel_x, viewport_y + stats_h + gap, panel_w, yres - stats_h - gap);
-    palette_panel->box(FL_DOWN_BOX);
+    palette_panel->box(FL_FLAT_BOX);
     palette_text = new Fl_Box(panel_x + 8, viewport_y + stats_h + gap + 8, panel_w - 16, 82, "Palette");
     palette_text->align(FL_ALIGN_TOP | FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
+    palette_text->labelsize(11);
+    palette_text->labelfont(FL_COURIER);
     palette_display = new LaserBoy_FLTK_Palette_Display(panel_x + 8,
                                                         viewport_y + stats_h + gap + 94,
                                                         panel_w - 16,
@@ -1056,11 +1974,14 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
     palette_panel->end();
 
     status_bar = new Fl_Group(0, frame_controls_y + frame_controls_h + gap, window_w, status_h);
-    status_bar->box(FL_UP_BOX);
+    status_bar->box(FL_FLAT_BOX);
     status_text = new Fl_Box(8, frame_controls_y + frame_controls_h + gap + 4, window_w - 16, status_h - 8, "Ready");
     status_text->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    status_text->labelsize(11);
     status_bar->end();
 
+    layout_gui_regions(window_w, window_h);
+    refresh_tool_buttons();
     window->resizable(main_viewport);
     window->callback(fltk_close_callback, this);
     window->end();
@@ -1073,10 +1994,12 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
     screen_format.BitsPerPixel = 32;
     screen_format.palette      = NULL;
     screen = new LaserBoy_Screen_Buffer;
-    screen->w      = xres;
+    // Viewport is square (art_w and display use yres); keep backing buffer square so it
+    // matches space.bmp from the first frame — avoids a startup realloc + full render path.
+    screen->w      = yres;
     screen->h      = yres;
     screen->format = &screen_format;
-    screen->pixels = std::calloc((size_t)xres * (size_t)yres, 4);
+    screen->pixels = std::calloc((size_t)yres * (size_t)yres, 4);
     if(screen->pixels == NULL)
         std::exit(2);
     if(lock_screen_buffer(screen) < 0)
@@ -1099,6 +2022,9 @@ LaserBoy_FLTK_GUI::LaserBoy_FLTK_GUI(int x, int y)
         space.font_size_factor = 1;
     space.show_stats = false;
     space.show_TUI_clue = false;
+    recompute_viewport_square_geometry();
+    commit_debounced_viewport_resize();
+    refresh_tool_buttons();
     update_gui_regions();
 }
 
@@ -1108,6 +2034,7 @@ LaserBoy_FLTK_GUI::~LaserBoy_FLTK_GUI()
     if(active_fltk_gui == this)
         active_fltk_gui = NULL;
     Fl::remove_handler(fltk_global_event_handler);
+    Fl::remove_timeout(viewport_resize_timeout_cb, this);
     if(screen)
     {
         std::free(screen->pixels);
@@ -1177,7 +2104,7 @@ bool LaserBoy_FLTK_GUI::show_export_task_modal()
     state.action = LASERBOY_EXPORT_ACTION_ILD_CURRENT;
     state.destination.clear();
 
-    Fl_Window* dialog = new Fl_Window(590, 360, "Export Task");
+    Fl_Window* dialog = new Fl_Window(590, 390, "Export Task");
     dialog->set_modal();
     state.window = dialog;
     Fl_Box* title = new Fl_Box(16, 12, 550, 24, "Choose the export type, action, destination, and options.");
@@ -1208,11 +2135,11 @@ bool LaserBoy_FLTK_GUI::show_export_task_modal()
     state.option_b = new Fl_Check_Button(130, 232, 390, 22, "");
     state.option_c = new Fl_Check_Button(130, 258, 390, 22, "");
     state.option_d = new Fl_Check_Button(130, 284, 390, 22, "");
-    state.note = new Fl_Box(130, 206, 420, 70, "");
+    state.note = new Fl_Box(130, 294, 420, 42, "");
     state.note->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
 
-    Fl_Button* cancel = new Fl_Button(388, 322, 82, 26, "Cancel");
-    Fl_Return_Button* export_button = new Fl_Return_Button(486, 322, 82, 26, "Export");
+    Fl_Button* cancel = new Fl_Button(388, 352, 82, 26, "Cancel");
+    Fl_Return_Button* export_button = new Fl_Return_Button(486, 352, 82, 26, "Export");
     cancel->callback(export_task_cancel_callback, &state);
     export_button->callback(export_task_ok_callback, &state);
     dialog->callback(export_task_cancel_callback, &state);
@@ -1242,14 +2169,20 @@ bool LaserBoy_FLTK_GUI::show_export_task_modal()
 //############################################################################
 bool LaserBoy_FLTK_GUI::show_import_task_modal()
 {
+    return show_import_task_modal(LASERBOY_IMPORT_TYPE_ILD, "");
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::show_import_task_modal(int initial_file_type, const string& initial_source)
+{
     LaserBoy_Import_Task_State state;
     state.gui = this;
     state.accepted = false;
-    state.file_type = LASERBOY_IMPORT_TYPE_ILD;
+    state.file_type = initial_file_type;
     state.action = LASERBOY_IMPORT_ACTION_REPLACE;
-    state.source.clear();
+    state.source = initial_source;
 
-    Fl_Window* dialog = new Fl_Window(560, 330, "Import Task");
+    Fl_Window* dialog = new Fl_Window(560, 370, "Import Task");
     dialog->set_modal();
     state.window = dialog;
     Fl_Box* title = new Fl_Box(16, 12, 520, 24, "Choose the import type, source, action, and options.");
@@ -1264,7 +2197,7 @@ bool LaserBoy_FLTK_GUI::show_import_task_modal()
     state.type_choice->add("BMP");
     state.type_choice->add("WTF");
     state.type_choice->add("UTF8");
-    state.type_choice->value(0);
+    state.type_choice->value(initial_file_type >= 0 ? initial_file_type : LASERBOY_IMPORT_TYPE_ILD);
     state.type_choice->callback(import_task_type_callback, &state);
 
     state.action_choice = new Fl_Choice(120, 86, 380, 26, "Action:");
@@ -1279,11 +2212,11 @@ bool LaserBoy_FLTK_GUI::show_import_task_modal()
     state.option_a = new Fl_Check_Button(120, 206, 360, 22, "");
     state.option_b = new Fl_Check_Button(120, 232, 360, 22, "");
     state.option_c = new Fl_Check_Button(120, 258, 360, 22, "");
-    state.note = new Fl_Box(120, 206, 380, 48, "");
+    state.note = new Fl_Box(120, 286, 380, 36, "");
     state.note->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_WRAP);
 
-    Fl_Button* cancel = new Fl_Button(360, 292, 82, 26, "Cancel");
-    Fl_Return_Button* import = new Fl_Return_Button(456, 292, 82, 26, "Import");
+    Fl_Button* cancel = new Fl_Button(360, 334, 82, 26, "Cancel");
+    Fl_Return_Button* import = new Fl_Return_Button(456, 334, 82, 26, "Import");
     cancel->callback(import_task_cancel_callback, &state);
     import->callback(import_task_ok_callback, &state);
     dialog->callback(import_task_cancel_callback, &state);
@@ -1313,15 +2246,8 @@ bool LaserBoy_FLTK_GUI::show_import_task_modal()
 bool LaserBoy_FLTK_GUI::import_file_with_wizard(const string& file)
 {
     const string extension = file_extension(file);
-    if(    extension != "ild"
-        && extension != "dxf"
-        && extension != "wav"
-        && extension != "txt"
-        && extension != "ctn"
-        && extension != "bmp"
-        && extension != "wtf"
-        && extension != "utf8"
-      )
+    const int file_type = import_type_for_extension(extension);
+    if(file_type < 0)
     {
         space.TUI_clue = "unsupported file type";
         fl_alert("Unsupported file type:\n%s", file.c_str());
@@ -1329,35 +2255,8 @@ bool LaserBoy_FLTK_GUI::import_file_with_wizard(const string& file)
         focus_display();
         return false;
     }
-    const int mode = show_import_mode_dialog(file, extension);
-    if(mode == LASERBOY_IMPORT_CANCEL)
-    {
-        space.TUI_clue = "open canceled";
-        update_gui_regions();
-        focus_display();
-        return false;
-    }
-    bool imported = false;
-    if(extension == "ild")
-        imported = import_ild_file(file, mode);
-    else if(extension == "dxf")
-        imported = import_dxf_file(file, mode);
-    else if(extension == "wav")
-        imported = import_wav_file(file, mode);
-    else if(extension == "txt")
-        imported = import_txt_file(file, mode);
-    else if(extension == "ctn")
-        imported = import_ctn_file(file, mode);
-    else if(extension == "wtf")
-        imported = import_wtf_file(file);
-    else if(extension == "bmp" || extension == "utf8")
-    {
-        space.TUI_clue = extension + " import not yet migrated";
-        fl_alert("%s import has multiple legacy actions and is not migrated to the native wizard yet.", extension.c_str());
-    }
-    if(imported)
-        finish_import_refresh(space.TUI_clue);
-    else
+    const bool imported = show_import_task_modal(file_type, file);
+    if(!imported)
         update_gui_regions();
     focus_display();
     return imported;
@@ -1550,6 +2449,8 @@ bool LaserBoy_FLTK_GUI::import_wav_file(const string& file, int mode, bool globa
 {
     bool ok = false;
     bool laserboy_wave = true;
+    const bool sync_channel_map = global_polarity && wav_import_action_uses_header(mode);
+    const bool wave_is_inverted = global_polarity && wav_import_action_uses_global_polarity(mode);
     switch(mode)
     {
         case LASERBOY_IMPORT_ACTION_WAV_LB_REPLACE:
@@ -1562,15 +2463,15 @@ bool LaserBoy_FLTK_GUI::import_wav_file(const string& file, int mode, bool globa
         case LASERBOY_IMPORT_ACTION_WAV_CLIP_AS_UNFORMATTED:
         case LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_REPLACE:
             laserboy_wave = false;
-            ok = space.from_unformatted_wave_file(file, global_polarity, false);
+            ok = space.from_unformatted_wave_file(file, wave_is_inverted, false);
             break;
         case LASERBOY_IMPORT_ACTION_WAV_UNFORMATTED_APPEND:
             laserboy_wave = false;
-            ok = space.from_unformatted_wave_file(file, global_polarity, true);
+            ok = space.from_unformatted_wave_file(file, wave_is_inverted, true);
             break;
         case LASERBOY_IMPORT_ACTION_WAV_QM_REFRAME:
             laserboy_wave = false;
-            ok = space.from_qm_wave_file(file, global_polarity, false);
+            ok = space.from_qm_wave_file(file, wave_is_inverted, false);
             break;
         case LASERBOY_IMPORT_ACTION_WAV_CLIP_REPLACE:
             ok = space.from_LaserBoy_wave_file(file, false);
@@ -1594,6 +2495,12 @@ bool LaserBoy_FLTK_GUI::import_wav_file(const string& file, int mode, bool globa
         else
             fl_alert("Failed to open wave file:\n%s", file.c_str());
         return false;
+    }
+    if(sync_channel_map)
+    {
+        string channel_map;
+        if(read_wave_channel_map(file, channel_map))
+            space.wav_channel_map = channel_map;
     }
     space.TUI_clue = file;
     return true;
@@ -1908,6 +2815,7 @@ bool LaserBoy_FLTK_GUI::import_utf8_file(const string& source, bool add_missing_
 void LaserBoy_FLTK_GUI::finish_import_refresh(const string& clue)
 {
     space.TUI_clue = clue;
+    clear_edit_history();
     space.clean_screen();
     space.render_space();
     display_space();
@@ -1930,13 +2838,13 @@ bool LaserBoy_FLTK_GUI::execute_export_task(int file_type, int action, const str
     switch(file_type)
     {
         case LASERBOY_EXPORT_TYPE_ILD:
-            exported = export_ild_file(destination, action, option_a, option_b, option_c);
+            exported = export_ild_file(destination, action, option_a, option_b, option_c, option_d);
             break;
         case LASERBOY_EXPORT_TYPE_DXF:
             exported = export_dxf_file(destination, action, option_a);
             break;
         case LASERBOY_EXPORT_TYPE_WAV:
-            exported = export_wav_file(destination, action);
+            exported = export_wav_file(destination, action, option_a, option_b, option_c, option_d);
             break;
         case LASERBOY_EXPORT_TYPE_TXT:
             exported = export_txt_file(destination, action, option_a, option_b, option_c, option_d);
@@ -1963,7 +2871,7 @@ bool LaserBoy_FLTK_GUI::execute_export_task(int file_type, int action, const str
 }
 
 //############################################################################
-bool LaserBoy_FLTK_GUI::export_ild_file(const string& destination, int action, bool use_format_45, bool save_2D_as_3D, bool auto_minimize)
+bool LaserBoy_FLTK_GUI::export_ild_file(const string& destination, int action, bool use_format_45, bool save_2D_as_3D, bool auto_minimize, bool save_1_frame_bridge)
 {
     if(   action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_CURRENT
        || action == LASERBOY_EXPORT_ACTION_ILD_EFFECT_SELECTED
@@ -1978,9 +2886,11 @@ bool LaserBoy_FLTK_GUI::export_ild_file(const string& destination, int action, b
     const bool old_fmt = space.save_ild_fmt_4_5;
     const bool old_2d  = space.save_2D_as_3D;
     const bool old_min = space.auto_minimize;
-    space.save_ild_fmt_4_5 = use_format_45;
-    space.save_2D_as_3D    = save_2D_as_3D;
-    space.auto_minimize    = auto_minimize;
+    const bool old_bridge = space.save_1_frame_bridge;
+    space.save_ild_fmt_4_5    = use_format_45;
+    space.save_2D_as_3D       = save_2D_as_3D;
+    space.auto_minimize       = auto_minimize;
+    space.save_1_frame_bridge = save_1_frame_bridge;
 
     bool ok = false;
     LaserBoy_ild_header_count counter;
@@ -2031,34 +2941,44 @@ bool LaserBoy_FLTK_GUI::export_ild_file(const string& destination, int action, b
     else
     {
         const string file = ensure_extension(destination, ".ild");
-        if(!confirm_file_overwrite(file))
-            ok = false;
-        else if(action == LASERBOY_EXPORT_ACTION_ILD_CURRENT)
+        if(action == LASERBOY_EXPORT_ACTION_ILD_CURRENT)
         {
             LaserBoy_frame_set out;
             out += space.current_frame();
-            ok = out.save_as_ild(file, counter);
+            ok = save_ild_or_wave_fallback(out, file, counter);
         }
         else if(action == LASERBOY_EXPORT_ACTION_ILD_SELECTED)
         {
             if(!space.number_of_selected_frames())
                 fl_alert("No frames selected to save.");
             else
-                ok = space.selected_frames().save_as_ild(file, counter);
+            {
+                LaserBoy_frame_set out = space.selected_frames();
+                ok = save_ild_or_wave_fallback(out, file, counter);
+            }
         }
         else if(action == LASERBOY_EXPORT_ACTION_ILD_ALL)
-            ok = space.save_as_ild(file, counter);
+        {
+            LaserBoy_frame_set out;
+            out += space;
+            ok = save_ild_or_wave_fallback(out, file, counter);
+        }
         else if(action == LASERBOY_EXPORT_ACTION_ILD_FONT_UTF8)
         {
             ok = export_utf8_file(LASERBOY_UTF8_SHARE + file_stem(file) + ".utf8", true);
             if(ok)
-                ok = space.save_as_ild(file, counter);
+            {
+                LaserBoy_frame_set out;
+                out += space;
+                ok = save_ild_or_wave_fallback(out, file, counter);
+            }
         }
     }
 
-    space.save_ild_fmt_4_5 = old_fmt;
-    space.save_2D_as_3D    = old_2d;
-    space.auto_minimize    = old_min;
+    space.save_ild_fmt_4_5    = old_fmt;
+    space.save_2D_as_3D       = old_2d;
+    space.auto_minimize       = old_min;
+    space.save_1_frame_bridge = old_bridge;
     if(ok)
         space.TUI_clue = "ild saved";
     else if(space.TUI_clue != "export canceled")
@@ -2098,7 +3018,7 @@ bool LaserBoy_FLTK_GUI::export_dxf_file(const string& destination, int action, b
 }
 
 //############################################################################
-bool LaserBoy_FLTK_GUI::export_wav_file(const string& destination, int action)
+bool LaserBoy_FLTK_GUI::export_wav_file(const string& destination, int action, bool invert_output, bool apply_offsets, bool use_8_channels, bool auto_flatten_z)
 {
     const string file = ensure_extension(destination, ".wav");
     if(!confirm_file_overwrite(file))
@@ -2106,6 +3026,15 @@ bool LaserBoy_FLTK_GUI::export_wav_file(const string& destination, int action)
         space.TUI_clue = "wave not saved";
         return false;
     }
+
+    const bool old_invert       = space.invert_wave_output;
+    const bool old_apply        = space.auto_apply_offsets;
+    const int  old_channels     = space.channels_of_wav_out;
+    const bool old_flatten_z    = space.auto_flatten_z;
+    space.invert_wave_output    = invert_output;
+    space.auto_apply_offsets    = apply_offsets;
+    space.channels_of_wav_out   = use_8_channels ? 8 : 6;
+    space.auto_flatten_z        = auto_flatten_z;
 
     bool ok = false;
     switch(action)
@@ -2140,7 +3069,15 @@ bool LaserBoy_FLTK_GUI::export_wav_file(const string& destination, int action)
     }
     if(ok && space.auto_apply_offsets && space.have_nonzero_offsets())
         space.apply_wave_offsets_prep(file);
-    space.TUI_clue = ok ? "wave saved" : "wave not saved";
+    string saved_channel_map;
+    if(ok && read_wave_channel_map(file, saved_channel_map))
+        space.TUI_clue = "wave saved: " + saved_channel_map;
+    else
+        space.TUI_clue = ok ? "wave saved" : "wave not saved";
+    space.invert_wave_output  = old_invert;
+    space.auto_apply_offsets  = old_apply;
+    space.channels_of_wav_out = old_channels;
+    space.auto_flatten_z      = old_flatten_z;
     return ok;
 }
 
@@ -2350,10 +3287,28 @@ void LaserBoy_FLTK_GUI::update_gui_regions()
                   << "Index: " << (space.frame_index + 1) << " / " << space.number_of_frames() << "\n"
                   << "Type: " << (frame.is_2D() ? "2D" : "3D") << "\n"
                   << "Vertices: " << frame.size() << "\n"
-                  << "Segments: " << frame.number_of_segments() << "\n\n";
+                  << "Segments: " << frame.number_of_segments() << "\n";
+            const int selection_size = frame.size_of_selection();
+            if(selection_size > 0)
+                stats << "Selected: " << selection_size
+                      << " (" << frame.egg << ".." << frame.spider << ")\n";
+            else
+                stats << "Selected: none\n";
+            stats << "\n";
         }
         else
             stats << "No frame loaded\n\n";
+        stats << "Tool: " << viewport_tool_label(viewport_tool) << "\n";
+        stats << "History: " << undo_history.size() << " undo, "
+              << redo_history.size() << " redo\n";
+        const double zoom_x = space.view_scale.x * 100.0;
+        const double zoom_y = space.view_scale.y * 100.0;
+        stats << std::fixed << std::setprecision(0);
+        if(zoom_x == zoom_y)
+            stats << "Zoom: " << zoom_x << "%\n";
+        else
+            stats << "Zoom: " << zoom_x << "% x " << zoom_y << "%\n";
+        stats << "Pan: " << space.view_offset.x << ", " << space.view_offset.y << "\n";
         stats << "View: " << (space.view_has_changed ? "modified" : "current");
         stats_text->copy_label(stats.str().c_str());
     }
@@ -2400,18 +3355,34 @@ void LaserBoy_FLTK_GUI::update_gui_regions()
         palette_display->redraw();
     if(status_text)
     {
-        string status;
+        string status = string("[") + viewport_tool_label(viewport_tool) + "]";
         if(space.current_menu_name.size())
-            status = space.current_menu_name;
+            status += " " + space.current_menu_name;
         if(space.TUI_clue.size())
         {
-            if(status.size())
-                status += ": ";
+            status += ": ";
             status += space.TUI_clue;
         }
-        if(!status.size())
-            status = "Ready";
+        else if(status == string("[") + viewport_tool_label(viewport_tool) + "]")
+            status += " Ready";
         status_text->copy_label(status.c_str());
+    }
+    sync_ui_visual_menu_checks();
+    refresh_menu_toggle_button();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::sync_ui_visual_menu_checks()
+{
+    if(!menu_bar)
+        return;
+    for(size_t i = 0; i < LB_UI_VISUAL_TOGGLES_COUNT; ++i)
+    {
+        const LB_UI_Visual_Toggle& t = LB_UI_VISUAL_TOGGLES[i];
+        const std::string          path = lb_visual_toggle_menu_path(t);
+        lb_set_ui_visual_menu_toggle(menu_bar,
+                                     path.c_str(),
+                                     lb_read_visual_toggle(t, space));
     }
 }
 
@@ -2440,6 +3411,1134 @@ void LaserBoy_FLTK_GUI::focus_display()
         display->take_focus();
         Fl::focus(display);
     }
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::layout_gui_regions(int window_w, int window_h)
+{
+    const int menu_h = 24;
+    const int toolbar_h = 34;
+    const int frame_controls_h = 28;
+    const int status_h = 22;
+    const int panel_w = 220;
+    const int gap = 4;
+    const int min_viewport_w = 160;
+    const int min_viewport_h = 120;
+
+    if(window_w < panel_w + gap + min_viewport_w)
+        window_w = panel_w + gap + min_viewport_w;
+    if(window_h < menu_h + toolbar_h + frame_controls_h + status_h + (3 * gap) + min_viewport_h)
+        window_h = menu_h + toolbar_h + frame_controls_h + status_h + (3 * gap) + min_viewport_h;
+
+    const int toolbar_y = menu_h;
+    const int viewport_y = menu_h + toolbar_h;
+    const int status_y = window_h - status_h;
+    const int frame_controls_y = status_y - gap - frame_controls_h;
+    int viewport_h = frame_controls_y - viewport_y - gap;
+    if(viewport_h < min_viewport_h)
+        viewport_h = min_viewport_h;
+    int viewport_w = window_w - panel_w - gap;
+    if(viewport_w < min_viewport_w)
+        viewport_w = min_viewport_w;
+    const int panel_x = viewport_w + gap;
+    const int stats_h = viewport_h / 2;
+    const int palette_y = viewport_y + stats_h + gap;
+    int palette_h = viewport_h - stats_h - gap;
+    if(palette_h < 40)
+        palette_h = 40;
+
+    if(menu_bar)
+        menu_bar->resize(0, 0, window_w, menu_h);
+    if(toolbar)
+        toolbar->resize(0, toolbar_y, window_w, toolbar_h);
+    if(main_viewport)
+        main_viewport->resize(0, viewport_y, viewport_w, viewport_h);
+    if(display)
+        display->resize(0, viewport_y, viewport_w, viewport_h);
+    if(frame_controls)
+        frame_controls->resize(0, frame_controls_y, viewport_w, frame_controls_h);
+
+    const int button_w = 28;
+    const int button_h = 20;
+    const int button_gap = 2;
+    const int label_w = 88;
+    const int controls_w = (4 * button_w) + label_w + (4 * button_gap);
+    int controls_x = (viewport_w - controls_w) / 2;
+    if(controls_x < 8)
+        controls_x = 8;
+    const int controls_y = frame_controls_y + (frame_controls_h - button_h) / 2;
+    if(first_frame_button)
+        first_frame_button->resize(controls_x, controls_y, button_w, button_h);
+    if(previous_frame_button)
+        previous_frame_button->resize(controls_x + button_w + button_gap, controls_y, button_w, button_h);
+    if(frame_number_label)
+        frame_number_label->resize(controls_x + (2 * (button_w + button_gap)), controls_y, label_w, button_h);
+    if(next_frame_button)
+        next_frame_button->resize(controls_x + (2 * (button_w + button_gap)) + label_w + button_gap,
+                                  controls_y,
+                                  button_w,
+                                  button_h);
+    if(last_frame_button)
+        last_frame_button->resize(controls_x + (3 * (button_w + button_gap)) + label_w + button_gap,
+                                  controls_y,
+                                  button_w,
+                                  button_h);
+
+    if(stats_panel)
+        stats_panel->resize(panel_x, viewport_y, panel_w, stats_h);
+    if(stats_text)
+        stats_text->resize(panel_x + 8, viewport_y + 8, panel_w - 16, stats_h - 16);
+    if(palette_panel)
+        palette_panel->resize(panel_x, palette_y, panel_w, palette_h);
+    if(palette_text)
+        palette_text->resize(panel_x + 8, palette_y + 8, panel_w - 16, 82);
+    if(palette_display)
+        palette_display->resize(panel_x + 8,
+                                palette_y + 94,
+                                panel_w - 16,
+                                palette_h - 102 > 20 ? palette_h - 102 : 20);
+
+    if(status_bar)
+        status_bar->resize(0, status_y, window_w, status_h);
+    if(status_text)
+        status_text->resize(8, status_y + 4, window_w - 16, status_h - 8);
+
+    recompute_viewport_square_geometry();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::schedule_debounced_viewport_resize()
+{
+    Fl::remove_timeout(viewport_resize_timeout_cb, this);
+    Fl::add_timeout(0.08, viewport_resize_timeout_cb, this);
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::recompute_viewport_square_geometry()
+{
+    if(!display)
+        return;
+    int ww = display->w();
+    int hh = display->h();
+    if(ww <= 0 || hh <= 0)
+    {
+        if(screen && screen->pixels && screen->w == screen->h && screen->w >= 8)
+        {
+            viewport_square_n = screen->w;
+            viewport_square_x = 0;
+            viewport_square_y = 0;
+        }
+        return;
+    }
+    int n = (ww < hh) ? ww : hh;
+    if(n < 8)
+        n = 8;
+    viewport_square_n = n;
+    viewport_square_x = (ww - n) / 2;
+    viewport_square_y = (hh - n) / 2;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::viewport_widget_local_to_canvas(int widget_lx, int widget_ly, int& canvas_x, int& canvas_y) const
+{
+    canvas_x = widget_lx - viewport_square_x;
+    canvas_y = widget_ly - viewport_square_y;
+    return viewport_square_n > 0
+        && canvas_x >= 0 && canvas_y >= 0
+        && canvas_x < viewport_square_n && canvas_y < viewport_square_n;
+}
+
+//############################################################################
+double LaserBoy_FLTK_GUI::viewport_model_to_canvas_scale(int art_px) const
+{
+    const double deep = (double)LASERBOY_SHORT_SPAN;
+    return space.show_quad_view ? (art_px / (deep * 2.0))
+                                : (art_px / deep);
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::commit_debounced_viewport_resize()
+{
+    recompute_viewport_square_geometry();
+    if(!display || viewport_square_n < 8)
+        return;
+    const int n = viewport_square_n;
+    if(!screen || !screen->pixels)
+        return;
+
+    const bool need_buffer = (screen->w != n || screen->h != n);
+    if(need_buffer)
+    {
+        void* new_pixels = std::calloc((size_t)n * (size_t)n, 4);
+        if(!new_pixels)
+            return;
+        std::free(screen->pixels);
+        screen->pixels = new_pixels;
+        screen->w = n;
+        screen->h = n;
+        bmp_free(space.p_bmp());
+        if(!bmp_init(space.p_bmp(), n, n, screen->format->BitsPerPixel))
+            std::exit(2);
+        bmp_copy(space.p_background()       , space.p_bmp());
+        bmp_copy(space.p_background_bmp_2D(), space.p_bmp());
+        bmp_copy(space.p_background_bmp_3D(), space.p_bmp());
+        space.recolor_background();
+    }
+    space.clean_screen();
+    space.render_space();
+    display_space();
+    update_gui_regions();
+    if(display)
+        display->redraw();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::update_viewport_mouse_status(int mouse_x, int mouse_y, const char* action)
+{
+    std::ostringstream status;
+    status << action << "  widget x:" << mouse_x << " y:" << mouse_y;
+    int cx = 0;
+    int cy = 0;
+    if(viewport_widget_local_to_canvas(mouse_x, mouse_y, cx, cy))
+        status << "  canvas x:" << cx << " y:" << cy;
+    else
+        status << "  (outside canvas)";
+    if(space.number_of_frames())
+        status << "  frame " << (space.frame_index + 1) << "/" << space.number_of_frames();
+    space.TUI_clue = status.str();
+    update_gui_regions();
+    if(status_text)
+        status_text->redraw();
+}
+
+//############################################################################
+LaserBoy_3D_double LaserBoy_FLTK_GUI::project_viewport_point(const LaserBoy_vertex& vertex, u_int vertex_index)
+{
+    const LaserBoy_frame& frame = space.current_frame();
+    const int art_h = (viewport_square_n > 0) ? viewport_square_n
+                      : (screen && screen->h > 0) ? screen->h
+                                                  : (int)yres;
+    const int center = space.show_quad_view ? (art_h / 4) : (art_h / 2);
+    const double scale = viewport_model_to_canvas_scale(art_h);
+    const double z_depth_scale = frame.size() ? ((double)LASERBOY_SHORT_SPAN / frame.size()) : 0.0;
+    const double z_depth_body_offset = (LASERBOY_SHORT_SPAN / 2.0);
+    LaserBoy_3D_double point = vertex.bit_masked_position(space.signal_bit_mask);
+
+    if(space.show_Z_as_order)
+        point.z = vertex_index * z_depth_scale - z_depth_body_offset;
+    if(space.view_angle != 0.0)
+        point = rotate_vertex(point, space.view_angle);
+    if(space.view_offset != 0)
+        point += space.view_offset;
+    if(space.view_scale != 1.0)
+        point *= space.view_scale;
+
+    return LaserBoy_3D_double(round(point.x * scale) + center,
+                              art_h - (round(point.y * scale) + center),
+                              point.z
+                             );
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::viewport_point_to_model_delta(int dx, int dy, LaserBoy_3D_double& delta) const
+{
+    if(!screen || !screen->h)
+        return false;
+
+    const int art_px = (viewport_square_n > 0) ? viewport_square_n
+                       : (screen->h > 0 ? screen->h : 0);
+    if(art_px <= 0)
+        return false;
+    const double scale = viewport_model_to_canvas_scale(art_px);
+    const double scale_x = (space.view_scale.x != 0.0) ? space.view_scale.x : 1.0;
+    const double scale_y = (space.view_scale.y != 0.0) ? space.view_scale.y : 1.0;
+    delta = LaserBoy_3D_double(dx / (scale * scale_x),
+                              -dy / (scale * scale_y),
+                               0.0
+                              );
+
+    if(space.view_angle != 0.0)
+        delta = rotate_vertex(delta,
+                              LaserBoy_3D_double(-space.view_angle.x,
+                                                 -space.view_angle.y,
+                                                 -space.view_angle.z
+                                                )
+                             );
+    return true;
+}
+
+//############################################################################
+double LaserBoy_FLTK_GUI::viewport_distance_to_segment(double mouse_x, double mouse_y, double x0, double y0, double x1, double y1) const
+{
+    const double vx = x1 - x0;
+    const double vy = y1 - y0;
+    const double wx = mouse_x - x0;
+    const double wy = mouse_y - y0;
+    const double length_squared = vx * vx + vy * vy;
+
+    if(length_squared <= 0.0)
+    {
+        const double dx = mouse_x - x0;
+        const double dy = mouse_y - y0;
+        return dx * dx + dy * dy;
+    }
+
+    double t = (wx * vx + wy * vy) / length_squared;
+    if(t < 0.0)
+        t = 0.0;
+    else if(t > 1.0)
+        t = 1.0;
+
+    const double px = x0 + t * vx;
+    const double py = y0 + t * vy;
+    const double dx = mouse_x - px;
+    const double dy = mouse_y - py;
+    return dx * dx + dy * dy;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::select_viewport_vertex(int mouse_x, int mouse_y, bool extend_selection)
+{
+    if(!space.number_of_frames() || !space.current_frame().size())
+    {
+        space.TUI_clue = "no vertex under cursor";
+        update_gui_regions();
+        return false;
+    }
+
+    LaserBoy_frame& frame = space.current_frame();
+    double best_distance = 1.0e30;
+    u_int best_index = 0;
+
+    for(u_int i = 0; i < frame.size(); i++)
+    {
+        const LaserBoy_3D_double point = project_viewport_point(frame.at(i), i);
+        const double dx = point.x - mouse_x;
+        const double dy = point.y - mouse_y;
+        const double distance = dx * dx + dy * dy;
+        if(distance < best_distance)
+        {
+            best_distance = distance;
+            best_index = i;
+        }
+    }
+
+    const double pick_radius = 12.0 + space.rendered_line_width;
+    if(best_distance > pick_radius * pick_radius)
+    {
+        space.TUI_clue = "no vertex under cursor";
+        update_gui_regions();
+        return false;
+    }
+
+    if(extend_selection)
+    {
+        if(best_index < frame.egg)
+            frame.egg = best_index;
+        else
+            frame.spider = best_index;
+    }
+    else
+    {
+        frame.egg = best_index;
+        frame.spider = best_index;
+    }
+    frame.normalize_cursors();
+
+    std::ostringstream status;
+    status << "select vertex " << best_index;
+    space.TUI_clue = status.str();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::select_viewport_segment(int mouse_x, int mouse_y, bool extend_selection)
+{
+    if(!space.number_of_frames() || !space.current_frame().size())
+    {
+        space.TUI_clue = "no segment under cursor";
+        update_gui_regions();
+        return false;
+    }
+
+    LaserBoy_frame& frame = space.current_frame();
+    const double pick_radius = 12.0 + space.rendered_line_width;
+    double best_distance = 1.0e30;
+    size_t best_start = 0;
+    size_t best_end = 0;
+    bool found = false;
+
+    for(size_t segment_index = 0; segment_index < frame.number_of_segments(); segment_index++)
+    {
+        size_t start = 0;
+        size_t end = 0;
+        if(!frame.find_segment_at_index(segment_index, start, end))
+            continue;
+        if(end <= start || end >= frame.size())
+            continue;
+
+        for(size_t i = start + 1; i <= end; i++)
+        {
+            const LaserBoy_3D_double p0 = project_viewport_point(frame.at(i - 1), (u_int)(i - 1));
+            const LaserBoy_3D_double p1 = project_viewport_point(frame.at(i    ), (u_int)i);
+            const double distance = viewport_distance_to_segment(mouse_x, mouse_y, p0.x, p0.y, p1.x, p1.y);
+            if(distance < best_distance)
+            {
+                best_distance = distance;
+                best_start = start;
+                best_end = end;
+                found = true;
+            }
+        }
+    }
+
+    if(!found || best_distance > pick_radius * pick_radius)
+    {
+        space.TUI_clue = "no segment under cursor";
+        update_gui_regions();
+        return false;
+    }
+
+    if(extend_selection && frame.size_of_selection())
+    {
+        if(best_start < frame.egg)
+            frame.egg = best_start;
+        if(best_end > frame.spider)
+            frame.spider = best_end;
+    }
+    else
+    {
+        frame.egg = best_start;
+        frame.spider = best_end;
+    }
+    frame.normalize_cursors();
+
+    std::ostringstream status;
+    status << "select segment " << frame.segment_index_of_vertex(best_start);
+    space.TUI_clue = status.str();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::select_viewport_rect(int canvas_x1, int canvas_y1,
+                                             int canvas_x2, int canvas_y2,
+                                             bool extend_selection)
+{
+    if(!space.number_of_frames() || !space.current_frame().size())
+    {
+        space.TUI_clue = "no vertices under rect";
+        update_gui_regions();
+        return false;
+    }
+    // Normalize rect so x1 <= x2 and y1 <= y2.
+    const double rx1 = (double)std::min(canvas_x1, canvas_x2);
+    const double rx2 = (double)std::max(canvas_x1, canvas_x2);
+    const double ry1 = (double)std::min(canvas_y1, canvas_y2);
+    const double ry2 = (double)std::max(canvas_y1, canvas_y2);
+
+    LaserBoy_frame& frame = space.current_frame();
+    // Z is ignored: every vertex whose projected 2D position falls inside the rect
+    // counts. The selection is the contiguous index span from first to last match.
+    size_t first_match = (size_t)-1;
+    size_t last_match  = 0;
+    size_t hits        = 0;
+    for(u_int i = 0; i < frame.size(); i++)
+    {
+        const LaserBoy_3D_double p = project_viewport_point(frame.at(i), i);
+        if(p.x >= rx1 && p.x <= rx2 && p.y >= ry1 && p.y <= ry2)
+        {
+            if(first_match == (size_t)-1)
+                first_match = i;
+            last_match = i;
+            hits++;
+        }
+    }
+
+    if(hits == 0)
+    {
+        space.TUI_clue = "no vertices under rect";
+        update_gui_regions();
+        return false;
+    }
+
+    if(extend_selection && frame.size_of_selection())
+    {
+        if(first_match < frame.egg)
+            frame.egg = first_match;
+        if(last_match > frame.spider)
+            frame.spider = last_match;
+    }
+    else
+    {
+        frame.egg = first_match;
+        frame.spider = last_match;
+    }
+    frame.normalize_cursors();
+
+    std::ostringstream status;
+    status << "select rect: " << hits << " vertices ("
+           << frame.egg << ".." << frame.spider << ")";
+    space.TUI_clue = status.str();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::begin_viewport_selection_drag(int mouse_x, int mouse_y, bool extend_selection)
+{
+    // Snapshot the frame BEFORE any selection mutation so the undo step
+    // restores the pre-click selection. A drag that follows upgrades the
+    // label by extending the same snapshot; a click that only changes
+    // selection still gets recorded because we mark committed=true below
+    // when egg / spider actually changed.
+    if(!begin_viewport_edit_transaction("select / move segment"))
+        return false;
+
+    LaserBoy_frame& frame = space.current_frame();
+    const u_int old_egg    = frame.egg;
+    const u_int old_spider = frame.spider;
+
+    if(!select_viewport_segment(mouse_x, mouse_y, extend_selection))
+    {
+        commit_viewport_edit_transaction(false); // no hit -> drop snapshot
+        return false;
+    }
+    if(frame.egg != old_egg || frame.spider != old_spider)
+        viewport_edit_transaction_committed = true;
+
+    viewport_drag_egg = frame.egg;
+    viewport_drag_spider = frame.spider;
+    viewport_drag_start_canvas_x = mouse_x;
+    viewport_drag_start_canvas_y = mouse_y;
+    viewport_drag_start_frame = frame;
+    viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_SELECTION;
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::drag_viewport_selection_by_pixels(int dx, int dy)
+{
+    if(   !space.number_of_frames()
+       || !space.current_frame().size()
+       || viewport_drag_action != LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_SELECTION
+      )
+        return false;
+
+    LaserBoy_3D_double delta;
+    if(!viewport_point_to_model_delta(dx, dy, delta))
+        return false;
+
+    LaserBoy_frame& frame = space.current_frame();
+    frame = viewport_drag_start_frame;
+    frame.egg = viewport_drag_egg;
+    frame.spider = viewport_drag_spider;
+    frame.normalize_cursors();
+
+    if(frame.move_selection(delta))
+    {
+        frame = viewport_drag_start_frame;
+        frame.egg = viewport_drag_egg;
+        frame.spider = viewport_drag_spider;
+        frame.normalize_cursors();
+        space.TUI_clue = "selection move out of bounds";
+        update_gui_regions();
+        return false;
+    }
+
+    viewport_edit_transaction_committed = true;
+    space.TUI_clue = "move selection";
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::begin_viewport_vertex_drag(int mouse_x, int mouse_y, bool extend_selection)
+{
+    // Same pattern as begin_viewport_selection_drag: snapshot first so a
+    // pure click-select gets undo coverage when egg / spider changed.
+    if(!begin_viewport_edit_transaction("select / move vertex"))
+        return false;
+
+    LaserBoy_frame& frame = space.current_frame();
+    const u_int old_egg    = frame.egg;
+    const u_int old_spider = frame.spider;
+
+    if(!select_viewport_vertex(mouse_x, mouse_y, extend_selection))
+    {
+        commit_viewport_edit_transaction(false);
+        return false;
+    }
+    if(frame.egg != old_egg || frame.spider != old_spider)
+        viewport_edit_transaction_committed = true;
+
+    if(extend_selection)
+        viewport_drag_vertex = frame.spider;
+    else
+        viewport_drag_vertex = frame.egg;
+    viewport_drag_egg = frame.egg;
+    viewport_drag_spider = frame.spider;
+    viewport_drag_start_canvas_x = mouse_x;
+    viewport_drag_start_canvas_y = mouse_y;
+    viewport_drag_start_frame = frame;
+    viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_VERTEX;
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::drag_viewport_vertex_by_pixels(int dx, int dy)
+{
+    if(   !space.number_of_frames()
+       || !space.current_frame().size()
+       || viewport_drag_action != LASERBOY_FLTK_VIEWPORT_DRAG_MOVE_VERTEX
+      )
+        return false;
+
+    LaserBoy_frame& frame = space.current_frame();
+    if(viewport_drag_vertex >= frame.size())
+        return false;
+
+    LaserBoy_3D_double delta;
+    if(!viewport_point_to_model_delta(dx, dy, delta))
+        return false;
+
+    frame = viewport_drag_start_frame;
+    frame.egg    = viewport_drag_vertex;
+    frame.spider = viewport_drag_vertex;
+    frame.normalize_cursors();
+
+    if(frame.move_selection(delta))
+    {
+        frame = viewport_drag_start_frame;
+        frame.egg    = viewport_drag_egg;
+        frame.spider = viewport_drag_spider;
+        frame.normalize_cursors();
+        space.TUI_clue = "vertex move out of bounds";
+        update_gui_regions();
+        return false;
+    }
+
+    frame.egg    = viewport_drag_egg;
+    frame.spider = viewport_drag_spider;
+    frame.normalize_cursors();
+    viewport_edit_transaction_committed = true;
+    std::ostringstream status;
+    status << "move vertex " << viewport_drag_vertex;
+    space.TUI_clue = status.str();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::pan_viewport_by_pixels(int dx, int dy)
+{
+    if(!screen || !screen->h)
+        return;
+    const int art_px = (viewport_square_n > 0) ? viewport_square_n
+                       : (screen->h > 0 ? screen->h : 0);
+    if(art_px <= 0)
+        return;
+    const double scale = viewport_model_to_canvas_scale(art_px);
+    const double scale_x = (space.view_scale.x != 0.0) ? space.view_scale.x : 1.0;
+    const double scale_y = (space.view_scale.y != 0.0) ? space.view_scale.y : 1.0;
+    space.view_offset = viewport_drag_start_view_offset;
+    space.view_offset.x += dx / (scale * scale_x);
+    space.view_offset.y -= dy / (scale * scale_y);
+    space.view_has_changed = true;
+    space.TUI_clue = "mouse pan";
+    // Real motion happened; keep the view snapshot taken at FL_PUSH.
+    viewport_edit_transaction_committed = true;
+    refresh_viewport_after_mouse_change();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::orbit_viewport_by_pixels(int dx, int dy)
+{
+    const double radians_per_pixel = space.rotation_step / 8.0;
+    space.view_angle.y += dx * radians_per_pixel;
+    space.view_angle.x += dy * radians_per_pixel;
+    space.simplify_view_angle();
+    space.view_has_changed = true;
+    space.TUI_clue = "mouse orbit";
+    viewport_edit_transaction_committed = true;
+    refresh_viewport_after_mouse_change();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::refresh_viewport_after_mouse_change()
+{
+    space.clean_screen();
+    space.render_space();
+    display_space();
+    update_gui_regions();
+    refresh_tool_buttons();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::toggle_menu_overlay()
+{
+    // Forward to the legacy command path; space.show_menu is the source of truth,
+    // and refresh_menu_toggle_button() (called from update_gui_regions on every
+    // refresh) will re-sync the icon after the event loop processes the key.
+    push_command_key(LASERBOY_KEY_RETURN);
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::refresh_menu_toggle_button()
+{
+    if(!menu_toggle_button)
+        return;
+    const bool shown = space.show_menu;
+    if(shown == menu_toggle_icon_shown && menu_toggle_button->image() != nullptr)
+        return;
+    menu_toggle_icon_shown = shown;
+    Fl_SVG_Image* icon = shown ? icon_menu : icon_menu_off;
+    if(icon)
+    {
+        menu_toggle_button->image(icon);
+        menu_toggle_button->label("");
+    }
+    else
+    {
+        menu_toggle_button->image(nullptr);
+        menu_toggle_button->label(shown ? "On" : "Off");
+    }
+    menu_toggle_button->redraw();
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::apply_view_control(char command)
+{
+    // Button-tuned step factors. The legacy keyboard d/D step is only 1.01,
+    // which is meant for held-down auto-repeat. A single button click should
+    // be visibly different, so we use a larger discrete step here.
+    const double zoom_step_up = 1.25;
+    const double zoom_step_dn = 0.80;
+    const char*  label        = nullptr;
+    switch(command)
+    {
+        case 'r':
+        case 'R': label = "center view";   break;
+        case 'd': label = "zoom in";       break;
+        case 'D': label = "zoom out";      break;
+        case 'f': label = "reset zoom";    break;
+        case 'F': label = "reset view";    break;
+        default:  return;
+    }
+    // The viewport view is part of the document (it is the camera that gets
+    // rendered), so view changes go on the undo stack just like vertex edits.
+    const bool txn = begin_viewport_view_transaction(label);
+    switch(command)
+    {
+        case 'r':
+        case 'R':
+            space.view_offset = 0;
+            space.TUI_clue = "view centered";
+            break;
+        case 'd':
+            space.view_scale *= zoom_step_up;
+            space.TUI_clue = "+ zoom XY";
+            break;
+        case 'D':
+            space.view_scale *= zoom_step_dn;
+            space.TUI_clue = "- zoom XY";
+            break;
+        case 'f':
+            space.view_scale = 1.0;
+            space.TUI_clue = "no zoom";
+            break;
+        case 'F':
+            space.view_angle = 0.0;
+            space.view_offset = 0;
+            space.view_scale = 1.0;
+            space.TUI_clue = "view reset";
+            break;
+    }
+    space.view_has_changed = true;
+    if(txn)
+        commit_viewport_edit_transaction(true);
+    refresh_viewport_after_mouse_change();
+    if(display)
+        Fl::focus(display);
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::delete_selection_in_frame()
+{
+    if(!space.number_of_frames())
+        return false;
+    LaserBoy_frame& frame = space.current_frame();
+    if(frame.size_of_selection() <= 0)
+    {
+        space.TUI_clue = "nothing selected to delete";
+        update_gui_regions();
+        return false;
+    }
+    if(!begin_viewport_edit_transaction("delete selection"))
+        return false;
+    const size_t removed = (size_t)frame.size_of_selection();
+    frame.delete_selection();
+    commit_viewport_edit_transaction(true);
+    std::ostringstream status;
+    status << "deleted " << removed << " vertices";
+    space.TUI_clue = status.str();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::copy_selection_to_new_frame()
+{
+    if(!space.number_of_frames())
+        return false;
+    LaserBoy_frame& current = space.current_frame();
+    if(current.size_of_selection() <= 0)
+    {
+        space.TUI_clue = "nothing selected to copy";
+        update_gui_regions();
+        return false;
+    }
+    LaserBoy_segment selection = current.selected_segment();
+    if(selection.empty())
+    {
+        space.TUI_clue = "selection is empty";
+        update_gui_regions();
+        return false;
+    }
+    // Build a new frame seeded from the current frame's ILDA header / palette so
+    // colors keep resolving correctly, then replace its vertices with the
+    // selection contents.
+    LaserBoy_frame new_frame(current);
+    new_frame.LaserBoy_segment::clear();
+    new_frame.palette_index = current.palette_index;
+    for(size_t i = 0; i < selection.size(); i++)
+        new_frame += selection.at(i);
+    new_frame.egg = 0;
+    new_frame.spider = new_frame.size() ? (new_frame.size() - 1) : 0;
+    new_frame.normalize_cursors();
+    new_frame.quantity = new_frame.size();
+    new_frame.is_unique = true;
+    // Insert directly after the current frame and navigate to it. space inherits
+    // both LaserBoy_frame_set::insert and LaserBoy_palette_set::insert, so the
+    // base must be named explicitly to disambiguate.
+    space.LaserBoy_frame_set::insert(
+        space.LaserBoy_frame_set::begin() + space.frame_index + 1, new_frame);
+    space.frame_index++;
+    clear_edit_history();
+    std::ostringstream status;
+    status << "copied " << selection.size() << " vertices to new frame "
+           << space.frame_index;
+    space.TUI_clue = status.str();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+const char* LaserBoy_FLTK_GUI::viewport_tool_label(LaserBoy_FLTK_Viewport_Tool tool) const
+{
+    switch(tool)
+    {
+        case LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT:   return "Segment";
+        case LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX:    return "Vertex";
+        case LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT: return "Pan/Orbit";
+    }
+    return "Tool";
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::refresh_tool_buttons()
+{
+    // Use DOWN_BOX for the active tool button, FLAT_BOX for inactive ones,
+    // giving a "pressed in" appearance like GIMP/FreeCAD tool palettes.
+    // Active-tool highlight: brighter teal-blue pops well on the dark grey background.
+    static const Fl_Color ACTIVE_TOOL_COLOR = fl_rgb_color(50, 120, 200);
+    auto set_tool_state = [&](Fl_Button* btn, bool active) {
+        if(!btn) return;
+        btn->box(active ? FL_FLAT_BOX : FL_FLAT_BOX);
+        btn->color(active ? ACTIVE_TOOL_COLOR : FL_BACKGROUND_COLOR);
+        btn->labelcolor(active ? FL_WHITE : FL_FOREGROUND_COLOR);
+        btn->redraw();
+    };
+    set_tool_state(segment_tool_button,   viewport_tool == LASERBOY_FLTK_VIEWPORT_TOOL_SEGMENT);
+    set_tool_state(vertex_tool_button,    viewport_tool == LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX);
+    set_tool_state(pan_orbit_tool_button, viewport_tool == LASERBOY_FLTK_VIEWPORT_TOOL_PAN_ORBIT);
+    if(undo_button)
+    {
+        if(can_undo_frame_edit())
+            undo_button->activate();
+        else
+            undo_button->deactivate();
+    }
+    if(redo_button)
+    {
+        if(can_redo_frame_edit())
+            redo_button->activate();
+        else
+            redo_button->deactivate();
+    }
+    // Selection-dependent edit buttons: only active when something is selected
+    // in the current frame.
+    const bool has_selection =
+           space.number_of_frames()
+        && space.current_frame().size_of_selection() > 0;
+    if(delete_selection_button)
+    {
+        if(has_selection) delete_selection_button->activate();
+        else              delete_selection_button->deactivate();
+    }
+    if(copy_selection_button)
+    {
+        if(has_selection) copy_selection_button->activate();
+        else              copy_selection_button->deactivate();
+    }
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::set_viewport_tool(LaserBoy_FLTK_Viewport_Tool tool)
+{
+    if(tool == viewport_tool)
+    {
+        refresh_tool_buttons();
+        return;
+    }
+    viewport_tool = tool;
+    if(viewport_edit_transaction_active)
+        commit_viewport_edit_transaction(false);
+    viewport_drag_action = LASERBOY_FLTK_VIEWPORT_DRAG_NONE;
+    // Auto-toggle vertex dot visuals so the user can actually see what they're
+    // clicking when the Vertex tool is active. Other tools restore the off state.
+    space.show_vertices = (viewport_tool == LASERBOY_FLTK_VIEWPORT_TOOL_VERTEX);
+    refresh_viewport_after_mouse_change();
+    std::ostringstream clue;
+    clue << "tool: " << viewport_tool_label(viewport_tool);
+    space.TUI_clue = clue.str();
+    refresh_tool_buttons();
+    update_gui_regions();
+    if(status_text)
+        status_text->redraw();
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::begin_viewport_edit_transaction(const std::string& label)
+{
+    if(viewport_edit_transaction_active)
+        return false;
+    if(!space.number_of_frames())
+        return false;
+
+    LaserBoy_FLTK_Edit_Snapshot snapshot;
+    snapshot.kind        = LaserBoy_FLTK_Edit_Snapshot::FRAME_EDIT;
+    snapshot.frame_index = space.frame_index;
+    snapshot.frame       = space.current_frame();
+    snapshot.label       = label;
+    undo_history.push_back(snapshot);
+    while(undo_history.size() > LASERBOY_FLTK_EDIT_HISTORY_LIMIT)
+        undo_history.pop_front();
+    redo_history.clear();
+    viewport_edit_transaction_active = true;
+    viewport_edit_transaction_committed = false;
+    refresh_tool_buttons();
+    return true;
+}
+
+//############################################################################
+// View transactions capture the camera (view_offset / view_scale / view_angle),
+// not a frame. In LaserBoy the viewport IS the camera that renders the laser
+// show, so pan / zoom / orbit CAN undo just like any other edit — but this
+// is opt-in: the "Include Camera" toolbar toggle controls whether view ops
+// are recorded. By default it's off and view ops are pure navigation.
+bool LaserBoy_FLTK_GUI::begin_viewport_view_transaction(const std::string& label)
+{
+    if(!include_camera_in_history)
+        return false;
+    if(viewport_edit_transaction_active)
+        return false;
+
+    LaserBoy_FLTK_Edit_Snapshot snapshot;
+    snapshot.kind        = LaserBoy_FLTK_Edit_Snapshot::VIEW_EDIT;
+    snapshot.frame_index = space.frame_index;
+    snapshot.view_offset = space.view_offset;
+    snapshot.view_scale  = space.view_scale;
+    snapshot.view_angle  = space.view_angle;
+    snapshot.label       = label;
+    undo_history.push_back(snapshot);
+    while(undo_history.size() > LASERBOY_FLTK_EDIT_HISTORY_LIMIT)
+        undo_history.pop_front();
+    redo_history.clear();
+    viewport_edit_transaction_active = true;
+    viewport_edit_transaction_committed = false;
+    refresh_tool_buttons();
+    return true;
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::commit_viewport_edit_transaction(bool changed)
+{
+    if(!viewport_edit_transaction_active)
+        return;
+    if(!changed)
+    {
+        if(!undo_history.empty())
+            undo_history.pop_back();
+    }
+    viewport_edit_transaction_active = false;
+    viewport_edit_transaction_committed = changed;
+    refresh_tool_buttons();
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::undo_frame_edit()
+{
+    if(viewport_edit_transaction_active)
+        commit_viewport_edit_transaction(viewport_edit_transaction_committed);
+    const bool has_frame =  space.number_of_frames() > 0;
+    if(undo_history.empty())
+    {
+        space.TUI_clue = "nothing to undo";
+        update_gui_regions();
+        if(status_text)
+            status_text->redraw();
+        return false;
+    }
+    LaserBoy_FLTK_Edit_Snapshot snapshot = undo_history.back();
+    undo_history.pop_back();
+
+    LaserBoy_FLTK_Edit_Snapshot redo_entry;
+    redo_entry.kind  = snapshot.kind;
+    redo_entry.label = snapshot.label;
+
+    if(snapshot.kind == LaserBoy_FLTK_Edit_Snapshot::VIEW_EDIT)
+    {
+        // Capture the current view as the redo target, then restore the snapshot.
+        redo_entry.frame_index = space.frame_index;
+        redo_entry.view_offset = space.view_offset;
+        redo_entry.view_scale  = space.view_scale;
+        redo_entry.view_angle  = space.view_angle;
+        redo_history.push_back(redo_entry);
+        while(redo_history.size() > LASERBOY_FLTK_EDIT_HISTORY_LIMIT)
+            redo_history.pop_front();
+
+        space.view_offset = snapshot.view_offset;
+        space.view_scale  = snapshot.view_scale;
+        space.view_angle  = snapshot.view_angle;
+        space.view_has_changed = true;
+    }
+    else // FRAME_EDIT
+    {
+        if(!has_frame)
+        {
+            // Snapshot is meaningless without a frame to write back into;
+            // drop it silently and report no-op.
+            space.TUI_clue = "nothing to undo";
+            update_gui_regions();
+            if(status_text)
+                status_text->redraw();
+            return false;
+        }
+        redo_entry.frame_index = (snapshot.frame_index < space.number_of_frames())
+                                 ? snapshot.frame_index
+                                 : space.frame_index;
+        if(redo_entry.frame_index < space.number_of_frames())
+            redo_entry.frame = space[redo_entry.frame_index];
+        else
+            redo_entry.frame = space.current_frame();
+        redo_history.push_back(redo_entry);
+        while(redo_history.size() > LASERBOY_FLTK_EDIT_HISTORY_LIMIT)
+            redo_history.pop_front();
+
+        if(snapshot.frame_index < space.number_of_frames())
+        {
+            space.frame_index = snapshot.frame_index;
+            space[snapshot.frame_index] = snapshot.frame;
+        }
+    }
+    std::ostringstream clue;
+    clue << "undo " << (snapshot.label.size() ? snapshot.label : std::string("edit"));
+    space.TUI_clue = clue.str();
+    refresh_tool_buttons();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+bool LaserBoy_FLTK_GUI::redo_frame_edit()
+{
+    if(viewport_edit_transaction_active)
+        commit_viewport_edit_transaction(viewport_edit_transaction_committed);
+    if(redo_history.empty())
+    {
+        space.TUI_clue = "nothing to redo";
+        update_gui_regions();
+        if(status_text)
+            status_text->redraw();
+        return false;
+    }
+    LaserBoy_FLTK_Edit_Snapshot snapshot = redo_history.back();
+    redo_history.pop_back();
+
+    LaserBoy_FLTK_Edit_Snapshot undo_entry;
+    undo_entry.kind  = snapshot.kind;
+    undo_entry.label = snapshot.label;
+
+    if(snapshot.kind == LaserBoy_FLTK_Edit_Snapshot::VIEW_EDIT)
+    {
+        undo_entry.frame_index = space.frame_index;
+        undo_entry.view_offset = space.view_offset;
+        undo_entry.view_scale  = space.view_scale;
+        undo_entry.view_angle  = space.view_angle;
+        undo_history.push_back(undo_entry);
+        while(undo_history.size() > LASERBOY_FLTK_EDIT_HISTORY_LIMIT)
+            undo_history.pop_front();
+
+        space.view_offset = snapshot.view_offset;
+        space.view_scale  = snapshot.view_scale;
+        space.view_angle  = snapshot.view_angle;
+        space.view_has_changed = true;
+    }
+    else // FRAME_EDIT
+    {
+        if(!space.number_of_frames())
+        {
+            space.TUI_clue = "nothing to redo";
+            update_gui_regions();
+            if(status_text)
+                status_text->redraw();
+            return false;
+        }
+        undo_entry.frame_index = (snapshot.frame_index < space.number_of_frames())
+                                 ? snapshot.frame_index
+                                 : space.frame_index;
+        if(undo_entry.frame_index < space.number_of_frames())
+            undo_entry.frame = space[undo_entry.frame_index];
+        else
+            undo_entry.frame = space.current_frame();
+        undo_history.push_back(undo_entry);
+        while(undo_history.size() > LASERBOY_FLTK_EDIT_HISTORY_LIMIT)
+            undo_history.pop_front();
+
+        if(snapshot.frame_index < space.number_of_frames())
+        {
+            space.frame_index = snapshot.frame_index;
+            space[snapshot.frame_index] = snapshot.frame;
+        }
+    }
+    std::ostringstream clue;
+    clue << "redo " << (snapshot.label.size() ? snapshot.label : std::string("edit"));
+    space.TUI_clue = clue.str();
+    refresh_tool_buttons();
+    refresh_viewport_after_mouse_change();
+    return true;
+}
+
+//############################################################################
+void LaserBoy_FLTK_GUI::clear_edit_history()
+{
+    undo_history.clear();
+    redo_history.clear();
+    viewport_edit_transaction_active = false;
+    viewport_edit_transaction_committed = false;
+    refresh_tool_buttons();
 }
 
 //############################################################################
@@ -10194,7 +12293,9 @@ void LaserBoy_FLTK_GUI::draw_color_blank_menu()
                         show_coda_was           = space.show_coda,
                         show_palette_was        = space.show_palette,
                         show_target_palette_was = space.show_target_palette,
-                        show_menu_was           = space.show_menu;
+                        show_menu_was           = space.show_menu,
+                        show_cursors_was        = space.show_cursors,
+                        show_color_cursor_was   = space.show_color_cursor;
                    int  temp_int;
                 double  temp_double;
     LaserBoy_3D_double  temp_3D_double;
@@ -10226,8 +12327,8 @@ void LaserBoy_FLTK_GUI::draw_color_blank_menu()
                 //------------------------------------------------------------
                 case LASERBOY_KEY_ESCAPE:
                     in_menu                   = false;
-                    space.show_cursors        = false;
-                    space.show_color_cursor   = false;
+                    space.show_cursors        = show_cursors_was;
+                    space.show_color_cursor   = show_color_cursor_was;
                     space.show_vertices       = show_vertices_was;
                     space.show_blanking       = show_blanking_was;
                     space.show_intro          = show_intro_was;
@@ -11060,7 +13161,8 @@ void LaserBoy_FLTK_GUI::move_scale_rotate_menu()
             show_intro_was       = space.show_intro,
             show_bridge_was      = space.show_bridge,
             show_coda_was        = space.show_coda,
-            show_menu_was        = space.show_menu;
+            show_menu_was        = space.show_menu,
+            show_cursors_was     = space.show_cursors;
     char    formatted_string[80] = {0};
     double  temp_double;
     //------------------------------------------------------------------------
@@ -11093,7 +13195,7 @@ void LaserBoy_FLTK_GUI::move_scale_rotate_menu()
                     space.show_intro    = show_intro_was;
                     space.show_bridge   = show_bridge_was;
                     space.show_coda     = show_coda_was;
-                    space.show_cursors  = false;
+                    space.show_cursors  = show_cursors_was;
                     space.show_fulcrum  = false;
                     space.TUI_clue = "exit move scale rotate";
                     break;

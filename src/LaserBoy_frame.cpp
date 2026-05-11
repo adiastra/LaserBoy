@@ -1615,6 +1615,45 @@ LaserBoy_frame& LaserBoy_frame::remove_vertex(u_int vertex_index)
 }
 
 //############################################################################
+LaserBoy_frame& LaserBoy_frame::delete_selection()
+{
+    // Erase every vertex from egg..spider (inclusive). Falls back to a single
+    // remove when the selection is just one vertex. Cursors are normalized
+    // afterward so they don't dangle past the new end of the frame.
+    if(size_of_selection() <= 0 || size() == 0)
+        return *this;
+    if(size_of_selection() == 1)
+    {
+        LaserBoy_segment::remove_vertex(spider);
+        if(spider > 0)
+            spider--;
+        if(egg > spider)
+            egg = spider;
+    }
+    else
+    {
+        const size_t lo = egg;
+        const size_t hi = spider;
+        if(hi < size())
+            erase(begin() + lo, begin() + hi + 1);
+        // After erasing, collapse the cursor to where the deletion happened so
+        // subsequent operations have a sane single-point selection.
+        if(size() == 0)
+        {
+            egg = spider = 0;
+        }
+        else
+        {
+            const size_t new_pos = (lo > 0) ? (lo - 1) : 0;
+            egg = spider = (new_pos < size()) ? new_pos : (size() - 1);
+        }
+    }
+    normalize_cursors();
+    quantity = size();
+    return *this;
+}
+
+//############################################################################
 void LaserBoy_frame::to_ofstream_ild(std::ofstream& out, u_short& id_num, LaserBoy_ild_header_count& counter) // only called from LaserBoy_frame_set
 {
     if(size() > 1)
